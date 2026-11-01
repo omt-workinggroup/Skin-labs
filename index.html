@@ -209,6 +209,40 @@ h2{font-family:var(--display);font-weight:400;font-size:clamp(34px,9vw,52px);lin
 .lb{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.92);display:grid;place-items:center;padding:16px;overflow:auto}
 .lb img{max-width:100%;height:auto;border-radius:6px}
 .lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));right:calc(14px + env(safe-area-inset-right,0px))}
+/* realistic category covers */
+.cats{gap:12px}
+.catc{display:flex;flex-direction:column;border-radius:18px;overflow:hidden;background:var(--panel);border:1px solid var(--line)}
+.catc:active{transform:scale(.98)}
+.catc .table{position:relative;aspect-ratio:1;background:radial-gradient(120% 90% at 30% 20%,#efece4,#d9d4c7 70%,#cbc5b6);overflow:hidden}
+.catc .table::after{content:"";position:absolute;inset:0;background:linear-gradient(160deg,rgba(255,255,255,.25),transparent 40%,rgba(0,0,0,.08));pointer-events:none}
+.catc .table img{position:absolute;left:50%;top:50%;height:80%;width:auto;transform:translate(calc(-50% + var(--x)),-50%) rotate(var(--r));border-radius:3px;
+  box-shadow:0 1px 1px rgba(0,0,0,.25),0 12px 22px rgba(60,45,20,.35)}
+.cmeta{padding:10px 12px 12px}
+.cmeta b{display:block;font-weight:800;font-size:16px;line-height:1.2}
+.cmeta span{display:block;font-size:13px;color:var(--mute)}
+.pack .pv{background:radial-gradient(120% 90% at 30% 20%,#efece4,#d9d4c7 70%,#cbc5b6)!important}
+.pack .pv img{box-shadow:0 1px 1px rgba(0,0,0,.25),0 12px 22px rgba(60,45,20,.35);border-radius:3px}
+.pack .meta a{min-width:0}
+.pbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 12px 12px}
+.pbtns .btn{min-height:44px;font-size:15px;padding:0 10px}
+.sheetimg{background:radial-gradient(120% 90% at 30% 20%,#efece4,#d9d4c7 70%,#cbc5b6)!important}
+.extra{display:grid;gap:10px;margin-top:18px}
+.xcard{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--panel);border:1px dashed #4a4a52;border-radius:18px;padding:14px 16px}
+.xcard b{display:block;font-size:16px}
+.xcard small{display:block;color:var(--mute);font-size:14px;line-height:1.35;margin-top:2px}
+.xart{display:flex;flex:none;width:92px}
+.again{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--y);color:var(--yk);border-radius:18px;padding:12px 14px;margin-bottom:18px}
+.again .ic{width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.12);display:grid;place-items:center;font-size:22px;font-weight:800;flex:none}
+.again b{display:block}.again small{display:block;font-size:13px;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60vw}
+.again .go{margin-left:auto;font-weight:800;font-size:14px;background:var(--yk);color:var(--y);padding:7px 13px;border-radius:999px}
+.wachat{border-radius:16px;overflow:hidden;background:#0b141a;border:1px solid #1f2c33}
+.wahead{display:flex;align-items:center;gap:10px;background:#1f2c33;padding:9px 12px;color:#e9edef}
+.wahead .wa-i{color:var(--wa);width:26px;height:26px}
+.wahead b{display:block;font-size:14px}.wahead small{display:block;font-size:12px;color:#8696a0}
+.wabody{padding:12px;background:#0b141a radial-gradient(circle at 20% 30%,rgba(255,255,255,.03) 1px,transparent 1.5px) 0 0/18px 18px;max-height:260px;overflow:auto}
+.bub{margin-left:auto;max-width:92%;background:#005c4b;color:#e9edef;border-radius:10px 2px 10px 10px;padding:8px 10px 18px;font-size:14px;line-height:1.4;position:relative;word-break:break-word}
+.bub u{color:#53bdeb;text-decoration:none}
+.bub .tm{position:absolute;right:8px;bottom:4px;font-size:11px;color:#8fbfb3}
 /* studio */
 .studio{display:grid;gap:12px;padding-top:12px}
 .stagebox{position:sticky;top:calc(env(safe-area-inset-top,0px) + 61px);z-index:15;background:var(--bg);padding-bottom:8px}
@@ -269,6 +303,7 @@ footer .num{color:var(--fg)}
   .tray{flex:1;min-height:64px;grid-template-rows:repeat(auto-fill,64px);grid-auto-columns:64px;align-content:start}
 }
 @media (min-width:700px){
+  .extra{grid-template-columns:1fr 1fr}
   .ways{grid-template-columns:repeat(3,1fr)}
   .phero{grid-template-columns:1.1fr 1fr;align-items:start}
   .cats{grid-template-columns:repeat(3,1fr);gap:14px}
@@ -312,7 +347,7 @@ footer .num{color:var(--fg)}
 
 <header class="top"><div class="wrap">
   <a class="brand" href="#">SKIN <b>LAB</b><small>by Baiden Creatives</small></a>
-  <nav class="nav"><a href="#" id="nv-home">Home</a><a href="#categories" id="nv-cats">Sticker packs</a><a href="#studio" id="nv-studio">Design your own</a><button type="button" id="nv-cart">Cart<span class="bd" id="nv-bd" hidden>0</span></button></nav>
+  <nav class="nav"><a href="#" id="nv-home">Shop</a><button type="button" id="nv-cats">Send your idea</button><a href="#studio" id="nv-studio">Design your own</a><button type="button" id="nv-cart">Cart<span class="bd" id="nv-bd" hidden>0</span></button></nav>
   <a class="wa-top" href="https://wa.me/233558362423" target="_blank" rel="noopener"><svg class="wa-i"><use href="#wa"/></svg>Chat with us</a>
 </div></header>
 
@@ -321,8 +356,8 @@ footer .num{color:var(--fg)}
 <a class="fab" href="https://wa.me/233558362423" target="_blank" rel="noopener" aria-label="Chat with Skin Lab on WhatsApp"><svg class="wa-i"><use href="#wa"/></svg></a>
 
 <nav class="tabs" aria-label="Main">
-  <a class="tab" href="#" id="t-home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 11 12 3l9 8v10h-6v-6H9v6H3Z"/></svg>Home</a>
-  <a class="tab" href="#categories" id="t-cats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>Packs</a>
+  <a class="tab" href="#" id="t-home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 11 12 3l9 8v10h-6v-6H9v6H3Z"/></svg>Shop</a>
+  <button class="tab" type="button" id="t-cats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3Z"/></svg>Your idea</button>
   <a class="tab" href="#studio" id="t-studio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M1 20h22"/><path d="m9 13 5-5 2 2-5 5H9Z"/></svg>Design</a>
   <button class="tab" type="button" id="t-cart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M5 7h14l-1.5 13h-11Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>Cart<span class="bd" id="t-bd" hidden>0</span></button>
 </nav>
@@ -407,7 +442,7 @@ function setPack(id, q) { if (q <= 0) delete packs[id]; else packs[id] = Math.mi
 const PIDX = id => D.packs.findIndex(p => p.id === id);
 const orderLink = (pk, items) => base + '#order-' + [...pk.map(([k, q]) => 'K' + PIDX(k) + (q > 1 ? 'x' + q : '')), ...items.map(([c, q]) => c.replace('-', '') + (q > 1 ? 'x' + q : ''))].join('-');
 function orderText(pk, items, extra = '') {
-  let t = `Hello Skin Lab, I'd like to order:\n`, i = 0, tot = 0;
+  let t = `🛒 *New order*\nHello Skin Lab, I'd like to order:\n`, i = 0, tot = 0;
   if (pk.length) { t += `\n*Sticker packs*\n` + pk.map(([k, q]) => { tot += q * PK[k].price; return `${++i}. ${PK[k].nice} pack (${PK[k].items.length} stickers) x${q} = ${CUR}${q * PK[k].price}`; }).join('\n') + '\n'; }
   if (items.length) { const n = items.reduce((a, [, q]) => a + q, 0); tot += n * PRICE;
     t += `\n*My own picks* (${CUR}${PRICE} each)\n` + items.map(([c, q]) => `${++i}. ${c} (${CODE[c].p.nice}) x${q} = ${CUR}${q * PRICE}`).join('\n') + '\n'; }
@@ -427,43 +462,49 @@ function updBar() {
   $('#bar').classList.toggle('show', n > 0 && route() !== 'studio');
   for (const id of ['#t-bd', '#nv-bd']) { $(id).hidden = !n; $(id).textContent = n; }
   document.querySelectorAll('.grid .tile[data-c]').forEach(t => { const q = cart[t.dataset.c]; t.classList.toggle('sel', !!q); const k = t.querySelector('.chk'); if (k) k.textContent = q > 1 ? q : '✓'; });
-  document.querySelectorAll('[data-packbtn]').forEach(b => { const q = packs[b.dataset.packbtn]; b.innerHTML = q ? `In your cart (${q}) · add another` : `Add pack to cart · ${CUR}${PK[b.dataset.packbtn].price}`; });
+  document.querySelectorAll('[data-packbtn]').forEach(b => { const q = packs[b.dataset.packbtn]; b.innerHTML = q ? `In your cart (${q}) · add one more` : `Add to cart, keep shopping`; });
 }
 function toast(m) { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 2000); }
 async function copy(text) { try { await navigator.clipboard.writeText(text); toast('Order copied'); } catch (e) { toast('Could not copy. Long-press to select instead.'); } }
 const closeSheets = () => { document.querySelectorAll('.sheet').forEach(s => s.hidden = true); $('#lb').hidden = true; };
 document.querySelectorAll('.sheet').forEach(s => s.addEventListener('click', e => { if (e.target === s) s.hidden = true; }));
 
+// WhatsApp-style preview of the exact message we will receive
+const waFmt = t => esc(t).replace(/\*([^*\n]+)\*/g, '<b>$1</b>').replace(/(https?:\/\/\S+)/g, '<u>$1</u>').replace(/\n/g, '<br>');
 function openCart() {
   const items = Object.entries(cart), pk = Object.entries(packs), b = $('#c-body');
   if (!items.length && !pk.length) {
-    b.innerHTML = `<div class="empty-c"><b>Your cart is empty</b>Pick a sticker pack, or choose single stickers to design your own.</div><a class="btn y" href="#categories" id="c-go">See the packs</a>`;
+    b.innerHTML = `<div class="empty-c"><b>Your cart is empty</b>Pick a category and choose a pack.</div><a class="btn y" href="#" id="c-go">Choose a category</a>`;
     $('#c-go').onclick = () => $('#cart').hidden = true;
   } else {
     const ns = nSingles();
-    b.innerHTML = `${pk.length ? `<div class="grp">Sticker packs</div><div class="rows">${pk.map(([k, q]) => `<div class="row"><div class="th"><img src="sheets/${k}.webp" alt="" loading="lazy" style="height:54px;width:auto;border-radius:4px"></div><div class="nm"><b style="font-family:var(--body)">${esc(PK[k].nice)}</b><span>${PK[k].items.length} stickers · ${CUR}${PK[k].price}</span></div>
+    b.innerHTML = `${pk.length ? `<div class="rows">${pk.map(([k, q]) => `<div class="row"><div class="th"><img src="sheets/${k}.webp" alt="" loading="lazy" style="height:54px;width:auto;border-radius:3px"></div><div class="nm"><b style="font-family:var(--body)">${esc(PK[k].nice)} pack</b><span>${PK[k].items.length} stickers · ${CUR}${PK[k].price}</span></div>
         <div class="qty"><button type="button" data-p="${k}" data-d="-1" aria-label="One less ${esc(PK[k].nice)} pack">−</button><span>${q}</span><button type="button" data-p="${k}" data-d="1" aria-label="One more ${esc(PK[k].nice)} pack">+</button></div></div>`).join('')}</div>` : ''}
-      ${items.length ? `<div class="grp">Your own picks · ${CUR}${PRICE} each</div><div class="rows">${items.map(([c, q]) => `<div class="row"><div class="th">${spr(CODE[c].p, CODE[c].it, 50)}</div><div class="nm"><b>${c}</b><span>${esc(CODE[c].p.nice)}</span></div>
+      ${items.length ? `<div class="grp">Single stickers · ${CUR}${PRICE} each</div><div class="rows">${items.map(([c, q]) => `<div class="row"><div class="th">${spr(CODE[c].p, CODE[c].it, 50)}</div><div class="nm"><b>${c}</b><span>${esc(CODE[c].p.nice)}</span></div>
         <div class="qty"><button type="button" data-q="${c}" data-d="-1" aria-label="One less ${c}">−</button><span>${q}</span><button type="button" data-q="${c}" data-d="1" aria-label="One more ${c}">+</button></div></div>`).join('')}</div>` : ''}
-      <div class="sum">${pk.length ? `<div><span>${nPacks()} pack${nPacks() > 1 ? 's' : ''}</span><span>${CUR}${money() - ns * PRICE}</span></div>` : ''}${ns ? `<div><span>${ns} single sticker${ns > 1 ? 's' : ''}</span><span>${CUR}${ns * PRICE}</span></div>` : ''}<div><span>Delivery</span><span>we'll agree on WhatsApp</span></div><div class="big"><span>Total</span><span>${CUR}${money()}</span></div></div>
-      <div class="fld" id="f-name"><label for="c-name">Your name</label><input id="c-name" autocomplete="name" placeholder="e.g. Ama" value="${esc(who.name)}"></div>
-      <div class="fld"><label for="c-loc">Where should we deliver?</label><input id="c-loc" autocomplete="address-level2" placeholder="e.g. Legon, Akuafo Hall" value="${esc(who.loc)}"></div>
-      <div class="fld"><label for="c-note">Anything else? (optional)</label><textarea id="c-note" placeholder="Bigger sizes, a custom name, a deadline...">${esc(who.note)}</textarea></div>
+      <div class="sum"><div class="big" style="border:0;padding:0;margin:0"><span>Total</span><span>${CUR}${money()}</span></div><div class="small"><span>Delivery is agreed on WhatsApp</span></div></div>
+      <div class="two"><div class="fld" id="f-name"><label for="c-name">Your name</label><input id="c-name" autocomplete="name" placeholder="e.g. Ama" value="${esc(who.name)}"></div>
+      <div class="fld"><label for="c-loc">Location</label><input id="c-loc" autocomplete="address-level2" placeholder="e.g. Legon" value="${esc(who.loc)}"></div></div>
+      <div class="grp">This is the message we'll get</div>
+      <div class="wachat"><div class="wahead">${waIcon}<span><b>Skin Lab</b><small>055 836 2423</small></span></div><div class="wabody"><div class="bub" id="c-prev"></div></div></div>
       <button class="btn wa" type="button" id="c-send">${waIcon}Send order on WhatsApp</button>
-      <div class="two"><button class="btn o" type="button" id="c-copy">Copy order</button><button class="btn o" type="button" id="c-clear">Empty cart</button></div>
-      <p class="small">Your order opens in WhatsApp already written out. You just tap send. If WhatsApp doesn't open, message <span class="num">055 836 2423</span> and paste your order.</p>`;
-    const keep = () => { who = { name: $('#c-name').value.trim(), loc: $('#c-loc').value.trim(), note: $('#c-note').value.trim() }; store.set('sl-who', who); };
-    ['#c-name', '#c-loc', '#c-note'].forEach(s => $(s).addEventListener('input', keep));
+      <div class="two"><button class="btn o" type="button" id="c-copy">Copy order</button><button class="btn o" type="button" id="c-clear">Empty cart</button></div>`;
+    const txt = () => orderText(Object.entries(packs), Object.entries(cart));
+    const keep = () => { who = { name: $('#c-name').value.trim(), loc: $('#c-loc').value.trim(), note: who.note || '' }; store.set('sl-who', who); $('#c-prev').innerHTML = waFmt(txt()) + '<span class="tm">now ✓✓</span>'; };
+    ['#c-name', '#c-loc'].forEach(s => $(s).addEventListener('input', keep)); keep();
     b.onclick = e => { const k = e.target.closest('[data-q],[data-p]'); if (!k) return;
       if (k.dataset.q) setQty(k.dataset.q, (cart[k.dataset.q] || 0) + +k.dataset.d); else setPack(k.dataset.p, (packs[k.dataset.p] || 0) + +k.dataset.d); openCart(); };
-    const txt = () => orderText(Object.entries(packs), Object.entries(cart));
     $('#c-send').onclick = () => { keep(); if (!who.name) { $('#f-name').classList.add('err'); $('#c-name').focus(); toast('Add your name so we know who is ordering'); return; }
+      store.set('sl-last', { packs: { ...packs }, cart: { ...cart }, at: Date.now() });
       const u = waLink(txt()); if (!window.open(u, '_blank', 'noopener')) location.href = u; };
     $('#c-copy').onclick = () => { keep(); copy(txt()); };
     $('#c-clear').onclick = () => { cart = {}; packs = {}; saveCart(); updBar(); openCart(); };
   }
   $('#cart').hidden = false;
 }
+function reorder() { const l = store.get('sl-last', null); if (!l) return; cart = {}; packs = {};
+  Object.entries(l.cart || {}).forEach(([c, q]) => { if (CODE[c]) cart[c] = q; }); Object.entries(l.packs || {}).forEach(([k, q]) => { if (PK[k]) packs[k] = q; });
+  saveCart(); updBar(); openCart(); }
 $('#bar-go').onclick = openCart; $('#t-cart').onclick = openCart; $('#nv-cart').onclick = openCart;
 $('#c-x').onclick = () => $('#cart').hidden = true;
 
@@ -472,6 +513,7 @@ function openInspo() {
   $('#i-name').value = who.name || ''; $('#inspo').hidden = false;
 }
 $('#i-x').onclick = () => $('#inspo').hidden = true;
+$('#t-cats').onclick = openInspo; $('#nv-cats').onclick = openInspo;
 $('#i-send').onclick = () => {
   const name = $('#i-name').value.trim(), idea = $('#i-idea').value.trim(), qty = $('#i-qty').value.trim();
   if (!idea) { $('#f-idea').classList.add('err'); $('#i-idea').focus(); toast('Tell us a little about what you want'); return; }
@@ -493,81 +535,51 @@ const footer = `<footer><div><div class="sig">Thanks for stopping by.</div>Skin 
 const HERO = [['p1-hacker-mode', 4, 6, 30], ['g1-gta-rockstar', 33, 3, 26], ['m2-spider-verse', 62, 5, 30], ['k1-sneakerhead-1', 8, 40, 24], ['v2-jdm-and-euro', 36, 34, 30], ['an1-anime-legends', 70, 38, 24],
   ['gen-z-girlies', 3, 70, 26], ['f1-club-crests-i', 30, 66, 26], ['p2-ai-vibe-coding', 57, 66, 30], ['d1-dark-street-art-1', 82, 72, 18], ['b1-moto-bike-life-1', 86, 10, 18], ['c1-marvel-chibis', 48, 18, 16]];
 
+// category covers: the real printed sheets of that category, laid on a table like a product photo
 function catGrid() {
-  return `<div class="cats">${D.cats.map(c => { const n = c.packs.reduce((a, id) => a + PK[id].items.length, 0);
-    return `<a class="cat ${light(c.color) ? 'lt' : 'dk'}" href="#${c.id}" style="background:${c.color}" data-fan="${c.packs[0]}"><span class="ct">${n} stickers</span><div class="fan"></div><div class="nm">${esc(c.name)}</div><div class="tg">${esc(c.tag)}</div></a>`; }).join('')}</div>`;
+  return `<div class="cats">${D.cats.map(c => { const ps = c.packs.map(id => PK[id]), lo = Math.min(...ps.map(p => p.price));
+    return `<a class="catc" href="#${c.id}"><div class="table">${ps.slice(0, 3).reverse().map((p, i, a) => `<img src="sheets/${p.id}.webp" alt="" loading="lazy" style="--r:${[-9, 7, -2][a.length - 1 - i]}deg;--x:${[0, 26, -24][a.length - 1 - i]}%">`).join('')}</div>
+      <div class="cmeta"><b>${esc(c.name)}</b><span>${c.packs.length} pack${c.packs.length > 1 ? 's' : ''} · from ${CUR}${lo}</span></div></a>`; }).join('')}</div>`;
 }
-function paintFans() {
-  document.querySelectorAll('.cat[data-fan]').forEach(el => {
-    const p = PK[el.dataset.fan], fan = el.querySelector('.fan'), W = fan.clientWidth, H = fan.clientHeight;
-    fan.innerHTML = [0, 1, 2].map(k => { const it = p.items[k * 2 % p.items.length], sz = Math.min(H * (k === 1 ? 1 : .8), W * .55);
-      return spr(p, it, sz, `left:${Math.max(0, W - sz - k * W * .27)}px;top:${k === 1 ? 0 : H * .12}px;transform:rotate(${[-10, 4, 12][k]}deg);z-index:${k === 1 ? 2 : 1}`); }).join('');
-  });
+function lastOrder() {
+  const l = store.get('sl-last', null); if (!l) return '';
+  const pk = Object.entries(l.packs || {}).filter(([k]) => PK[k]), ns = Object.values(l.cart || {}).reduce((a, b) => a + b, 0);
+  if (!pk.length && !ns) return '';
+  const label = [...pk.map(([k, q]) => `${q > 1 ? q + '× ' : ''}${PK[k].nice}`), ns ? `${ns} single sticker${ns > 1 ? 's' : ''}` : ''].filter(Boolean).join(', ');
+  return `<button type="button" class="again" id="again"><span class="ic">↻</span><span><b>Order again</b><small>${esc(label)}</small></span><span class="go">Open</span></button>`;
 }
 function vHome() {
-  app.innerHTML = `
-  <section class="hero">
-    <div>
-      <span class="kick">printed in Accra, for your laptop</span>
-      <h1>Make your laptop <span class="ul">yours.<svg viewBox="0 0 200 20" preserveAspectRatio="none" aria-hidden="true"><path d="M3 14C40 6 90 4 140 8s50 2 57-2" fill="none" stroke="#FFD21F" stroke-width="6" stroke-linecap="round"/></svg></span></h1>
-      <p class="lead">${D.packs.length} ready-made sticker packs and ${total} designs, from coding jokes and club crests to Spider-Man, anime and Supras. Grab a whole pack, build your own from singles, or send us your idea. Everything is printed on <b>laminated vinyl</b>.</p>
-      <div class="ctas"><a class="btn y" href="#categories">Shop sticker packs</a><a class="btn o" href="#studio">Design your own</a></div>
-      <div class="stats"><span>Packs from <b>${CUR}50</b></span><span>Singles <b>${CUR}${PRICE}</b></span><span><b>${D.packs.length}</b> packs</span><span><b>${D.cats.length}</b> categories</span><span>MoMo accepted</span></div>
+  app.innerHTML = `<section class="sec" style="padding-top:18px">
+    ${lastOrder()}
+    <div class="sech"><div><h2>Pick a category</h2><p class="sub">Each one has ready-made sticker packs. Packs from ${CUR}50.</p></div></div>
+    ${catGrid()}
+    <div class="extra">
+      <a class="xcard" href="#studio"><span class="xart" id="xa1"></span><span><b>Design your own layout</b><small>Pick single stickers from any pack and arrange them on a laptop. ${CUR}${PRICE} each.</small></span></a>
+      <button type="button" class="xcard" id="x-inspo"><span class="xart" id="xa2"></span><span><b>Send us your idea</b><small>Your name, picture or logo made into stickers. From ${CUR}15.</small></span></button>
     </div>
-    <div class="lidwrap"><span class="tape" style="left:-14px;top:18px;transform:rotate(-38deg)"></span><span class="tape" style="right:-12px;bottom:22px;transform:rotate(-34deg)"></span>
-      <div class="lid" aria-hidden="true">${HERO.map(([, l, t, sz]) => `<div style="position:absolute;left:${l}%;top:${t}%;width:${sz}%;aspect-ratio:1;display:grid;place-items:center"></div>`).join('')}</div></div>
-  </section>
-  <div class="marq" aria-hidden="true"><div class="mq">${(() => { const row = D.packs.map(p => spr(p, p.items[1 % p.items.length], 64)).join(''); return row + row; })()}</div></div>
-  <section class="sec"><div class="sech"><h2>Three ways to get stickers</h2></div>
-    <div class="ways">
-      <a class="way" href="#categories" style="background:var(--y);color:var(--yk)"><span class="pr">${CUR}50–60</span><div class="art" id="art1"></div><h3>Buy a pack</h3><p>A full sheet of 20 to 36 stickers on one theme. See the sheet before you order.</p></a>
-      <a class="way" href="#studio" style="background:#2b2b31"><span class="pr">${CUR}${PRICE} each</span><div class="art" id="art2"></div><h3>Design your own</h3><p>Pick single stickers from any pack and arrange them on a laptop. Pay only for what you pick.</p></a>
-      <button type="button" class="way" id="way3" style="background:var(--paper);color:var(--ink);text-align:left"><span class="pr">from ${CUR}15</span><div class="art" id="art3"></div><h3>Send your inspo</h3><p>Your name, your picture, your logo. Tell us the idea and we'll make it into a sticker.</p></button>
-    </div></section>
-  <section class="sec"><div class="sech"><div><h2>What are you into?</h2><p class="sub">Every category has a few packs. Open one to see the full sheet.</p></div></div>${catGrid()}</section>
-  <section class="sec"><div class="sech"><h2>How ordering works</h2></div>
-    <div class="steps">
-      <div class="step"><b>1</b><div><strong>Fill your cart</strong><p>Add a whole pack, pick singles, or both. Need two of something? Change the number in your cart.</p></div></div>
-      <div class="step"><b>2</b><div><strong>Send it on WhatsApp</strong><p>Your cart goes to us as one tidy message with every code and the total. Tap send and that's it.</p></div></div>
-      <div class="step"><b>3</b><div><strong>Pay and stick</strong><p>We confirm, you pay with MoMo, we print and get them to you.</p></div></div>
-    </div></section>
-  <section class="sec" style="display:grid;gap:22px">
-    <div class="note">Can't find what you want? Send us the picture, a name or your logo and we'll turn it into a sticker for you. Custom ones start at ${CUR}15.<small>Skin Lab team</small></div>
-    <div><h2 style="margin-bottom:14px">Questions people ask</h2>
-    <div class="faq">
-      <details><summary>Will they peel off?</summary><p>They're printed on vinyl and laminated, so they handle backpacks, sweaty palms and the odd rainy walk to class. Wipe the surface clean and dry before you stick, then press down firmly for a few seconds.</p></details>
-      <details><summary>How big are they?</summary><p>Most are between 3 and 6 cm, sized to fit a laptop lid, the space around your keyboard, a phone case or a water bottle. Want one bigger? Add a note in your cart.</p></details>
-      <details><summary>What's the difference between a pack and singles?</summary><p>A pack is the full printed sheet for ${CUR}50 or ${CUR}60, depending on the size of the sheet. Singles are stickers you choose one by one from any pack at ${CUR}${PRICE} each, so you can mix themes.</p></details>
-      <details><summary>How do I pay and get them?</summary><p>Once you send your cart we reply on WhatsApp to confirm. You pay with MoMo and we sort out delivery or pickup with you.</p></details>
-    </div></div>
   </section>${footer}`;
-  paintFans();
-  document.querySelectorAll('.lid > div').forEach((cell, i) => { const p = PK[HERO[i][0]], it = p.items[(i * 3) % p.items.length], r = (i % 2 ? 1 : -1) * (4 + (i * 3) % 11);
-    cell.innerHTML = spr(p, it, cell.clientWidth, `--r:${r}deg;animation-delay:${i * 60}ms;transform:rotate(${r}deg)`); });
-  const art = (id, list) => { $(id).innerHTML = list.map(([pid, k], i) => spr(PK[pid], PK[pid].items[k], 70, `transform:rotate(${[-8, 6, -4][i]}deg)`)).join(''); };
-  art('#art1', [['g1-gta-rockstar', 0], ['f1-club-crests-i', 1], ['p1-hacker-mode', 3]]); art('#art2', [['m2-spider-verse', 2], ['v2-jdm-and-euro', 5], ['gen-z-girlies', 0]]); art('#art3', [['anime-vibes', 4], ['emoji-mood', 0], ['q1-quotes-and-vibes', 2]]);
-  $('#way3').onclick = openInspo;
+  const art = (id, list) => { $(id).innerHTML = list.map(([pid, k], i) => spr(PK[pid], PK[pid].items[k], 52, `transform:rotate(${[-8, 7][i]}deg);margin-right:-12px`)).join(''); };
+  art('#xa1', [['p3-code-languages-1', 3], ['m2-spider-verse', 2]]); art('#xa2', [['emoji-mood', 0], ['anime-vibes', 4]]);
+  $('#x-inspo').onclick = openInspo;
+  if ($('#again')) $('#again').onclick = reorder;
 }
-function vCats() {
-  app.innerHTML = `<section class="sec"><div class="sech"><div><h2>All the packs</h2><p class="sub">${D.packs.length} packs, ${total} designs, ${D.cats.length} categories.</p></div></div>
-    <form class="find" id="find"><input id="find-q" autocomplete="off" placeholder="Got a code? Try PRG-014" aria-label="Find a sticker by its code"><button class="btn y" type="submit">Find</button></form>${catGrid()}</section>${footer}`;
-  paintFans();
-  $('#find').onsubmit = e => { e.preventDefault(); let q = $('#find-q').value.trim().toUpperCase().replace(/\s+/g, '');
-    const m = q.match(/^([A-Z]{3})-?(\d{1,3})$/); if (m) q = `${m[1]}-${m[2].padStart(3, '0')}`;
-    if (CODE[q]) peek(q); else toast("We don't have a sticker with that code"); };
-}
+function vCats() { vHome(); }
 function vCat(c) {
-  app.innerHTML = `<section class="sec">
-    <div class="crumb"><a href="#categories">All packs</a> / <span>${esc(c.name)}</span></div>
-    <div class="sech"><div><h2>${esc(c.name)}</h2><p class="sub">${c.packs.length} pack${c.packs.length > 1 ? 's' : ''}, ${esc(c.tag)}. Buy a whole pack, or open one and pick singles.</p></div></div>
+  app.innerHTML = `<section class="sec" style="padding-top:14px">
+    <div class="crumb"><a href="#">Categories</a> / <span>${esc(c.name)}</span></div>
+    <div class="sech"><div><h2>${esc(c.name)} packs</h2><p class="sub">Tap a pack to see every sticker on it.</p></div></div>
     <div class="packs">${c.packs.map(id => { const p = PK[id];
-      return `<a class="pack" href="#${p.id}"><div class="pv" style="background:${p.bg}"><img src="sheets/${p.id}.webp" alt="${esc(p.nice)} sticker sheet" loading="lazy"></div><div class="meta"><div><b>${esc(p.nice)}</b><span>${p.items.length} stickers on one sheet</span></div><span class="price">${CUR}${p.price}</span></div></a>`; }).join('')}</div>
+      return `<div class="pack"><a href="#${p.id}" class="pv"><img src="sheets/${p.id}.webp" alt="${esc(p.nice)} sticker sheet" loading="lazy"></a>
+        <div class="meta"><a href="#${p.id}"><b>${esc(p.nice)}</b><span>${p.items.length} stickers on one sheet</span></a><span class="price">${CUR}${p.price}</span></div>
+        <div class="pbtns"><button class="btn y" type="button" data-quick="${p.id}">Order this pack</button><a class="btn o" href="#${p.id}">See stickers</a></div></div>`; }).join('')}</div>
+    <a class="xcard" href="#studio" style="margin-top:16px"><span><b>Want only some of them?</b><small>Design your own layout with single stickers at ${CUR}${PRICE} each.</small></span></a>
   </section>${footer}`;
+  app.querySelectorAll('[data-quick]').forEach(b => b.onclick = () => { const id = b.dataset.quick; if (!packs[id]) setPack(id, 1); buzz(); openCart(); });
 }
 function vPack(p) {
   const c = CAT[p.cat], lt = light(p.bg);
   app.innerHTML = `<section class="sec" style="padding-top:14px">
-    <div class="crumb"><a href="#categories">All packs</a> / <a href="#${c.id}">${esc(c.name)}</a></div>
+    <div class="crumb"><a href="#">Categories</a> / <a href="#${c.id}">${esc(c.name)}</a></div>
     ${c.packs.length > 1 ? `<div class="hs" style="margin:2px 0 12px">${c.packs.map(id => `<a class="chip ${id === p.id ? 'on' : ''}" href="#${id}">${esc(PK[id].nice)}</a>`).join('')}</div>` : ''}
     <div class="phero">
       <button type="button" class="sheetimg" id="zoom" style="background:${p.bg}" aria-label="See the ${esc(p.nice)} sheet bigger"><img src="sheets/${p.id}.webp" alt="${esc(p.nice)} sticker sheet" width="${p.sw}" height="${p.sh}"><span class="zm">Tap to zoom</span></button>
@@ -576,8 +588,9 @@ function vPack(p) {
         <h2>${esc(p.nice)}</h2>
         <p class="sub">${p.items.length} stickers on one ${p.price >= 60 ? 'A4' : ''} sheet, ${esc(p.tag)}. Peel them one by one for your laptop, keyboard, mousepad and phone.</p>
         <div class="bigprice">${CUR}${p.price}<small>for the full pack</small></div>
-        <button class="btn y" type="button" data-packbtn="${p.id}" id="addpack"></button>
-        <div class="two"><a class="btn o" href="#studio" id="diy">Design your own</a><button class="btn o" type="button" id="toinspo">Send your inspo</button></div>
+        <button class="btn wa" type="button" id="orderpack">${waIcon}Order this pack</button>
+        <button class="btn o" type="button" data-packbtn="${p.id}" id="addpack"></button>
+        <div class="two"><a class="btn o" href="#studio" id="diy">Design your own</a><button class="btn o" type="button" id="toinspo">Send your idea</button></div>
       </div>
     </div>
     <div class="sech" style="margin-top:26px"><div><h2 style="font-size:clamp(28px,7vw,40px)">What's inside</h2><p class="sub">Only want a few? Tap them to pick singles at ${CUR}${PRICE} each. Hold one to see it bigger.</p></div></div>
@@ -591,7 +604,8 @@ function vPack(p) {
   g.addEventListener('pointermove', e => { if (Math.hypot(e.clientX - sx, e.clientY - sy) > 8) clearTimeout(lp); }, { passive: true });
   g.addEventListener('contextmenu', e => { if (e.target.closest('.tile')) e.preventDefault(); });
   g.onclick = e => { const t = e.target.closest('.tile'); if (t && !held) { const was = !!cart[t.dataset.c]; toggle(t.dataset.c); if (!was && nSingles() === 1) toast(`Picked as a single, ${CUR}${PRICE}`); } held = false; };
-  $('#addpack').onclick = () => { setPack(p.id, (packs[p.id] || 0) + 1); buzz(); toast(`${p.nice} pack added`); };
+  $('#addpack').onclick = () => { setPack(p.id, (packs[p.id] || 0) + 1); buzz(); toast(`${p.nice} pack added. Keep shopping or open your cart.`); };
+  $('#orderpack').onclick = () => { if (!packs[p.id]) setPack(p.id, 1); buzz(); openCart(); };
   $('#diy').onclick = () => { S.cat = c.id; S.pack = p.id; saveS(); };
   $('#toinspo').onclick = openInspo;
   $('#zoom').onclick = () => { $('#lb-img').src = `sheets/${p.id}.webp`; $('#lb').hidden = false; };
@@ -740,7 +754,7 @@ function render() {
   const r = route(); closeSheets(); document.body.classList.toggle('is-studio', r === 'studio');
   if (r === 'studio') vStudio(); else if (r === 'categories') vCats(); else if (r.startsWith('order-')) vOrder(r); else if (CAT[r]) vCat(CAT[r]); else if (PK[r]) vPack(PK[r]); else vHome();
   scrollTo(0, 0);
-  const tab = r === 'studio' ? 'studio' : (r === '' ? 'home' : 'cats');
+  const tab = r === 'studio' ? 'studio' : 'home';
   [['t-home', 'home'], ['t-cats', 'cats'], ['t-studio', 'studio']].forEach(([id, k]) => $('#' + id).classList.toggle('on', tab === k));
   [['nv-home', 'home'], ['nv-cats', 'cats'], ['nv-studio', 'studio']].forEach(([id, k]) => $('#' + id).classList.toggle('on', tab === k));
   updBar();
