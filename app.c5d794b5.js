@@ -28,7 +28,7 @@ let who = store.get('sl-who', { name: '', loc: '', note: '' });
 const saveCart = () => { store.set('sl-cart', cart); store.set('sl-packs', packs); };
 const nSingles = () => Object.values(cart).reduce((a, b) => a + b, 0);
 const nPacks = () => Object.values(packs).reduce((a, b) => a + b, 0);
-function curDsg() { const d = store.get('sl-dsg', null); if (!d || !d.lap || !d.items) return null;
+function curDsg() { const d = store.get('sl-dsg', null); if (!d || !(d.lap || d.v === 3) || !d.items) return null;
   return Object.values(d.items).some(v => v.length) || Object.values(d.skin || {}).some(Boolean) ? d : null; }
 const dsgSkins = () => { const d = curDsg(); return d ? Object.values(d.skin).filter(Boolean).length : 0; };
 const count = () => nSingles() + nPacks() + dsgSkins();
@@ -128,7 +128,8 @@ function openCart() {
       if (!window.open(u, '_blank', 'noopener')) location.href = u; };
     $('#c-copy').onclick = async () => { keep(); copy(await sealed()); };
     $('#c-clear').onclick = () => { cart = {}; packs = {}; store.set('sl-dsg', null); saveCart(); updBar(); openCart(); };
-    if (dg) { designPicture(dg, 150).then(c => { const el = $('#c-dsg'); if (el) { el.innerHTML = ''; el.appendChild(c); } });
+    if (dg && dg.v === 3) { const el = $('#c-dsg'); if (el && dg.thumb) el.innerHTML = `<img src="${dg.thumb}" alt="Your laptop design" style="width:100%;display:block">`; $('#c-edit').href = '/design/'; }
+    if (dg) { if (dg.v !== 3) designPicture(dg, 150).then(c => { const el = $('#c-dsg'); if (el) { el.innerHTML = ''; el.appendChild(c); } });
       $('#c-edit').onclick = () => { $('#cart').hidden = true; };
       $('#c-rmd').onclick = () => { Object.values(dg.items).flat().forEach(o => { if (cart[o.c]) { cart[o.c]--; if (cart[o.c] <= 0) delete cart[o.c]; } });
         store.set('sl-dsg', null); saveCart(); updBar(); openCart(); toast('Design removed from the cart'); }; }
@@ -271,7 +272,7 @@ function orderBody(pk, items, o, ref) {
   const sv = who; who = { name: o && o.n || '', loc: o && o.l || '', note: o && o.m || '' };
   const od = o && o.d ? dsgUnpack(o.d) : null;
   const t = orderText(pk, items, null, od) + (ref ? `\n\nOrder ${ref}` : ''); who = sv;
-  if (od) designPicture(od, 300).then(c => { const el = $('#o-dsg'); if (el) { el.innerHTML = ''; el.appendChild(c); } });
+  if (od && od.v !== 3) designPicture(od, 300).then(c => { const el = $('#o-dsg'); if (el) { el.innerHTML = ''; el.appendChild(c); } });
   $('#o-copy').onclick = () => copy(t);
 }
 function vNotice(ref) {
@@ -667,9 +668,9 @@ async function designToCart() {
   Object.entries(counts).forEach(([c, q]) => cart[c] = Math.max(cart[c] || 0, q));
   store.set('sl-dsg', designSnap()); saveCart(); updBar(); await saveMine(true); buzz(); openCart();
 }
-const dsgLine = d => !d ? '' : `${lapName(d)} (${LCOLS[d.col][0]}): ` + Object.keys(SURFS).filter(k => (d.items[k] || []).length || (d.skin || {})[k]).map(k => `${k === 'pad' ? (PADS[d.pad || 'std'][2] + ' mousepad ' + PADS[d.pad || 'std'][0] + '×' + PADS[d.pad || 'std'][1] + ' cm').toLowerCase() : SURFS[k][0].toLowerCase()}${d.skin[k] ? ' with ' + SKIN[d.skin[k]][1] + ' skin' : ''}${d.items[k].length ? `${d.skin[k] ? ' +' : ''} ${d.items[k].length} sticker${d.items[k].length > 1 ? 's' : ''}` : ''}`).join(', ');
-const dsgPack = d => d && { l: [d.lap.b, d.lap.m], c: d.col, p: d.pad, k: d.skin, i: Object.fromEntries(Object.entries(d.items).map(([k, v]) => [k, v.map(o => [o.c, +o.x.toFixed(3), +o.y.toFixed(3), +o.s.toFixed(3), o.r])])) };
-const dsgUnpack = p => p && { lap: { b: p.l[0], m: p.l[1] }, col: p.c, pad: p.p || 'std', skin: { lid: '', kb: '', bot: '', pad: '', ...p.k }, items: Object.fromEntries(Object.entries({ lid: [], kb: [], bot: [], pad: [], ...p.i }).map(([k, v]) => [k, v.filter(o => CODE[o[0]]).map(([c, x, y, s, r]) => ({ c, x, y, s, r }))])) };
+const dsgLine = d => !d ? '' : d.v === 3 ? `${d.name} (${d.col}): ` + Object.keys(d.items).filter(k => (d.items[k] || []).length || (d.skin || {})[k]).map(k => `${{ lid: 'lid', kb: 'keyboard', bot: 'bottom' }[k]}${d.skin[k] ? ' with ' + (SKIN[d.skin[k]] ? SKIN[d.skin[k]][1] : d.skin[k].replace('s-', '').replace('ph-', '')) + ' skin' : ''}${d.items[k].length ? `${d.skin[k] ? ' +' : ''} ${d.items[k].length} sticker${d.items[k].length > 1 ? 's' : ''}` : ''}`).join(', ') : `${lapName(d)} (${LCOLS[d.col][0]}): ` + Object.keys(SURFS).filter(k => (d.items[k] || []).length || (d.skin || {})[k]).map(k => `${k === 'pad' ? (PADS[d.pad || 'std'][2] + ' mousepad ' + PADS[d.pad || 'std'][0] + '×' + PADS[d.pad || 'std'][1] + ' cm').toLowerCase() : SURFS[k][0].toLowerCase()}${d.skin[k] ? ' with ' + SKIN[d.skin[k]][1] + ' skin' : ''}${d.items[k].length ? `${d.skin[k] ? ' +' : ''} ${d.items[k].length} sticker${d.items[k].length > 1 ? 's' : ''}` : ''}`).join(', ');
+const dsgPack = d => d && d.v === 3 ? { v: 3, n: d.name, c: d.col, k: d.skin, i: Object.fromEntries(Object.entries(d.items).map(([k, v]) => [k, v.map(o => [o.c, +o.x.toFixed(3), +o.y.toFixed(3), +o.s.toFixed(3), o.r])])) } : d && { l: [d.lap.b, d.lap.m], c: d.col, p: d.pad, k: d.skin, i: Object.fromEntries(Object.entries(d.items).map(([k, v]) => [k, v.map(o => [o.c, +o.x.toFixed(3), +o.y.toFixed(3), +o.s.toFixed(3), o.r])])) };
+const dsgUnpack = p => p && p.v === 3 ? { v: 3, name: p.n, col: p.c, skin: { lid: '', kb: '', bot: '', ...p.k }, items: Object.fromEntries(Object.entries({ lid: [], kb: [], bot: [], ...p.i }).map(([k, v]) => [k, v.filter(o => CODE[o[0]]).map(([c, x, y, s, r]) => ({ c, x, y, s, r }))])) } : p && { lap: { b: p.l[0], m: p.l[1] }, col: p.c, pad: p.p || 'std', skin: { lid: '', kb: '', bot: '', pad: '', ...p.k }, items: Object.fromEntries(Object.entries({ lid: [], kb: [], bot: [], pad: [], ...p.i }).map(([k, v]) => [k, v.filter(o => CODE[o[0]]).map(([c, x, y, s, r]) => ({ c, x, y, s, r }))])) };
 
 // ---- inspo: Ideas | Mine ----
 function vMine() {
@@ -684,27 +685,28 @@ function vMine() {
   </section>${footer}`;
   $('#ins-own').onclick = openInspo;
   const m = app.querySelector('.mine'); if (m) m.onclick = e => { const o = e.target.closest('[data-open]'), d = e.target.closest('[data-del]');
-    if (o) { const x = store.get('sl-mine', []).find(y => y.id === o.dataset.open); if (!x) return; Object.assign(G, JSON.parse(JSON.stringify(x.d)), { mineId: x.id, on: -1 }); saveG(); location.hash = 'design'; }
+    if (o) { const x = store.get('sl-mine', []).find(y => y.id === o.dataset.open); if (!x) return; if (x.d.v === 3) { store.set('sl-design3', { i: x.d.li, col: x.d.col, items: x.d.items, skin: x.d.skin }); location.href = '/design/'; return; } Object.assign(G, JSON.parse(JSON.stringify(x.d)), { mineId: x.id, on: -1 }); saveG(); location.hash = 'design'; }
     if (d) { store.set('sl-mine', store.get('sl-mine', []).filter(y => y.id !== d.dataset.del)); vMine(); toast('Deleted'); } };
 }
 
 // ---- home: Skins ----
 function skinsGrid() {
-  return `<div class="cats skins">${SKINS.map((s, i) => `<a class="catc" href="#design" data-useskin="${s[0]}"><div class="table sk" data-art="${s[0]}" style="aspect-ratio:3/2;background:#111"></div>
+  return `<div class="cats skins">${SKINS.filter(s => s[2] === 'photo').map((s, i) => `<a class="catc" href="#design" data-useskin="${s[0]}"><div class="table sk" data-art="${s[0]}" style="aspect-ratio:3/2;background:#111"></div>
     <div class="cmeta"><span class="no">${String(i + 1).padStart(2, '0')}</span><b>${esc(s[1])}</b><span>${s[2] === 'photo' ? 'Printed by us · fits any laptop' : 'Made to fit your laptop'}</span></div></a>`).join('')}
     <a class="catc" href="#" data-ownskin="1"><div class="table" style="aspect-ratio:3/2;background:#0a0a0a;display:grid;place-items:center;border:1px dashed var(--line2)"><span style="font-size:30px">＋</span></div>
-    <div class="cmeta"><span class="no">${String(SKINS.length + 1).padStart(2, '0')}</span><b>Your own picture</b><span>Send it on WhatsApp</span></div></a></div>`;
+    <div class="cmeta"><span class="no">${String(SKINS.filter(s => s[2] === 'photo').length + 1).padStart(2, '0')}</span><b>Your own picture</b><span>Send it on WhatsApp</span></div></a></div>`;
 }
 function wireSkins(root) {
   root.querySelectorAll('[data-art]').forEach(el => skinThumb(el.dataset.art, el, 330, 220));
-  root.querySelectorAll('[data-useskin]').forEach(a => a.onclick = () => { G.skin.lid = a.dataset.useskin; G.surf = 'lid'; G.tab = 'skins'; saveG(); });
+  root.querySelectorAll('[data-useskin]').forEach(a => { a.href = '/design/'; a.onclick = () => { const st = store.get('sl-design3', {}) || {}; st.skin = { ...(st.skin || {}), lid: a.dataset.useskin }; store.set('sl-design3', st); }; });
   const own = root.querySelector('[data-ownskin]'); if (own) own.onclick = e => { e.preventDefault(); openInspo(); $('#i-idea').value = 'A full laptop skin with my own picture'; };
 }
 
 // ---------- router ----------
 function render() {
   const r = route(); closeSheets();
-  if (r === 'inspo') vInspo(); else if (r === 'mine') vMine(); else if (r === 'design' || r === 'studio') vDesign(); else if (r === 'design-pick') vPick(); else if (r === 'categories') vCats(); else if (r.startsWith('order-')) vOrder(r); else if (r.startsWith('o-')) vSealed(r.slice(2).split('.')[0]); else if (r.startsWith('unlock-')) vUnlock(r.slice(7)); else if (r === 'unlocked') vUnlock(store.get('sl-owner', '')); else if (CAT[r]) vCat(CAT[r]); else if (PK[r]) vPack(PK[r]); else vHome();
+  if (r === 'design' || r === 'studio' || r === 'design-pick') { location.replace('/design/'); return; }
+  if (r === 'cart') { history.replaceState(null, '', location.pathname); vHome(); setTimeout(openCart, 50); } else if (r === 'inspo') vInspo(); else if (r === 'mine') vMine(); else if (r === 'categories') vCats(); else if (r.startsWith('order-')) vOrder(r); else if (r.startsWith('o-')) vSealed(r.slice(2).split('.')[0]); else if (r.startsWith('unlock-')) vUnlock(r.slice(7)); else if (r === 'unlocked') vUnlock(store.get('sl-owner', '')); else if (CAT[r]) vCat(CAT[r]); else if (PK[r]) vPack(PK[r]); else vHome();
   scrollTo(0, 0);
   const tab = r === 'inspo' || r === 'mine' ? 'inspo' : r.startsWith('design') || r === 'studio' ? 'design' : 'home'; document.body.classList.toggle('is-design', tab === 'design' && r !== 'design-pick' && !!G.lap);
   ['home', 'design', 'inspo'].forEach(k => { $('#t-' + k).classList.toggle('on', tab === k); $('#nv-' + k).classList.toggle('on', tab === k); });
