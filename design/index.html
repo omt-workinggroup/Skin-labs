@@ -148,7 +148,7 @@ function vPick() {
 }
 
 // ---------- textures ----------
-const TW = 1024;
+const TW = Math.min(2048, (window.innerWidth >= 1000 ? 2048 : 1536));
 const imgCache = {};
 const img = src => imgCache[src] || (imgCache[src] = new Promise(ok => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => ok(null); i.src = src; }));
 function rr(g, x, y, w, h, r) { g.beginPath(); g.roundRect(x, y, w, h, r); }
@@ -162,8 +162,8 @@ const isLight = c => ['silver', 'starlight', 'gold', 'white', 'platinum', 'pink'
 async function paintStickers(g, s, W, H) {
   for (const [i, o] of items[s].entries()) { const { p, it } = CODE[o.c], im = await img(`/atlas/${p.id}.${IX}`); if (!im) continue;
     const Lw = o.s * W, k = Lw / Math.max(it[3], it[4]), w = it[3] * k, h = it[4] * k;
-    g.save(); g.translate(o.x * W, o.y * H); g.rotate(o.r * Math.PI / 180); g.shadowColor = 'rgba(0,0,0,.35)'; g.shadowBlur = 6; g.shadowOffsetY = 2;
-    g.drawImage(im, it[1], it[2], it[3], it[4], -w / 2, -h / 2, w, h); g.shadowColor = 'transparent';
+    g.save(); g.translate(o.x * W, o.y * H); g.rotate(o.r * Math.PI / 180); g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+    g.drawImage(im, it[1], it[2], it[3], it[4], -w / 2, -h / 2, w, h);
     if (s === surf && i === sel) { g.strokeStyle = '#fff'; g.lineWidth = 3; g.setLineDash([10, 7]); g.strokeRect(-w / 2 - 8, -h / 2 - 8, w + 16, h + 16); g.setLineDash([]); }
     g.restore(); }
 }

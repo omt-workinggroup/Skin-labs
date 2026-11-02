@@ -485,8 +485,7 @@ async function paintStickers(g, surf, W, H, d = G) {
   g.save(); rr(g, 0, 0, W, H, Math.min(W, H) * .045); g.clip();
   for (const o of d.items[surf]) { const { p, it } = CODE[o.c], im = await loadImg(p.id).catch(() => null); if (!im) continue;
     const L = o.s * W, k = L / Math.max(it[3], it[4]), w = it[3] * k, h = it[4] * k;
-    g.save(); g.translate(o.x * W, o.y * H); g.rotate(o.r * Math.PI / 180); g.shadowColor = 'rgba(0,0,0,.4)'; g.shadowBlur = Math.max(2, W / 120); g.shadowOffsetY = W / 300;
-    g.drawImage(im, it[1], it[2], it[3], it[4], -w / 2, -h / 2, w, h); g.restore(); }
+    g.save(); g.translate(o.x * W, o.y * H); g.rotate(o.r * Math.PI / 180);     g.drawImage(im, it[1], it[2], it[3], it[4], -w / 2, -h / 2, w, h); g.restore(); }
   g.restore();
 }
 async function designPicture(d = G, H = 420, onlyUsed = true) {   // all decorated surfaces side by side
