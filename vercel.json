@@ -3,7 +3,7 @@
  "trailingSlash": true,
  "headers": [
   {
-   "source": "/(atlas|sheets|sheets-sm|sheets-xs|inspo|fonts)/(.*)",
+   "source": "/(atlas|sheets|sheets-sm|sheets-xs|inspo|skins|laptops|fonts)/(.*)",
    "headers": [
     {
      "key": "Cache-Control",

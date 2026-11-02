@@ -84,8 +84,8 @@ const waLink = t => `https://wa.me/${WA}?text=${encodeURIComponent(t)}`;
 function updBar() {
   const n = count(), np = nPacks(), ns = nSingles();
   $('#bar-n').textContent = n;
-  $('#bar-t').textContent = [np ? `${np} pack${np > 1 ? 's' : ''}` : '', ns ? `${ns} sticker${ns > 1 ? 's' : ''}` : ''].filter(Boolean).join(' + ') + ' in your cart';
-  $('#bar-p').textContent = `${CUR}${money()}`;
+  const nk = dsgSkins(); $('#bar-t').textContent = [np ? `${np} pack${np > 1 ? 's' : ''}` : '', ns ? `${ns} sticker${ns > 1 ? 's' : ''}` : '', nk ? `${nk} skin${nk > 1 ? 's' : ''}` : ''].filter(Boolean).join(' + ') + ' in your cart';
+  $('#bar-p').textContent = `${CUR}${money()}${nk ? ' + skin' : ''}`;
   $('#bar').classList.toggle('show', n > 0);
   for (const id of ['#t-bd', '#nv-bd']) { $(id).hidden = !n; $(id).textContent = n; }
   document.querySelectorAll('.grid .tile[data-c]').forEach(t => { const q = cart[t.dataset.c]; t.classList.toggle('sel', !!q); const k = t.querySelector('.chk'); if (k) k.textContent = q > 1 ? q : '✓'; });
@@ -311,13 +311,13 @@ async function vUnlock(d) {
 
 // ---------- inspiration: real photos, tap one to get stickers like it ----------
 const INS = window.INSPO || [];
-const ITAGS = [['', 'All'], ['laptop', 'On laptops'], ['code', 'Coding'], ['pop', 'Anime & pop'], ['custom', 'Custom']];
+const ITAGS = [['', 'All'], ['skins', 'Skins'], ['laptop', 'On laptops'], ['code', 'Coding'], ['pop', 'Anime & pop'], ['custom', 'Custom']];
 const hasT = (x, k) => !k || (x.t || '').split(' ').includes(k);
 let insF = '', ivList = [], ivI = 0;
 function vInspo() {
   app.innerHTML = `<section class="sec" style="padding-top:18px">
     <div class="seg iseg"><a href="#inspo" class="on">Ideas</a><a href="#mine">Mine</a></div>
-    <div class="ihead"><div><h1 class="h1">Sticker <em>inspiration.</em></h1><p class="sub">Laptops and sticker sheets we like. Tap one and we'll print stickers like it.</p></div></div>
+    <div class="ihead"><div><h1 class="h1">Skins &amp; stickers, <em>inspired.</em></h1><p class="sub">Skins and sticker setups we like. Tap one and we'll print it for you.</p></div></div>
     ${INS.length ? `<div class="hs ifil">${ITAGS.map(([k, n]) => { const c = INS.filter(x => hasT(x, k)).length;
         return c ? `<button type="button" class="chip ${k === insF ? 'on' : ''}" data-f="${k}" aria-pressed="${k === insF}">${n}<span class="ct">${c}</span></button>` : ''; }).join('')}</div>
       <div class="ins" id="ins"></div>` : `<div class="insempty">New inspiration photos are on the way.</div>`}
@@ -335,7 +335,7 @@ function drawIns() {
   ivList = INS.map((x, i) => i).filter(i => hasT(INS[i], insF));
   const g = $('#ins'), nc = innerWidth >= 1000 ? 4 : innerWidth >= 700 ? 3 : 2, cols = Array.from({ length: nc }, () => ({ h: 0, html: '' }));
   ivList.forEach((i, n) => { const x = INS[i], c = cols.reduce((a, b) => b.h < a.h - .01 ? b : a); c.h += x.h / x.w + .04;
-    c.html += `<button type="button" class="insp" data-n="${n}" style="background:${x.c};aspect-ratio:${x.w}/${x.h}" aria-label="${esc(x.alt)}"><img src="inspo/sm/${x.id}.${IX}" width="${x.w}" height="${x.h}" alt="${esc(x.alt)}" ${n < 4 ? '' : 'loading="lazy"'} decoding="async" onload="this.classList.add('ok')">${hasT(x, 'laptop') && insF !== 'laptop' ? '<span class="il">On a laptop</span>' : ''}</button>`; });
+    c.html += `<button type="button" class="insp" data-n="${n}" style="background:${x.c};aspect-ratio:${x.w}/${x.h}" aria-label="${esc(x.alt)}"><img src="inspo/sm/${x.id}.${IX}" width="${x.w}" height="${x.h}" alt="${esc(x.alt)}" ${n < 4 ? '' : 'loading="lazy"'} decoding="async" onload="this.classList.add('ok')">${hasT(x, 'skins') ? (insF === 'skins' ? '' : '<span class="il">Skin</span>') : hasT(x, 'laptop') && insF !== 'laptop' ? '<span class="il">On a laptop</span>' : ''}</button>`; });
   g.innerHTML = cols.map(c => `<div class="col">${c.html}</div>`).join('');
   g.querySelectorAll('img').forEach(im => { if (im.complete && im.naturalWidth) im.classList.add('ok'); });
 }
@@ -374,22 +374,36 @@ const BRANDS = {
   Other: [['13.3″ laptop', 13.3, 30.4, 21.2, 'win'], ['14″ laptop', 14, 32.2, 22.4, 'win'], ['15.6″ laptop', 15.6, 35.8, 24.2, 'pad'], ['16″ laptop', 16, 35.6, 24.8, 'pad'], ['17.3″ laptop', 17.3, 39.8, 26.8, 'pad']],
 };
 const LCOLS = { silver: ['Silver', '#e4e6e9', '#b6b9be'], grey: ['Space grey', '#55575d', '#2b2c30'], black: ['Black', '#2c2d30', '#0e0e10'], gold: ['Gold', '#efdcc9', '#c8ab90'], blue: ['Midnight', '#36435d', '#19202e'] };
-const SURFS = { lid: ['Lid', 'Laptop lid', 5.5], kb: ['Keyboard', 'Keyboard area', 3.2], bot: ['Bottom', 'Bottom', 6] };
+const SURFS = { lid: ['Lid', 'Laptop lid', 5.5], kb: ['Keyboard', 'Keyboard area', 3.2], bot: ['Bottom', 'Bottom', 6], pad: ['Mousepad', 'Mousepad', 5] };
+const PADS = { std: [25, 21, 'Standard'], xl: [80, 30, 'Desk mat'] };
 const SKINS = [
+  ['ph-graffiti', 'Red graffiti', 'photo'],
+  ['ph-starry', 'Starry Night', 'photo'],
+  ['ph-boondocks', 'Boondocks', 'photo'],
+  ['ph-joker', 'Joker', 'photo'],
+  ['ph-marvel', 'Marvel comics', 'photo'],
+  ['ph-avengers', 'Avengers', 'photo'],
+  ['ph-bvs', 'Batman v Superman', 'photo'],
+  ['ph-pink', 'Pink waves', 'photo'],
+  ['ph-rose', 'Rose waves', 'photo'],
+  ['ph-girlpower', 'Girl power', 'photo'],
+  ['ph-tanjiro', 'Demon Slayer', 'photo'],
+  ['ph-jinx', 'Jinx', 'photo'],
   ['bomb-code', 'Code · sticker bomb', 'bomb', 'p1-hacker-mode', '#0b1310'], ['bomb-anime', 'Anime · sticker bomb', 'bomb', 'an1-anime-legends', '#151a2c'],
   ['bomb-gaming', 'Gaming · sticker bomb', 'bomb', 'g1-gta-rockstar', '#1d1230'], ['bomb-football', 'Football · sticker bomb', 'bomb', 'f1-club-crests-i', '#0d3b20'],
   ['bomb-marvel', 'Marvel · sticker bomb', 'bomb', 'm2-spider-verse', '#2a0a10'], ['bomb-girly', 'Girly · sticker bomb', 'bomb', 'gen-z-girlies', '#f6d7e6'],
   ['galaxy', 'Galaxy', 'galaxy'], ['carbon', 'Carbon fibre', 'carbon'], ['marble', 'White marble', 'marble'], ['matte', 'Matte black', 'solid', '#141415'], ['sand', 'Sand', 'solid', '#d8cbb6'],
 ];
+const LSAMPLE = { Apple: ['apple-1', 'apple-2'], Dell: ['dell-1'], Asus: ['asus-1', 'asus-2'] }, LSIZE = {"apple-1": [675, 900], "apple-2": [675, 900], "dell-1": [720, 720], "asus-1": [720, 900], "asus-2": [720, 720]};
 const SKIN = Object.fromEntries(SKINS.map(s => [s[0], s]));
 const lapOf = l => l && BRANDS[l.b] && BRANDS[l.b][l.m];
-const D0 = () => ({ lap: null, col: 'silver', surf: 'lid', skin: { lid: '', kb: '', bot: '' }, items: { lid: [], kb: [], bot: [] } });
-let G = Object.assign(D0(), store.get('sl-design', {}));
+const D0 = () => ({ lap: null, col: 'silver', pad: 'std', surf: 'lid', skin: { lid: '', kb: '', bot: '', pad: '' }, items: { lid: [], kb: [], bot: [], pad: [] } });
+let G = Object.assign(D0(), store.get('sl-design', {})); G.skin = { ...D0().skin, ...G.skin }; G.items = { ...D0().items, ...G.items }; if (!PADS[G.pad]) G.pad = 'std';
 for (const k in SURFS) { G.items[k] = (G.items[k] || []).filter(o => CODE[o.c]); if (!SKIN[G.skin[k]]) G.skin[k] = ''; }
 if (!LCOLS[G.col]) G.col = 'silver'; if (!SURFS[G.surf]) G.surf = 'lid'; if (G.lap && !lapOf(G.lap)) G.lap = null;
 G.on = -1;
-const saveG = () => store.set('sl-design', { lap: G.lap, col: G.col, surf: G.surf, skin: G.skin, items: G.items, cat: G.cat, pack: G.pack, tab: G.tab });
-const dims = (s, d = G) => { const m = lapOf(d.lap) || BRANDS.Other[2]; return [m[2], m[3]]; };
+const saveG = () => store.set('sl-design', { lap: G.lap, col: G.col, pad: G.pad, surf: G.surf, skin: G.skin, items: G.items, cat: G.cat, pack: G.pack, tab: G.tab });
+const dims = (s, d = G) => { if (s === 'pad') return PADS[d.pad || 'std'].slice(0, 2); const m = lapOf(d.lap) || BRANDS.Other[2]; return [m[2], m[3]]; };
 const lapName = (d = G) => { const m = lapOf(d.lap); return m ? (d.lap.b === 'Other' ? m[0] : `${d.lap.b} ${m[0]}`) : 'Laptop'; };
 const nStick = (d = G) => Object.values(d.items).reduce((a, v) => a + v.length, 0);
 const nSkins = (d = G) => Object.values(d.skin).filter(Boolean).length;
@@ -403,6 +417,9 @@ const skinCache = {};
 async function skinArt(id, W, H) {             // returns a canvas with the skin artwork at W×H
   const key = `${id}|${Math.round(W)}|${Math.round(H)}`; if (skinCache[key]) return skinCache[key];
   const s = SKIN[id], c = document.createElement('canvas'); c.width = Math.round(W); c.height = Math.round(H); const g = c.getContext('2d'), r = rng(97);
+  if (s[2] === 'photo') { const im = await new Promise(ok => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => ok(null); i.src = `skins/${id}.${IX}`; });
+    g.fillStyle = '#222'; g.fillRect(0, 0, W, H);
+    if (im) { const k = Math.max(W / im.width, H / im.height), w = im.width * k, h = im.height * k; g.drawImage(im, (W - w) / 2, (H - h) / 2, w, h); } }
   if (s[2] === 'solid') { g.fillStyle = s[3]; g.fillRect(0, 0, W, H); g.fillStyle = 'rgba(255,255,255,.035)'; for (let i = 0; i < W * H / 40; i++) g.fillRect(r() * W, r() * H, 1, 1); }
   if (s[2] === 'galaxy') {
     g.fillStyle = '#07061a'; g.fillRect(0, 0, W, H);
@@ -434,6 +451,10 @@ async function skinArt(id, W, H) {             // returns a canvas with the skin
 // the laptop surface itself; skin goes under the keys on the keyboard view
 async function paintSurf(g, surf, W, H, d = G) {
   const [, a, b] = LCOLS[d.col], light = ['silver', 'gold'].includes(d.col), ink = light ? 'rgba(0,0,0,' : 'rgba(255,255,255,', m = lapOf(d.lap) || BRANDS.Other[2];
+  if (surf === 'pad') { const rad = Math.min(W, H) * .05; g.save(); rr(g, 0, 0, W, H, rad); g.clip(); g.fillStyle = '#141416'; g.fillRect(0, 0, W, H);
+    const r0 = rng(11); g.fillStyle = 'rgba(255,255,255,.035)'; for (let i = 0; i < W * H / 50; i++) g.fillRect(r0() * W, r0() * H, 1, 1);
+    if (d.skin.pad) g.drawImage(await skinArt(d.skin.pad, W, H), 0, 0, W, H);
+    g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = Math.max(1, W / 260); g.setLineDash([W / 90, W / 160]); const m = Math.min(W, H) * .022; rr(g, m, m, W - 2 * m, H - 2 * m, rad * .8); g.stroke(); g.setLineDash([]); g.restore(); return; }
   const rad = Math.min(W, H) * .045, lg = g.createLinearGradient(0, 0, W, H); lg.addColorStop(0, a); lg.addColorStop(.55, b); lg.addColorStop(1, a);
   g.save(); rr(g, 0, 0, W, H, rad); g.clip(); g.fillStyle = lg; g.fillRect(0, 0, W, H);
   if (d.skin[surf]) g.drawImage(await skinArt(d.skin[surf], W, H), 0, 0, W, H);
@@ -469,12 +490,12 @@ async function paintStickers(g, surf, W, H, d = G) {
 }
 async function designPicture(d = G, H = 420, onlyUsed = true) {   // all decorated surfaces side by side
   const used = Object.keys(SURFS).filter(k => !onlyUsed || d.items[k].length || d.skin[k]); if (!used.length) used.push('lid');
-  const [w0, h0] = dims('lid', d), pad = Math.round(H * .07), lab = Math.round(H * .12), w = Math.round(H * w0 / h0);
-  const cv = document.createElement('canvas'); cv.width = used.length * w + pad * (used.length + 1); cv.height = H + pad * 2 + lab; const g = cv.getContext('2d');
+  const pad = Math.round(H * .07), lab = Math.round(H * .12), ws = used.map(k => { const [a, b] = dims(k, d); return Math.round(H * a / b); }), xs = ws.map((_, i) => pad + ws.slice(0, i).reduce((a, b) => a + b + pad, 0));
+  const cv = document.createElement('canvas'); cv.width = ws.reduce((a, b) => a + b, 0) + pad * (used.length + 1); cv.height = H + pad * 2 + lab; const g = cv.getContext('2d');
   g.fillStyle = '#000'; g.fillRect(0, 0, cv.width, cv.height);
-  for (const [i, k] of used.entries()) { g.save(); g.translate(pad + i * (w + pad), pad); await paintSurf(g, k, w, H, d); await paintStickers(g, k, w, H, d); g.restore();
+  for (const [i, k] of used.entries()) { const w = ws[i]; g.save(); g.translate(xs[i], pad); await paintSurf(g, k, w, H, d); await paintStickers(g, k, w, H, d); g.restore();
     g.fillStyle = '#8c8c8c'; g.font = `${Math.round(lab * .32)}px "Geist Mono", monospace`; g.textAlign = 'center';
-    g.fillText(`${SURFS[k][1].toUpperCase()}${d.skin[k] ? ' · ' + SKIN[d.skin[k]][1].toUpperCase() : ''}${d.items[k].length ? ' · ' + d.items[k].length + ' STICKERS' : ''}`, pad + i * (w + pad) + w / 2, pad + H + lab * .7); }
+    g.fillText(`${k === 'pad' ? PADS[d.pad || 'std'][2].toUpperCase() + ' MOUSEPAD' : SURFS[k][1].toUpperCase()}${d.skin[k] ? ' · ' + SKIN[d.skin[k]][1].toUpperCase() : ''}${d.items[k].length ? ' · ' + d.items[k].length + ' STICKERS' : ''}`, xs[i] + w / 2, pad + H + lab * .7); }
   return cv;
 }
 const skinThumb = async (id, el, w = 300, h = 200) => { const c = await skinArt(id, w, h), x = document.createElement('canvas'); x.width = w; x.height = h;
@@ -488,6 +509,7 @@ function vPick() {
     <h1 class="h1">Which laptop <em>is yours?</em></h1>
     <p class="sub">We draw your exact model at its real size, so every sticker and skin fits.</p>
     <div class="lbl" style="margin:22px 0 10px">Brand</div><div class="brands" id="pk-b"></div>
+    <div class="lsamp" id="pk-s"></div>
     <div class="lbl" style="margin:22px 0 4px">Model</div><div class="models" id="pk-m"></div>
     <div class="lbl" style="margin:22px 0 10px">Colour</div><div class="lcols" id="pk-c"></div>
     <button class="btn y" type="button" id="pk-go" style="width:100%;margin-top:24px">Start designing</button>
@@ -495,6 +517,7 @@ function vPick() {
   </section>${footer}`;
   const draw = () => {
     $('#pk-b').innerHTML = Object.keys(BRANDS).map(k => `<button type="button" class="chip ${k === b ? 'on' : ''}" data-b="${k}">${k}</button>`).join('');
+    const sm = LSAMPLE[b] || []; $('#pk-s').innerHTML = sm.length ? `<div class="lbl" style="margin:20px 0 8px">Real ${b} laptops</div><div class="hs lsr">${sm.map(k => `<img src="laptops/${k}.${IX}" width="${LSIZE[k][0]}" height="${LSIZE[k][1]}" alt="${b} laptop" loading="lazy">`).join('')}</div>` : '';
     $('#pk-m').innerHTML = BRANDS[b].map((m, i) => `<button type="button" class="mrow ${i === mi ? 'on' : ''}" data-m="${i}"><span>${m[0]}</span><span class="lbl">${m[2]} × ${m[3]} cm${i === mi ? ' ✓' : ''}</span></button>`).join('');
     $('#pk-c').innerHTML = Object.entries(LCOLS).map(([k, v]) => `<button type="button" class="lsw ${k === col ? 'on' : ''}" data-c="${k}" aria-label="${v[0]}"><i style="background:linear-gradient(135deg,${v[1]},${v[2]})"></i><span>${v[0]}</span></button>`).join('');
     $('#pk-go').disabled = mi < 0; $('#pk-go').style.opacity = mi < 0 ? .4 : 1;
@@ -512,6 +535,7 @@ function vDesign() {
   app.innerHTML = `<section class="studio2">
     <div class="ed-main">
       <div class="kick-row ed-k"><span>${esc(lapName())} · ${LCOLS[G.col][0]}</span><a href="#design-pick">Change laptop</a></div>
+      <div class="hs" id="ed-pad" hidden>${Object.entries(PADS).map(([k, v]) => `<button type="button" class="chip sm" data-pad="${k}">${v[2]} · ${v[0]} × ${v[1]} cm</button>`).join('')}</div>
       <div class="seg" id="ed-s">${Object.entries(SURFS).map(([k, v]) => `<button type="button" data-surf="${k}">${v[0]}<i></i></button>`).join('')}</div>
       <div class="stagewrap" id="stagewrap"><div class="stage" id="stage"><canvas id="st-bg"></canvas><div class="empty" id="st-empty"></div><span class="cm" id="st-cm" hidden></span></div></div>
       <div class="dims" id="st-dims"></div>
@@ -525,19 +549,19 @@ function vDesign() {
   const stage = $('#stage'), bg = $('#st-bg'), wrap = $('#stagewrap'); let hist = [], tabNow = tab;
   const items = () => G.items[G.surf], snap = () => { hist.push(JSON.stringify({ i: G.items, s: G.skin })); if (hist.length > 60) hist.shift(); };
   const dimsCm = () => dims(G.surf);
-  const head = () => { document.querySelectorAll('#ed-s [data-surf]').forEach(b => { b.classList.toggle('on', b.dataset.surf === G.surf); const n = G.items[b.dataset.surf].length + (G.skin[b.dataset.surf] ? 1 : 0); b.querySelector('i').textContent = n ? ` ${n}` : ''; });
+  const head = () => { $('#ed-pad').hidden = G.surf !== 'pad'; document.querySelectorAll('#ed-pad [data-pad]').forEach(b => b.classList.toggle('on', b.dataset.pad === G.pad)); document.querySelectorAll('#ed-s [data-surf]').forEach(b => { b.classList.toggle('on', b.dataset.surf === G.surf); const n = G.items[b.dataset.surf].length + (G.skin[b.dataset.surf] ? 1 : 0); b.querySelector('i').textContent = n ? ` ${n}` : ''; });
     document.querySelectorAll('#ed-t [data-tab]').forEach(b => b.classList.toggle('on', b.dataset.tab === tabNow));
     const n = nStick(); $('#st-done').textContent = n || nSkins() ? `Add to cart${n ? ` · ${CUR}${n * PRICE}` : ''}` : 'Add to cart'; };
   let paintTok = 0;
   async function layout() {
-    const [w, h] = dimsCm(), ar = w / h, avail = wrap.clientWidth, mob = innerWidth < 1000, maxH = mob ? Math.max(170, innerHeight * .3) : Math.min(innerHeight * .62, 560);
+    const [w, h] = dimsCm(), ar = w / h, avail = wrap.clientWidth, mob = innerWidth < 1000, maxH = mob ? Math.max(G.surf === 'pad' && G.pad === 'xl' ? 110 : 170, innerHeight * .3) : Math.min(innerHeight * .62, 560);
     let sw = avail, sh = sw / ar; if (sh > maxH) { sh = maxH; sw = sh * ar; }
     stage.style.width = sw + 'px'; stage.style.height = sh + 'px'; stage.style.borderRadius = Math.min(sw, sh) * .045 + 'px';
     const dpr = Math.min(2, devicePixelRatio || 1); bg.width = sw * dpr; bg.height = sh * dpr; bg.style.width = sw + 'px'; bg.style.height = sh + 'px';
     const tok = ++paintTok, off = document.createElement('canvas'); off.width = bg.width; off.height = bg.height; const og = off.getContext('2d'); og.scale(dpr, dpr);
     $('#st-dims').textContent = `${SURFS[G.surf][1]}${G.skin[G.surf] ? ' · ' + SKIN[G.skin[G.surf]][1] : ''} · ${w} × ${h} cm`;
-    $('#st-empty').innerHTML = G.surf === 'kb' ? 'Stickers go on the palm rest.<br>Tap one below, then drag it into place.' : 'Tap a sticker below to stick it here.<br>Drag to move, pinch to resize.';
-    stage.classList.toggle('is-dark', !['silver', 'gold'].includes(G.col) || !!G.skin[G.surf]);
+    $('#st-empty').innerHTML = G.surf === 'pad' ? 'Pick a skin for the whole mousepad,<br>or add stickers to be printed on it.' : G.surf === 'kb' ? 'Stickers go on the palm rest.<br>Tap one below, then drag it into place.' : 'Tap a sticker below to stick it here.<br>Drag to move, pinch to resize.';
+    stage.classList.toggle('is-dark', G.surf === 'pad' || !['silver', 'gold'].includes(G.col) || !!G.skin[G.surf]);
     draw(); await paintSurf(og, G.surf, sw, sh); if (tok !== paintTok) return;
     const g = bg.getContext('2d'); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, bg.width, bg.height); g.drawImage(off, 0, 0);
   }
@@ -568,7 +592,7 @@ function vDesign() {
     } else if (tabNow === 'skins') {
       p.innerHTML = `<div class="skgrid">${[['', 'No skin'], ...SKINS].map(s => `<button type="button" class="skt ${G.skin[G.surf] === s[0] ? 'on' : ''}" data-skin="${s[0]}"><span class="sk" data-art="${s[0]}">${s[0] ? '' : '<b>∅</b>'}</span><span class="lbl">${esc(s[1].replace(' · sticker bomb', ' bomb'))}</span></button>`).join('')}
         <button type="button" class="skt" id="sk-own"><span class="sk own"><b>＋</b></span><span class="lbl">Your picture</span></button></div>
-        <p class="small" style="margin-top:8px">The skin covers the whole ${SURFS[G.surf][1].toLowerCase()}. Stickers go on top. Skin prices are confirmed on WhatsApp.</p>`;
+        <p class="small" style="margin-top:8px">The first ${SKINS.filter(s => s[2] === 'photo').length} are real skins we've printed. The skin covers the whole ${SURFS[G.surf][1].toLowerCase()}. Stickers go on top. Skin prices are confirmed on WhatsApp.</p>`;
       p.querySelectorAll('[data-art]').forEach(el => { if (el.dataset.art) skinThumb(el.dataset.art, el, 150, 100); });
       p.querySelector('.skgrid').onclick = e => { const b = e.target.closest('[data-skin]'); if (!b) return; snap(); G.skin[G.surf] = b.dataset.skin; saveG(); pane(); layout(); };
       $('#sk-own').onclick = () => { openInspo(); $('#i-idea').value = `A ${SURFS[G.surf][1].toLowerCase()} skin for my ${lapName()} with my own picture`; };
@@ -620,6 +644,7 @@ function vDesign() {
     draw(); });
   const end = e => { pts.delete(e.pointerId); if (drag && (drag.m !== 'pinch' || pts.size < 2)) { drag = null; showCm(null); saveG(); } };
   stage.addEventListener('pointerup', end); stage.addEventListener('pointercancel', end);
+  $('#ed-pad').onclick = e => { const b = e.target.closest('[data-pad]'); if (!b) return; G.pad = b.dataset.pad; saveG(); layout(); };
   $('#ed-s').onclick = e => { const b = e.target.closest('[data-surf]'); if (!b) return; G.surf = b.dataset.surf; G.on = -1; saveG(); layout(); if (tabNow !== 'stickers') pane(); else head(); };
   $('#ed-t').onclick = e => { const b = e.target.closest('[data-tab]'); if (!b) return; tabNow = G.tab = b.dataset.tab; saveG(); pane(); };
   $('#st-undo').onclick = () => { if (!hist.length) { toast('Nothing to undo'); return; } const h = JSON.parse(hist.pop()); G.items = h.i; G.skin = h.s; G.on = -1; saveG(); layout(); if (tabNow === 'skins') pane(); };
@@ -627,7 +652,7 @@ function vDesign() {
   $('#st-done').onclick = () => designToCart();
   pane(); new ResizeObserver(() => layout()).observe(wrap); layout();
 }
-const designSnap = () => ({ lap: G.lap, col: G.col, skin: { ...G.skin }, items: JSON.parse(JSON.stringify(G.items)) });
+const designSnap = () => ({ lap: G.lap, col: G.col, pad: G.pad, skin: { ...G.skin }, items: JSON.parse(JSON.stringify(G.items)) });
 async function saveMine(silent) {
   if (!nStick() && !nSkins()) { toast('Add a sticker or a skin first'); return; }
   const d = designSnap(), pic = await designPicture(d, 160, false), t = document.createElement('canvas'); t.width = 360; t.height = Math.round(360 * pic.height / pic.width);
@@ -642,9 +667,9 @@ async function designToCart() {
   Object.entries(counts).forEach(([c, q]) => cart[c] = Math.max(cart[c] || 0, q));
   store.set('sl-dsg', designSnap()); saveCart(); updBar(); await saveMine(true); buzz(); openCart();
 }
-const dsgLine = d => !d ? '' : `${lapName(d)} (${LCOLS[d.col][0]}): ` + Object.keys(SURFS).filter(k => d.items[k].length || d.skin[k]).map(k => `${SURFS[k][0].toLowerCase()}${d.skin[k] ? ' with ' + SKIN[d.skin[k]][1] + ' skin' : ''}${d.items[k].length ? `${d.skin[k] ? ' +' : ''} ${d.items[k].length} sticker${d.items[k].length > 1 ? 's' : ''}` : ''}`).join(', ');
-const dsgPack = d => d && { l: [d.lap.b, d.lap.m], c: d.col, k: d.skin, i: Object.fromEntries(Object.entries(d.items).map(([k, v]) => [k, v.map(o => [o.c, +o.x.toFixed(3), +o.y.toFixed(3), +o.s.toFixed(3), o.r])])) };
-const dsgUnpack = p => p && { lap: { b: p.l[0], m: p.l[1] }, col: p.c, skin: p.k, items: Object.fromEntries(Object.entries(p.i).map(([k, v]) => [k, v.filter(o => CODE[o[0]]).map(([c, x, y, s, r]) => ({ c, x, y, s, r }))])) };
+const dsgLine = d => !d ? '' : `${lapName(d)} (${LCOLS[d.col][0]}): ` + Object.keys(SURFS).filter(k => (d.items[k] || []).length || (d.skin || {})[k]).map(k => `${k === 'pad' ? (PADS[d.pad || 'std'][2] + ' mousepad ' + PADS[d.pad || 'std'][0] + '×' + PADS[d.pad || 'std'][1] + ' cm').toLowerCase() : SURFS[k][0].toLowerCase()}${d.skin[k] ? ' with ' + SKIN[d.skin[k]][1] + ' skin' : ''}${d.items[k].length ? `${d.skin[k] ? ' +' : ''} ${d.items[k].length} sticker${d.items[k].length > 1 ? 's' : ''}` : ''}`).join(', ');
+const dsgPack = d => d && { l: [d.lap.b, d.lap.m], c: d.col, p: d.pad, k: d.skin, i: Object.fromEntries(Object.entries(d.items).map(([k, v]) => [k, v.map(o => [o.c, +o.x.toFixed(3), +o.y.toFixed(3), +o.s.toFixed(3), o.r])])) };
+const dsgUnpack = p => p && { lap: { b: p.l[0], m: p.l[1] }, col: p.c, pad: p.p || 'std', skin: { lid: '', kb: '', bot: '', pad: '', ...p.k }, items: Object.fromEntries(Object.entries({ lid: [], kb: [], bot: [], pad: [], ...p.i }).map(([k, v]) => [k, v.filter(o => CODE[o[0]]).map(([c, x, y, s, r]) => ({ c, x, y, s, r }))])) };
 
 // ---- inspo: Ideas | Mine ----
 function vMine() {
@@ -666,7 +691,7 @@ function vMine() {
 // ---- home: Skins ----
 function skinsGrid() {
   return `<div class="cats skins">${SKINS.map((s, i) => `<a class="catc" href="#design" data-useskin="${s[0]}"><div class="table sk" data-art="${s[0]}" style="aspect-ratio:3/2;background:#111"></div>
-    <div class="cmeta"><span class="no">${String(i + 1).padStart(2, '0')}</span><b>${esc(s[1])}</b><span>Made to fit your laptop</span></div></a>`).join('')}
+    <div class="cmeta"><span class="no">${String(i + 1).padStart(2, '0')}</span><b>${esc(s[1])}</b><span>${s[2] === 'photo' ? 'Printed by us · fits any laptop' : 'Made to fit your laptop'}</span></div></a>`).join('')}
     <a class="catc" href="#" data-ownskin="1"><div class="table" style="aspect-ratio:3/2;background:#0a0a0a;display:grid;place-items:center;border:1px dashed var(--line2)"><span style="font-size:30px">＋</span></div>
     <div class="cmeta"><span class="no">${String(SKINS.length + 1).padStart(2, '0')}</span><b>Your own picture</b><span>Send it on WhatsApp</span></div></a></div>`;
 }
