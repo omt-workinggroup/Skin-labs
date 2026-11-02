@@ -85,6 +85,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 @media (min-width:1000px){.ed{grid-template-columns:minmax(0,1fr) 400px;gap:28px;align-items:start}.stage{margin:0;height:min(76vh,720px);top:76px}.drawer{position:sticky;top:76px;padding-top:0}
   .tray{grid-auto-flow:row;grid-template-rows:none;grid-template-columns:repeat(5,1fr);max-height:260px;overflow-y:auto}.skins{grid-auto-flow:row;grid-template-rows:none;grid-template-columns:repeat(3,1fr);max-height:300px;overflow-y:auto}
   .tabs{display:none}.wrap{padding-bottom:40px}}
+.dm{display:flex;justify-content:space-between;align-items:center;height:46px;padding:0 14px;border:1px solid var(--line2);color:#fff;text-decoration:none;font-size:14px;font-weight:500}.dm span:first-child:before{content:'';display:inline-block;width:9px;height:9px;border-radius:50%;background:#1faa53;margin-right:9px}
 </style>
 <script type="importmap">{"imports":{"three":"/vendor/three/three.module.min.js"}}</script>
 </head><body>
@@ -370,7 +371,8 @@ function pane() {
     p.innerHTML = `<div class="skins" id="sk"><button class="sk ${!skin[surf] ? 'on' : ''}" data-x=""><span style="display:grid;place-items:center;color:#777">∅</span><span class="lbl">No skin</span></button>
       ${PHOTO.map(([id, n]) => `<button class="sk ${skin[surf] === id ? 'on' : ''}" data-x="${id}"><span style="background-image:url(/skins/${id}.${IX})"></span><span class="lbl">${n}</span></button>`).join('')}
       ${SOLID.map(([id, n, c]) => `<button class="sk ${skin[surf] === id ? 'on' : ''}" data-x="${id}"><span style="background:${c}"></span><span class="lbl">${n}</span></button>`).join('')}</div>
-      <p class="lbl" style="text-transform:none;letter-spacing:0;font-family:var(--body);font-size:12.5px">Covers the whole ${SN[surf].toLowerCase()}. Stickers sit on top.</p>`;
+      <p class="lbl" style="text-transform:none;letter-spacing:0;font-family:var(--body);font-size:12.5px">Covers the whole ${SN[surf].toLowerCase()}. Stickers sit on top.</p>
+      <a class="dm" target="_blank" rel="noopener" href="https://wa.me/233558362423?text=${encodeURIComponent(`Hello Skin Lab, how much is a ${skin[surf] ? (PHOTO.concat(SOLID).find(x => x[0] === skin[surf]) || ['', ''])[1] + ' ' : ''}skin for my ${L.brand} ${L.name}?`)}"><span>Skin price? DM us on WhatsApp</span><span>→</span></a>`;
     $('#sk').onclick = e => { const b = e.target.closest('[data-x]'); if (!b) return; snap(); skin[surf] = b.dataset.x; pane(); paint(surf); go(surf); };
   } else {
     p.innerHTML = `<div class="lbl" style="margin-bottom:10px">Colours this model comes in</div><div class="cols" id="cl">${L.cols.map(c => `<button class="${c === col ? 'on' : ''}" data-c="${c}"><i style="background:${LCOL[c]}"></i>${c[0].toUpperCase() + c.slice(1)}</button>`).join('')}</div>`;

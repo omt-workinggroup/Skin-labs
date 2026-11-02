@@ -72,8 +72,8 @@ function orderText(pk, items, lk = null, dg = curDsg()) {
   if (pk.length) { t += `\n*Sticker packs*\n` + pk.map(([k, q]) => { tot += q * PK[k].price; return `${++i}. ${PK[k].nice} pack (${PK[k].items.length} stickers) x${q} = ${CUR}${q * PK[k].price}`; }).join('\n') + '\n'; }
   if (items.length) { const n = items.reduce((a, [, q]) => a + q, 0); tot += n * PRICE;
     t += `\n*My own picks* (${CUR}${PRICE} each)\n` + items.map(([c, q]) => `${++i}. ${c} (${CODE[c].p.nice}) x${q} = ${CUR}${q * PRICE}`).join('\n') + '\n'; }
-  if (dg) { t += `\n*My laptop design*\n${dsgLine(dg)}\n`; if (Object.values(dg.skin).some(Boolean)) t += `(skin price to confirm on WhatsApp)\n`; }
-  t += `\n*Total: ${CUR}${tot}*${dg && Object.values(dg.skin).some(Boolean) ? ' + skin' : ''}\n`;
+  if (dg) { t += `\n*My laptop design*\n${dsgLine(dg)}\n`; if (Object.values(dg.skin).some(Boolean)) t += `Please send me the price for the skin.\n`; }
+  t += `\n*Total: ${CUR}${tot}*${dg && Object.values(dg.skin).some(Boolean) ? ' (stickers only, skin price on DM)' : ''}\n`;
   if (who.name) t += `\nName: ${who.name}`;
   if (who.loc) t += `\nLocation: ${who.loc}`;
   if (who.note) t += `\nNote: ${who.note}`;
@@ -85,7 +85,7 @@ function updBar() {
   const n = count(), np = nPacks(), ns = nSingles();
   $('#bar-n').textContent = n;
   const nk = dsgSkins(); $('#bar-t').textContent = [np ? `${np} pack${np > 1 ? 's' : ''}` : '', ns ? `${ns} sticker${ns > 1 ? 's' : ''}` : '', nk ? `${nk} skin${nk > 1 ? 's' : ''}` : ''].filter(Boolean).join(' + ') + ' in your cart';
-  $('#bar-p').textContent = `${CUR}${money()}${nk ? ' + skin' : ''}`;
+  $('#bar-p').textContent = `${CUR}${money()}${nk ? ' + skin (price on DM)' : ''}`;
   $('#bar').classList.toggle('show', n > 0);
   for (const id of ['#t-bd', '#nv-bd']) { $(id).hidden = !n; $(id).textContent = n; }
   document.querySelectorAll('.grid .tile[data-c]').forEach(t => { const q = cart[t.dataset.c]; t.classList.toggle('sel', !!q); const k = t.querySelector('.chk'); if (k) k.textContent = q > 1 ? q : '✓'; });
@@ -691,8 +691,8 @@ function vMine() {
 
 // ---- home: Skins ----
 function skinsGrid() {
-  return `<div class="cats skins">${SKINS.filter(s => s[2] === 'photo').map((s, i) => `<a class="catc" href="#design" data-useskin="${s[0]}"><div class="table sk" data-art="${s[0]}" style="aspect-ratio:3/2;background:#111"></div>
-    <div class="cmeta"><span class="no">${String(i + 1).padStart(2, '0')}</span><b>${esc(s[1])}</b><span>${s[2] === 'photo' ? 'Printed by us · fits any laptop' : 'Made to fit your laptop'}</span></div></a>`).join('')}
+  return `<a class="xcard" href="https://wa.me/${WA}?text=${encodeURIComponent('Hello Skin Lab, how much is a laptop skin for my laptop? My laptop is: ')}" target="_blank" rel="noopener" style="margin-bottom:18px"><span class="xicon" aria-hidden="true">${waIcon}</span><span><b>Skin prices: DM us</b><small>Prices depend on your laptop. Send us your model on WhatsApp and we'll tell you.</small></span></a><div class="cats skins">${SKINS.filter(s => s[2] === 'photo').map((s, i) => `<a class="catc" href="#design" data-useskin="${s[0]}"><div class="table sk" data-art="${s[0]}" style="aspect-ratio:3/2;background:#111"></div>
+    <div class="cmeta"><span class="no">${String(i + 1).padStart(2, '0')}</span><b>${esc(s[1])}</b><span>Price on DM · fits any laptop</span></div></a>`).join('')}
     <a class="catc" href="#" data-ownskin="1"><div class="table" style="aspect-ratio:3/2;background:#0a0a0a;display:grid;place-items:center;border:1px dashed var(--line2)"><span style="font-size:30px">＋</span></div>
     <div class="cmeta"><span class="no">${String(SKINS.filter(s => s[2] === 'photo').length + 1).padStart(2, '0')}</span><b>Your own picture</b><span>Send it on WhatsApp</span></div></a></div>`;
 }
