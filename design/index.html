@@ -175,39 +175,103 @@ async function paintSkin(g, id, W, H) {
   const im = await img(`/skins/${id}.${IX}`); if (!im) return; const k = Math.max(W / im.width, H / im.height); g.drawImage(im, (W - im.width * k) / 2, (H - im.height * k) / 2, im.width * k, im.height * k);
 }
 const isLight = c => ['silver', 'starlight', 'gold', 'white', 'platinum', 'pink', 'beige', 'sage', 'mercury'].includes(c);
-async function paintStickers(g, s, W, H) {
-  for (const [i, o] of items[s].entries()) { const { p, it } = CODE[o.c], im = await img(`/atlas/${p.id}.${IX}`); if (!im) continue;
+// sticker atlases: one decoded image per pack, kept for the whole visit
+const atlas = id => img(`/atlas/${id}.${IX}`), ready = {};
+const warmAtlas = ids => ids.forEach(id => atlas(id).then(im => { if (im) ready[id] = im; }));
+function drawStickers(g, s, W, H) {
+  g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+  for (const [i, o] of items[s].entries()) { const { p, it } = CODE[o.c], im = ready[p.id]; if (!im) { atlas(p.id).then(m => { if (m) { ready[p.id] = m; schedule(s); } }); continue; }
     const Lw = o.s * W, k = Lw / Math.max(it[3], it[4]), w = it[3] * k, h = it[4] * k;
-    g.save(); g.translate(o.x * W, o.y * H); g.rotate(o.r * Math.PI / 180); g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
-    g.drawImage(im, it[1], it[2], it[3], it[4], -w / 2, -h / 2, w, h);
-    if (s === surf && i === sel) { g.strokeStyle = '#fff'; g.lineWidth = 3; g.setLineDash([10, 7]); g.strokeRect(-w / 2 - 8, -h / 2 - 8, w + 16, h + 16); g.setLineDash([]); }
+    g.save(); g.translate(o.x * W, o.y * H); g.rotate(o.r * Math.PI / 180); g.drawImage(im, it[1], it[2], it[3], it[4], -w / 2, -h / 2, w, h);
+    if (s === surf && i === sel) { g.strokeStyle = '#fff'; g.lineWidth = Math.max(2, W / 600); g.setLineDash([W / 140, W / 200]); g.strokeRect(-w / 2 - W / 160, -h / 2 - W / 160, w + W / 80, h + W / 80); g.setLineDash([]);
+      g.fillStyle = '#fff'; [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([a, b]) => { g.beginPath(); g.arc(a * (w / 2 + W / 160), b * (h / 2 + W / 160), W / 180, 0, 7); g.fill(); }); }
     g.restore(); }
 }
-async function paint(s) {
-  const c = TX[s].image, g = c.getContext('2d'), W = c.width, H = c.height, base = LCOL[col], light = isLight(col);
-  const lg = g.createLinearGradient(0, 0, W, H); lg.addColorStop(0, base); lg.addColorStop(.6, shade(base, light ? -10 : 8)); lg.addColorStop(1, base);
+// base layer (colour + skin + logo + keyboard): drawn once per change, reused every frame a sticker moves
+const BASE = {};
+async function paintBase(s) {
+  const c = BASE[s] || (BASE[s] = document.createElement('canvas')); c.width = TX[s].image.width; c.height = TX[s].image.height;
+  const g = c.getContext('2d'), W = c.width, H = c.height, base = LCOL[col], light = isLight(col);
+  const lg = g.createLinearGradient(0, 0, W, H); lg.addColorStop(0, base); lg.addColorStop(.6, shade(base, light ? -8 : 7)); lg.addColorStop(1, base);
   g.fillStyle = lg; g.fillRect(0, 0, W, H);
+  if (L.style !== 'mac' && ['budget', 'game', 'biz', 'chrome'].includes(L.style)) { const r0 = mulberry(7); g.fillStyle = light ? 'rgba(0,0,0,.025)' : 'rgba(255,255,255,.022)'; for (let i = 0; i < W * H / 90; i++) g.fillRect(r0() * W, r0() * H, 1.4, 1.4); }
   if (s === 'lid') { if (skin.lid) await paintSkin(g, skin.lid, W, H); else lidMark(g, W, H, light); }
-  if (s === 'bot') { await paintSkin(g, skin.bot, W, H);
-    g.fillStyle = 'rgba(0,0,0,.35)'; for (let i = 0; i < 30; i++) { rr(g, W * .28 + i * W * .015, H * .12, W * .006, H * .2, 3); g.fill(); }
-    g.fillStyle = '#111'; [[.07, .1], [.93, .1], [.07, .9], [.93, .9]].forEach(([x, y]) => { rr(g, x * W - W * .05, y * H - H * .025, W * .1, H * .05, H * .025); g.fill(); }); }
-  if (s === 'kb') { await paintSkin(g, skin.kb, W, H);
-    const mac = L.style === 'mac', pad = L.scr >= 15.5 && !['mac', 'thin', 'flip'].includes(L.style), kx = W * (mac ? .09 : .05), ky = H * .05, kw = W * (mac ? .82 : .9), kh = H * .52;
-    g.fillStyle = 'rgba(0,0,0,.3)'; rr(g, kx - 8, ky - 8, kw + 16, kh + 16, 10); g.fill();
-    const rows = [[1, 14], [14], [1.5, 12, 1.5], [1.8, 11, 2.2], [2.3, 10, 2.7], [1, 1, 1, 1.2, 5.5, 1.2, 1, 1, 1]], kc = light && !skin.kb ? '#2a2b2f' : '#0e0f11';
-    const mainW = pad ? kw * .79 : kw, gap = kw * .006;
-    rows.forEach((row, ri) => { const rh = kh / rows.length, y = ky + ri * rh + rh * .1, keys = [];
-      row.forEach(v => { if (row.length <= 3 && Number.isInteger(v) && v > 2) for (let j = 0; j < v; j++) keys.push(1); else keys.push(v); });
-      const tot = keys.reduce((a, b) => a + b, 0); let x = kx, ki = 0; const LEG = ['', '1234567890-=', 'QWERTYUIOP[]', 'ASDFGHJKL;\'', 'ZXCVBNM,./', ''][ri];
-      keys.forEach(v => { const w = v / tot * (mainW - gap * (keys.length - 1)), kh2 = rh * (ri ? .8 : .6); g.fillStyle = kc; rr(g, x, y, w, kh2, 6); g.fill();
-        const ch = ri === 2 || ri === 3 || ri === 4 ? LEG[ki - 1] : ri === 1 ? LEG[ki - 1] : ''; if (ch && v === 1) { g.fillStyle = 'rgba(255,255,255,.72)'; g.font = `500 ${kh2 * .34}px Geist, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(ch, x + w / 2, y + kh2 / 2); }
-        ki++; x += w + gap; });
-      if (pad) for (let j = 0; j < 4; j++) { const w = (kw - mainW - gap * 4) / 4; g.fillStyle = kc; rr(g, kx + mainW + gap + j * (w + gap), y, w, rh * (ri ? .8 : .6), 6); g.fill(); } });
-    if (L.style === 'game') { g.fillStyle = 'rgba(0,200,255,.18)'; g.fillRect(kx, ky + kh + 4, kw, 3); }
-    const tw = W * (mac ? .4 : .3), th = H * .3; g.fillStyle = light ? 'rgba(0,0,0,.08)' : 'rgba(255,255,255,.07)'; g.strokeStyle = light ? 'rgba(0,0,0,.18)' : 'rgba(255,255,255,.15)'; g.lineWidth = 2;
-    rr(g, (W - tw) / 2 - (pad ? W * .06 : 0), H * .64, tw, th, 14); g.fill(); g.stroke(); }
-  await paintStickers(g, s, W, H);
-  TX[s].needsUpdate = true;
+  if (s === 'bot') { await paintSkin(g, skin.bot, W, H); bottom(g, W, H, light); }
+  if (s === 'kb') { await paintSkin(g, skin.kb, W, H); keyboard(g, W, H, light); }
+}
+function paintNow(s) { const c = TX[s].image, g = c.getContext('2d'); if (BASE[s]) g.drawImage(BASE[s], 0, 0); TX[s].needsUpdate = true; kick(); }
+async function paint(s) { await paintBase(s); paintNow(s); syncStickers(s); }
+// ---- stickers as their own flat 3D pieces: moving one never repaints the laptop
+let GEO = null; const STK = { lid: [], kb: [], bot: [] }, ATX = {}, SELL = {};
+const surfPos = (s, u, v) => { const { w, d, tb, tl } = GEO;
+  if (s === 'kb') return new THREE.Vector3(u * (w - .5) - (w / 2 - .25), tb + .03, v * (d - .5) - (d / 2 - .25));
+  if (s === 'bot') return new THREE.Vector3((w / 2 - .25) - u * (w - .5), -.03, v * (d - .5) - (d / 2 - .25));
+  return new THREE.Vector3((w / 2 - .15) - u * (w - .3), tl + .03, (d / 2 - .15) - v * (d - .3) + d / 2); };
+const atlasTex = p => ATX[p.id] || (ATX[p.id] = (() => { const t = new THREE.Texture(); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  const m = new THREE.MeshBasicMaterial({ map: t, transparent: true, alphaTest: .02, depthWrite: false, toneMapped: false, polygonOffset: true, polygonOffsetFactor: -4, side: THREE.DoubleSide });
+  atlas(p.id).then(im => { if (im) { ready[p.id] = im; t.image = im; t.needsUpdate = true; kick(); } }); return m; })());
+function quad(o, s) { const { p, it } = CODE[o.c], C = surfPos(s, o.x, o.y), R = surfPos(s, o.x + 1, o.y).sub(C), Dv = surfPos(s, o.x, o.y + 1).sub(C);
+  const pw = R.length(), Rn = R.normalize(), Dn = Dv.normalize(), k = o.s * pw / Math.max(it[3], it[4]), hw = it[3] * k / 2, hh = it[4] * k / 2, a = o.r * Math.PI / 180;
+  const Rr = Rn.clone().multiplyScalar(Math.cos(a)).addScaledVector(Dn, Math.sin(a)), Dr = Rn.clone().multiplyScalar(-Math.sin(a)).addScaledVector(Dn, Math.cos(a));
+  const P = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([x, y]) => C.clone().addScaledVector(Rr, x * hw).addScaledVector(Dr, y * hh));
+  return { P, uv: [[it[1] / p.aw, 1 - it[2] / p.ah], [(it[1] + it[3]) / p.aw, 1 - it[2] / p.ah], [(it[1] + it[3]) / p.aw, 1 - (it[2] + it[4]) / p.ah], [it[1] / p.aw, 1 - (it[2] + it[4]) / p.ah]] }; }
+function syncStickers(s) { if (!GEO || !lap) return; dirty = true; const parent = s === 'lid' ? lid : lap, list = items[s], pool = STK[s];
+  while (pool.length > list.length) { const m = pool.pop(); parent.remove(m); m.geometry.dispose(); }
+  list.forEach((o, i) => { const { p } = CODE[o.c]; let m = pool[i];
+    if (!m) { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(12, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(8, 2)); g.setIndex([0, 2, 1, 0, 3, 2]); m = new THREE.Mesh(g, atlasTex(p)); m.renderOrder = 2; parent.add(m); pool[i] = m; }
+    if (m.material !== atlasTex(p)) m.material = atlasTex(p);
+    const { P, uv } = quad(o, s), pa = m.geometry.attributes.position, ua = m.geometry.attributes.uv;
+    P.forEach((v, j) => pa.setXYZ(j, v.x, v.y, v.z)); uv.forEach(([u, v], j) => ua.setXY(j, u, v)); pa.needsUpdate = ua.needsUpdate = true; m.geometry.computeBoundingSphere(); m.geometry.computeBoundingBox();
+    m.renderOrder = 2 + i; m.userData = { s, i }; });
+  // selection frame
+  if (SELL[s]) { (s === 'lid' ? lid : lap).remove(SELL[s]); SELL[s].geometry.dispose(); SELL[s] = null; }
+  if (s === surf && sel >= 0 && list[sel]) { const { P } = quad({ ...list[sel], s: list[sel].s * 1.12 }, s), g = new THREE.BufferGeometry().setFromPoints([...P, P[0]]);
+    SELL[s] = new THREE.Line(g, new THREE.LineDashedMaterial({ color: 0xffffff, dashSize: .35, gapSize: .25, depthTest: false })); SELL[s].computeLineDistances(); SELL[s].renderOrder = 99; parent.add(SELL[s]); } }
+function schedule(s) { syncStickers(s); }
+
+function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+// ---- keyboard deck: real layout, labelled keycaps, trackpad, speakers, power key
+function keyboard(g, W, H, light) {
+  const mac = L.style === 'mac', pad = L.scr >= 15.5 && !['mac', 'thin', 'flip'].includes(L.style), spk = mac && L.scr >= 14;
+  const kx = W * (spk ? .14 : mac ? .085 : .045), kw = W - 2 * kx, ky = H * .045, kh = H * .55;
+  const deck = light && !skin.kb ? 'rgba(0,0,0,.08)' : 'rgba(0,0,0,.32)'; g.fillStyle = deck; rr(g, kx - W * .008, ky - H * .012, kw + W * .016, kh + H * .024, W * .008); g.fill();
+  const cap = light && !skin.kb ? ['#2e2f33', '#1f2023'] : ['#1a1b1e', '#0b0b0d'], ink = 'rgba(255,255,255,.82)', ink2 = 'rgba(255,255,255,.55)';
+  const F = mac ? ['esc', ...Array.from({ length: 12 }, (_, i) => 'F' + (i + 1)), '⏻'] : ['Esc', ...Array.from({ length: 12 }, (_, i) => 'F' + (i + 1)), 'Del'];
+  const rows = mac ? [
+    F.map(k => [k, 1]), [['`', 1], ...'1234567890-='.split('').map(k => [k, 1]), ['delete', 1.5]],
+    [['tab', 1.5], ...'QWERTYUIOP[]\\'.split('').map(k => [k, 1])], [['caps lock', 1.8], ...'ASDFGHJKL;\''.split('').map(k => [k, 1]), ['return', 1.8]],
+    [['shift', 2.3], ...'ZXCVBNM,./'.split('').map(k => [k, 1]), ['shift', 2.3]], [['fn', 1], ['control', 1], ['option', 1], ['command', 1.25], ['', 5], ['command', 1.25], ['option', 1], ['◀', 1], ['▲▼', 1], ['▶', 1]]]
+  : [F.map(k => [k, 1]), [['`', 1], ...'1234567890-='.split('').map(k => [k, 1]), ['⌫', 2]],
+    [['Tab', 1.5], ...'QWERTYUIOP[]\\'.split('').map(k => [k, 1])], [['Caps', 1.8], ...'ASDFGHJKL;\''.split('').map(k => [k, 1]), ['Enter', 2.2]],
+    [['Shift', 2.3], ...'ZXCVBNM,./'.split('').map(k => [k, 1]), ['Shift', 2.7]], [['Ctrl', 1.2], ['Fn', 1], ['⊞', 1], ['Alt', 1.2], ['', 5.2], ['Alt', 1.2], ['Ctrl', 1.2], ['◀', 1], ['▲▼', 1], ['▶', 1]]];
+  const mainW = pad ? kw * .8 : kw, gap = kw * .0055, rh = kh / rows.length;
+  const key = (x, y, w, h, t) => { const gr = g.createLinearGradient(0, y, 0, y + h); gr.addColorStop(0, cap[0]); gr.addColorStop(1, cap[1]);
+    g.fillStyle = 'rgba(0,0,0,.45)'; rr(g, x, y + h * .06, w, h, h * .16); g.fill(); g.fillStyle = gr; rr(g, x, y, w, h, h * .16); g.fill();
+    if (!t) return; const small = t.length > 2; g.fillStyle = small ? ink2 : ink; g.font = `${small ? 500 : 600} ${h * (small ? .24 : .36)}px Geist, system-ui, sans-serif`;
+    g.textAlign = small && !/^F\d/.test(t) && t !== 'Esc' && t !== 'esc' ? 'left' : 'center'; g.textBaseline = 'middle';
+    if (t === '⊞') { const s = h * .13; g.fillStyle = ink; [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([a, b]) => g.fillRect(x + w / 2 + (a < 0 ? -s * 1.1 : s * .1), y + h / 2 + (b < 0 ? -s * 1.1 : s * .1), s, s)); return; }
+    g.fillText(t, g.textAlign === 'left' ? x + h * .16 : x + w / 2, small && g.textAlign === 'left' ? y + h * .7 : y + h / 2); };
+  rows.forEach((row, ri) => { const tot = row.reduce((a, k) => a + k[1], 0), h = rh * (ri === 0 ? .6 : .84), y = ky + ri * rh + (ri === 0 ? rh * .22 : rh * .08);
+    let x = kx; row.forEach(([t, u]) => { const w = u / tot * (mainW - gap * (row.length - 1)); if (t === '▲▼') { key(x, y, w, h / 2 - gap / 2, '▲'); key(x, y + h / 2 + gap / 2, w, h / 2 - gap / 2, '▼'); } else key(x, y, w, h, t); x += w + gap; });
+    if (pad && ri > 0) { const NP = [['Num', '/', '*', '-'], ['7', '8', '9', '+'], ['4', '5', '6', ''], ['1', '2', '3', '↵'], ['0', '', '.', '']][ri - 1], nw = (kw - mainW - gap * 4) / 4;
+      NP.forEach((t, j) => key(kx + mainW + gap * 2 + j * (nw + gap), y, nw, h, t)); } });
+  if (spk) [kx - W * .085, kx + kw + W * .018].forEach(sx => { g.fillStyle = light ? 'rgba(0,0,0,.35)' : 'rgba(0,0,0,.55)'; for (let yy = ky; yy < ky + kh; yy += W * .007) for (let xx = sx; xx < sx + W * .066; xx += W * .007) { g.beginPath(); g.arc(xx, yy, W * .0016, 0, 7); g.fill(); } });
+  if (L.style === 'biz' || L.style === 'game') { const px = kx + kw - W * .03; g.fillStyle = cap[0]; rr(g, px, ky - H * .045, W * .03, H * .03, H * .012); g.fill(); }
+  if (L.style === 'game') { g.fillStyle = 'rgba(42,216,255,.28)'; g.fillRect(kx, ky + kh + H * .01, kw, H * .004); }
+  const tw = W * (mac ? .42 : .3), th = H * (mac ? .33 : .3), tx = (W - tw) / 2 - (pad ? W * .07 : 0), ty = H * .64;
+  const tg = g.createLinearGradient(0, ty, 0, ty + th); tg.addColorStop(0, light ? 'rgba(0,0,0,.05)' : 'rgba(255,255,255,.06)'); tg.addColorStop(1, light ? 'rgba(0,0,0,.09)' : 'rgba(255,255,255,.03)');
+  g.fillStyle = tg; g.strokeStyle = light ? 'rgba(0,0,0,.16)' : 'rgba(255,255,255,.14)'; g.lineWidth = W * .0012; rr(g, tx, ty, tw, th, W * .012); g.fill(); g.stroke();
+  if (L.name.startsWith('ThinkPad')) { g.fillStyle = '#c4161c'; g.beginPath(); g.arc(kx + mainW * .515, ky + rh * 3.9, H * .011, 0, 7); g.fill();
+    g.fillStyle = cap[1]; [-1, 0, 1].forEach(i => { rr(g, W / 2 - W * .1 + (i + 1) * W * .067, ty - H * .045, W * .062, H * .03, H * .008); g.fill(); }); }
+  if (!mac && L.style !== 'chrome') { g.fillStyle = light ? 'rgba(0,0,0,.35)' : 'rgba(255,255,255,.35)'; g.font = `600 ${W * .011}px Geist, sans-serif`; g.textAlign = 'left'; g.fillText(L.brand === 'Lenovo' && L.name.startsWith('ThinkPad') ? 'ThinkPad' : L.brand, W * .05, H * .95); }
+}
+function bottom(g, W, H, light) {
+  const ink = light ? 'rgba(0,0,0,.4)' : 'rgba(0,0,0,.55)';
+  g.fillStyle = ink; for (let i = 0; i < 34; i++) { rr(g, W * .25 + i * W * .015, H * .1, W * .007, H * .22, W * .003); g.fill(); }
+  if (L.style === 'game') for (let i = 0; i < 24; i++) { rr(g, W * .3 + i * W * .017, H * .62, W * .008, H * .16, W * .003); g.fill(); }
+  g.fillStyle = '#0d0d0e'; (L.style === 'mac' ? [[.06, .08], [.94, .08], [.06, .92], [.94, .92]].map(([x, y]) => [x, y, .028, .028]) : [[.5, .06, .7, .03], [.5, .93, .7, .03]]).forEach(([x, y, w, h]) => { rr(g, (x - w / 2) * W, (y - h / 2) * H, w * W, h * H, h * H / 2); g.fill(); });
+  g.fillStyle = light ? 'rgba(0,0,0,.28)' : 'rgba(255,255,255,.22)'; [[.04, .5], [.96, .5], [.3, .96], [.7, .96], [.5, .5]].forEach(([x, y]) => { g.beginPath(); g.arc(x * W, y * H, W * .005, 0, 7); g.fill(); });
+  g.font = `${W * .009}px Geist, sans-serif`; g.textAlign = 'center'; g.fillText(`${L.brand} ${L.name.replace(/ \(.+\)$/, '')}`, W / 2, H * .83); g.fillText('Designed for Skin Lab · Accra', W / 2, H * .86);
 }
 function shade(hex, p) { const n = parseInt(hex.slice(1), 16), f = v => Math.max(0, Math.min(255, v + p * 2.55)) | 0; return '#' + ((f(n >> 16) << 16) | (f(n >> 8 & 255) << 8) | f(n & 255)).toString(16).padStart(6, '0'); }
 const TX = {};
@@ -234,17 +298,56 @@ function lidMark(g, W, H, light, think) {
   const fs = W * (t.length > 6 ? .035 : .05); g.font = `${wt} ${fs}px Geist, sans-serif`;
   if (frame) { g.lineWidth = W * .004; g.beginPath(); g.arc(0, 0, fs * .95, 0, 7); frame === 'circle' ? (g.fill(), g.fillStyle = light ? '#eee' : '#222') : g.stroke(); }
   g.fillText(t, 0, fs * .04); g.restore(); }
-function screenTex(w, h) { const c = document.createElement('canvas'); c.width = 1024; c.height = Math.round(1024 * h / w); const g = c.getContext('2d'), W = c.width, H = c.height;
-  g.fillStyle = '#050505'; g.fillRect(0, 0, W, H); const b = W * .025, gr = g.createLinearGradient(0, 0, W, H); gr.addColorStop(0, '#16161a'); gr.addColorStop(1, '#2a2a30');
-  g.fillStyle = gr; g.fillRect(b, b, W - 2 * b, H - 2 * b - W * .02);
-  g.fillStyle = '#fff'; g.font = `400 ${W * .085}px "Instrument Serif", serif`; g.textAlign = 'center'; g.fillText('Skin Lab', W / 2, H * .52);
-  g.font = `${W * .018}px "Geist Mono", monospace`; g.fillStyle = '#888'; g.fillText('BY BAIDEN CREATIVES', W / 2, H * .6);
-  if (L.brand !== 'Apple') { g.fillStyle = '#777'; g.font = `600 ${W * .016}px Geist, sans-serif`; g.fillText((MARK[L.brand] || [L.brand])[0].replace('win', 'Surface'), W / 2, H - W * .008); }
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; }
+let SCR = null;
+function drawScreen() {
+  const c = SCR.image, g = c.getContext('2d'), W = c.width, H = c.height, now = new Date(), b = W * .022, chin = L.style === 'mac' ? 0 : W * .02;
+  const hm = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }), dt = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'numeric', year: 'numeric' });
+  g.fillStyle = '#050505'; g.fillRect(0, 0, W, H); const x0 = b, y0 = b, sw = W - 2 * b, sh = H - 2 * b - chin;
+  g.save(); g.beginPath(); g.rect(x0, y0, sw, sh); g.clip();
+  if (L.brand === 'Apple') {
+    const gr = g.createLinearGradient(x0, y0, x0 + sw, y0 + sh); gr.addColorStop(0, '#1d2b64'); gr.addColorStop(.45, '#7a3f9e'); gr.addColorStop(.75, '#e2794f'); gr.addColorStop(1, '#f6c27a'); g.fillStyle = gr; g.fillRect(x0, y0, sw, sh);
+    g.fillStyle = 'rgba(255,255,255,.18)'; g.fillRect(x0, y0, sw, sh * .045); g.fillStyle = '#fff'; g.font = `600 ${sh * .026}px -apple-system, Geist, sans-serif`; g.textBaseline = 'middle';
+    drawApple(g, x0 + sw * .025, y0 + sh * .0225, sh * .022, '#fff'); g.textAlign = 'left'; g.fillText('Finder   File   Edit   View', x0 + sw * .05, y0 + sh * .023);
+    g.textAlign = 'right'; g.fillText(`${now.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}  ${hm}`, x0 + sw * .985, y0 + sh * .023);
+    g.textAlign = 'center'; g.font = `600 ${sh * .2}px -apple-system, Geist, sans-serif`; g.fillStyle = 'rgba(255,255,255,.92)'; g.fillText(hm, x0 + sw / 2, y0 + sh * .38);
+    g.font = `500 ${sh * .04}px -apple-system, Geist, sans-serif`; g.fillText(now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }), x0 + sw / 2, y0 + sh * .52);
+    const dw = sw * .5, dh = sh * .09; g.fillStyle = 'rgba(255,255,255,.28)'; rr(g, x0 + (sw - dw) / 2, y0 + sh - dh - sh * .02, dw, dh, dh * .3); g.fill();
+    ['#3a86ff', '#ff006e', '#fb5607', '#ffbe0b', '#8338ec', '#06d6a0', '#118ab2', '#ef476f'].forEach((cc, k) => { g.fillStyle = cc; rr(g, x0 + (sw - dw) / 2 + dw * .04 + k * dw * .12, y0 + sh - dh - sh * .02 + dh * .14, dh * .72, dh * .72, dh * .18); g.fill(); });
+  } else if (L.style === 'chrome') {
+    const gr = g.createLinearGradient(x0, y0, x0, y0 + sh); gr.addColorStop(0, '#a8c7fa'); gr.addColorStop(1, '#1a73e8'); g.fillStyle = gr; g.fillRect(x0, y0, sw, sh);
+    g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(x0, y0 + sh * .92, sw, sh * .08); g.fillStyle = '#fff'; g.beginPath(); g.arc(x0 + sw * .03, y0 + sh * .96, sh * .022, 0, 7); g.fill();
+    g.font = `500 ${sh * .03}px Geist, sans-serif`; g.textAlign = 'right'; g.textBaseline = 'middle'; g.fillText(hm, x0 + sw * .97, y0 + sh * .96);
+  } else {
+    // Windows 11 style desktop: soft blue bloom, centred taskbar, clock bottom right
+    const bg = g.createLinearGradient(x0, y0, x0 + sw, y0 + sh); bg.addColorStop(0, '#0b2a6f'); bg.addColorStop(1, '#5aa0ff'); g.fillStyle = bg; g.fillRect(x0, y0, sw, sh);
+    const cx = x0 + sw * .55, cy = y0 + sh * .52;
+    for (let k = 0; k < 7; k++) { g.save(); g.translate(cx, cy); g.rotate(-1.1 + k * .32); const pg = g.createLinearGradient(0, -sh * .45, 0, sh * .1);
+      pg.addColorStop(0, `rgba(${120 + k * 12},${190 + k * 6},255,.0)`); pg.addColorStop(.5, `rgba(${80 + k * 10},${150 + k * 10},255,.55)`); pg.addColorStop(1, 'rgba(20,70,200,.0)');
+      g.fillStyle = pg; g.beginPath(); g.ellipse(0, -sh * .18, sw * .07, sh * .34, 0, 0, 7); g.fill(); g.restore(); }
+    const tb = sh * .065, ty = y0 + sh - tb; g.fillStyle = 'rgba(32,32,40,.82)'; g.fillRect(x0, ty, sw, tb);
+    const ic = tb * .52, n = 6, sx = x0 + sw / 2 - (n * ic * 1.6) / 2;
+    const win = (x, y, s) => { const q = s * .46; g.fillStyle = '#4cc2ff'; [[0, 0], [1, 0], [0, 1], [1, 1]].forEach(([a, bb]) => g.fillRect(x + a * (q + s * .08), y + bb * (q + s * .08), q, q)); };
+    win(sx, ty + (tb - ic) / 2, ic);
+    ['#ffffff', '#f2c94c', '#2f80ed', '#27ae60', '#eb5757'].forEach((cc, k) => { g.fillStyle = cc; rr(g, sx + (k + 1) * ic * 1.6, ty + (tb - ic) / 2, ic, ic, ic * .2); g.fill(); });
+    g.fillStyle = '#fff'; g.textAlign = 'right'; g.textBaseline = 'middle'; g.font = `500 ${tb * .26}px "Segoe UI", Geist, sans-serif`;
+    g.fillText(hm, x0 + sw * .985, ty + tb * .34); g.fillText(dt, x0 + sw * .985, ty + tb * .7);
+    g.textAlign = 'left'; g.font = `300 ${sh * .16}px "Segoe UI", Geist, sans-serif`; g.fillStyle = 'rgba(255,255,255,.95)'; g.fillText(hm, x0 + sw * .06, y0 + sh * .2);
+    g.font = `400 ${sh * .04}px "Segoe UI", Geist, sans-serif`; g.fillText(now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }), x0 + sw * .065, y0 + sh * .33);
+    win(x0 + sw * .065, y0 + sh * .4, sh * .06); g.font = `500 ${sh * .03}px "Segoe UI", Geist, sans-serif`; g.fillText('Windows 11', x0 + sw * .065 + sh * .085, y0 + sh * .43);
+  }
+  g.restore();
+  g.fillStyle = '#1a1a1a'; g.beginPath(); g.arc(W / 2, b * .5, b * .18, 0, 7); g.fill(); g.fillStyle = '#2c4a6e'; g.beginPath(); g.arc(W / 2, b * .5, b * .08, 0, 7); g.fill();
+  if (chin) { g.fillStyle = '#8a8a8a'; g.font = `600 ${chin * .55}px Geist, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    const m = L.name.startsWith('ThinkPad') ? 'Lenovo' : L.name.startsWith('Alienware') ? 'ALIENWARE' : L.name.startsWith('ROG') ? 'ROG' : (MARK[L.brand] || [L.brand])[0].replace('win', 'Surface'); g.fillText(m, W / 2, H - chin / 2 - b * .3); }
+  SCR.needsUpdate = true; dirty = true;
+}
+function screenTex(w, h) { const c = document.createElement('canvas'); c.width = 1280; c.height = Math.round(1280 * h / w); SCR = new THREE.CanvasTexture(c); SCR.colorSpace = THREE.SRGBColorSpace; SCR.anisotropy = 4; drawScreen(); return SCR; }
+setInterval(() => { if (SCR && L) drawScreen(); }, 20000);
 
 // ---------- 3D ----------
-let RO, resize = () => { const h = $('#stage'); if (!h || !R) return; const r = h.getBoundingClientRect(); if (r.width < 10 || r.height < 10) return; R.setSize(r.width, r.height, false); cam.aspect = r.width / r.height; cam.updateProjectionMatrix(); };
-let R, scene, cam, ctl, lap, lid, decals, floor, raf, idle = true, tween = null;
+let RO, resize = () => { const h = $('#stage'); if (!h || !R) return; const r = h.getBoundingClientRect(); if (r.width < 10 || r.height < 10) return; R.setSize(r.width, r.height, false); cam.aspect = r.width / r.height; cam.updateProjectionMatrix(); kick(); };
+let R, scene, cam, ctl, lap, lid, decals, floor, raf, idle = true, tween = null, dirty = true, idleT = 0;
+const kick = () => { dirty = true; if (R) R.shadowMap.needsUpdate = true; };
 function shapeRR(w, d, r) { const s = new THREE.Shape(), x = -w / 2, y = -d / 2; s.moveTo(x + r, y); s.lineTo(x + w - r, y); s.quadraticCurveTo(x + w, y, x + w, y + r); s.lineTo(x + w, y + d - r); s.quadraticCurveTo(x + w, y + d, x + w - r, y + d); s.lineTo(x + r, y + d); s.quadraticCurveTo(x, y + d, x, y + d - r); s.lineTo(x, y + r); s.quadraticCurveTo(x, y, x + r, y); return s; }
 // a flat panel in the XZ plane with uv set by a mapping function (x,z) -> (u, vCanvas)
 function panel(w, d, r, map, mat) { const g = new THREE.ShapeGeometry(shapeRR(w, d, r), 10), p = g.attributes.position, uv = g.attributes.uv;
@@ -257,7 +360,7 @@ function build() {
   const w = L.w, d = L.d, T = L.t / 10, tb = T * .58, tl = Math.max(.35, T * .38), r = L.style === 'mac' ? 1.1 : L.style === 'game' ? .6 : .8;
   const metal = !['budget', 'game', 'biz', 'chrome'].includes(L.style) || ['silver', 'space', 'starlight', 'gold', 'platinum', 'mercury'].includes(col);
   const mat = new THREE.MeshPhysicalMaterial({ color: LCOL[col], metalness: metal ? .7 : .1, roughness: metal ? .38 : .62, clearcoat: metal ? .3 : 0 });
-  lap = new THREE.Group(); scene.add(lap);
+  lap = new THREE.Group(); scene.add(lap); GEO = { w, d, tb, tl }; for (const k in STK) STK[k] = []; for (const k in SELL) SELL[k] = null;
   const base = body(w, d, tb, r, mat); lap.add(base);
   TX.kb = mkTex(w, d); TX.bot = mkTex(w, d); TX.lid = mkTex(w, d);
   const dm = t => new THREE.MeshStandardMaterial({ map: t, roughness: .55, metalness: .15, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2 });
@@ -268,16 +371,26 @@ function build() {
   lid = new THREE.Group(); lid.position.set(0, tb, -d / 2); lap.add(lid);
   const lb = body(w, d, tl, r, mat); lb.position.z = d / 2; lid.add(lb);
   const lo = panel(w - .3, d - .3, r * .85, (x, z) => [(w / 2 - .15 - x) / (w - .3), (d / 2 - .15 - z) / (d - .3)], dm(TX.lid)); lo.position.y = tl + .005; lo.geometry.translate(0, 0, d / 2); lid.add(lo);
-  const sc = panel(w - .3, d - .3, r * .85, (x, z) => [(x + w / 2 - .15) / (w - .3), (d / 2 - .15 - z) / (d - .3)], new THREE.MeshStandardMaterial({ map: screenTex(w, d), roughness: .2, metalness: 0, emissive: 0xffffff, emissiveIntensity: .12, emissiveMap: screenTex(w, d), side: THREE.DoubleSide })); sc.position.y = -.005; sc.geometry.translate(0, 0, d / 2); lid.add(sc);
+  const sc = panel(w - .3, d - .3, r * .85, (x, z) => [(x + w / 2 - .15) / (w - .3), (d / 2 - .15 - z) / (d - .3)], (() => { const t = screenTex(w, d); return new THREE.MeshBasicMaterial({ map: t, toneMapped: false, side: THREE.DoubleSide, color: 0xe8e8e8 }); })()); sc.position.y = -.005; sc.geometry.translate(0, 0, d / 2); lid.add(sc);
   if (['biz', 'game', 'budget'].includes(L.style)) { const h = new THREE.Mesh(new THREE.CylinderGeometry(tb * .45, tb * .45, w * .78, 20), mat); h.rotation.z = Math.PI / 2; h.position.set(0, tb * .55, -d / 2 + .1); lap.add(h); }
-  const portM = new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: .8 });
-  [[-1, -.25, .9], [-1, -.08, .45], [1, -.2, .9], [1, 0, .5], [1, .15, .45]].forEach(([sd, z, len]) => { if (L.style === 'mac' && sd > 0 && z > -.2) return;
-    const p = new THREE.Mesh(new THREE.BoxGeometry(.05, tb * .32, len), portM); p.position.set(sd * (w / 2 + .01), tb * .45, z * d); lap.add(p); });
+  const portM = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: .9 }), pinM = new THREE.MeshStandardMaterial({ color: 0x3a3a3a, metalness: .6, roughness: .4 });
+  const mk = (side, z, kind) => { const S = { a: [.45, 1.25], c: [.28, .85], h: [.5, 1.45], rj: [Math.min(tb * .8, 1.05), 1.4], sd: [.18, 2.2], mag: [.3, 1.6], dc: [.5, .5] }[kind];
+    const g = kind === 'au' ? new THREE.CylinderGeometry(.18, .18, .08, 18) : kind === 'c' || kind === 'mag' ? new THREE.CapsuleGeometry(S[0] / 2, S[1] - S[0], 4, 10) : new THREE.BoxGeometry(.08, S[0], S[1]);
+    const m = new THREE.Mesh(g, portM); if (kind === 'au') m.rotation.z = Math.PI / 2; if (kind === 'c' || kind === 'mag') m.rotation.x = Math.PI / 2;
+    m.position.set(side * (w / 2 + .005), Math.min(tb * .5, tb - .2), z); lap.add(m);
+    if (kind === 'a' || kind === 'h') { const t = new THREE.Mesh(new THREE.BoxGeometry(.09, S[0] * .3, S[1] * .8), pinM); t.position.copy(m.position); t.position.y += S[0] * .12; lap.add(t); } };
+  const P = L.style === 'mac' ? [[-1, ['mag', 'c', 'c']], [1, L.scr >= 14 ? ['h', 'sd', 'au'] : ['au']]]
+    : L.style === 'game' ? [[-1, ['rj', 'a', 'au']], [1, ['a', 'a', 'c', 'h']]]
+    : L.style === 'biz' ? [[-1, ['c', 'c', 'h', 'a']], [1, ['au', 'a', ...(L.t >= 19 ? ['rj'] : [])]]]
+    : L.style === 'budget' ? [[-1, ['dc', 'h', 'a', 'c']], [1, ['au', 'a', 'sd']]]
+    : L.style === 'chrome' ? [[-1, ['c', 'a', 'au']], [1, ['c', 'a', 'sd']]]
+    : [[-1, ['c', 'c', 'a']], [1, ['au', 'a', 'sd']]];
+  P.forEach(([side, list]) => { let z = -d * .3; list.forEach(k => { const len = { a: 1.25, c: .85, h: 1.45, rj: 1.4, sd: 2.2, mag: 1.6, dc: .5, au: .4 }[k]; mk(side, z + len / 2, k); z += len + .7; }); });
   decals = { lid: lo, kb, bot }; lap.position.y = 0; setLid(lidA);
-  ['lid', 'kb', 'bot'].forEach(paint);
+  ['lid', 'kb', 'bot'].forEach(x => paint(x));
   const s = Math.max(w, d); ctl.minDistance = s * .7; ctl.maxDistance = s * 3;
 }
-function setLid(a) { lidA = a; lid.rotation.x = -a * Math.PI / 180; }
+function setLid(a) { lidA = a; lid.rotation.x = -a * Math.PI / 180; kick(); }
 // direction from target, lid angle, target as fractions of (w, d)
 const VIEWS = { hero: [[.62, .55, .78], 110, [0, .2, -.12]], lid: [[0, .32, -1], 102, [0, .5, -.55]], kb: [[0, 1, .38], 108, [0, 0, .05]], bot: [[.1, -1, .25], 0, [0, 0, 0]] };
 const fitDist = v => { const span = v === 'lid' ? Math.max(L.w, L.d * 1.1) : v === 'hero' ? Math.max(L.w, L.d) * 1.05 : Math.max(L.w, L.d * 1.25);
@@ -290,18 +403,19 @@ function go(v, ms = 700) {
   idle = v === 'hero';
 }
 function initGL(host) {
-  R = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true }); R.setPixelRatio(Math.min(2, devicePixelRatio)); R.toneMapping = THREE.ACESFilmicToneMapping; R.toneMappingExposure = 1.05;
-  R.shadowMap.enabled = true; R.shadowMap.type = THREE.PCFSoftShadowMap; host.appendChild(R.domElement);
+  R = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true }); R.setPixelRatio(Math.min(innerWidth < 700 ? 1.75 : 2, devicePixelRatio)); R.toneMapping = THREE.ACESFilmicToneMapping; R.toneMappingExposure = 1.05;
+  R.shadowMap.enabled = true; R.shadowMap.type = THREE.PCFSoftShadowMap; R.shadowMap.autoUpdate = false; host.appendChild(R.domElement);
   scene = new THREE.Scene(); const pm = new THREE.PMREMGenerator(R); scene.environment = pm.fromScene(new RoomEnvironment(), .04).texture;
   cam = new THREE.PerspectiveCamera(32, 1, .5, 800);
   const key = new THREE.DirectionalLight(0xffffff, 1.6); key.position.set(30, 60, 25); key.castShadow = true; key.shadow.mapSize.set(1024, 1024); Object.assign(key.shadow.camera, { left: -45, right: 45, top: 45, bottom: -45 }); key.shadow.radius = 6; scene.add(key);
   scene.add(new THREE.HemisphereLight(0xffffff, 0x222222, .35));
   floor = new THREE.Mesh(new THREE.CircleGeometry(80, 64), new THREE.ShadowMaterial({ opacity: .45 })); floor.rotation.x = -Math.PI / 2; floor.position.y = -.02; floor.receiveShadow = true; scene.add(floor);
   ctl = new OrbitControls(cam, R.domElement); ctl.enableDamping = true; ctl.enablePan = false; ctl.minPolarAngle = 0; ctl.maxPolarAngle = Math.PI; ctl.rotateSpeed = .8;
-  ctl.addEventListener('start', () => { idle = false; tween = null; });
+  ctl.addEventListener('start', () => { idle = false; tween = null; }); ctl.addEventListener('change', () => { dirty = true; });
   RO = new ResizeObserver(() => resize()); RO.observe(host); resize();
-  const loop = now => { raf = requestAnimationFrame(loop); if (tween) tween(now); else if (idle) { const a = .0025, t = ctl.target, x = cam.position.x - t.x, z = cam.position.z - t.z; cam.position.x = t.x + x * Math.cos(a) - z * Math.sin(a); cam.position.z = t.z + x * Math.sin(a) + z * Math.cos(a); }
-    ctl.update(); floor.visible = cam.position.y > 0; R.render(scene, cam); }; raf = requestAnimationFrame(loop);
+  const loop = now => { raf = requestAnimationFrame(loop); if (idle && !idleT) idleT = now; if (idle && now - idleT > 9000) { idle = false; } if (!idle) idleT = 0;
+    const moving = !!tween || idle; if (tween) tween(now); else if (idle) { const a = .0025, t = ctl.target, x = cam.position.x - t.x, z = cam.position.z - t.z; cam.position.x = t.x + x * Math.cos(a) - z * Math.sin(a); cam.position.z = t.z + x * Math.sin(a) + z * Math.cos(a); }
+    const ch = ctl.update(); if (!(moving || ch || dirty)) return; dirty = false; floor.visible = cam.position.y > 0; R.render(scene, cam); }; raf = requestAnimationFrame(loop);
   // sticker picking and dragging on the 3D surfaces
   const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
   const hitAt = (e, only) => { const r = R.domElement.getBoundingClientRect(); ndc.set((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1); ray.setFromCamera(ndc, cam);
@@ -310,12 +424,24 @@ function initGL(host) {
   const stickerAt = (s, x, y) => { const c = TX[s].image, W = c.width, H = c.height;
     for (let i = items[s].length - 1; i >= 0; i--) { const o = items[s][i], { it } = CODE[o.c], k = o.s * W / Math.max(it[3], it[4]), w = it[3] * k / 2 + 10, h = it[4] * k / 2 + 10;
       const dx = (x - o.x) * W, dy = (y - o.y) * H, a = -o.r * Math.PI / 180, rx = dx * Math.cos(a) - dy * Math.sin(a), ry = dx * Math.sin(a) + dy * Math.cos(a); if (Math.abs(rx) < w && Math.abs(ry) < h) return i; } return -1; };
-  let drag = null, down = null;
-  R.domElement.addEventListener('pointerdown', e => { down = { x: e.clientX, y: e.clientY }; const h = hitAt(e); if (!h) return; const i = stickerAt(h.s, h.x, h.y);
-    if (i >= 0) { snap(); surf = h.s; sel = i; drag = { s: h.s, ox: items[h.s][i].x - h.x, oy: items[h.s][i].y - h.y }; ctl.enabled = false; idle = false; tween = null; refresh(); e.stopPropagation(); } }, { capture: true });
-  R.domElement.addEventListener('pointermove', e => { if (!drag) return; const h = hitAt(e, drag.s); if (!h) return; const o = items[drag.s][sel]; o.x = Math.min(1, Math.max(0, h.x + drag.ox)); o.y = Math.min(1, Math.max(0, h.y + drag.oy)); paint(drag.s); });
-  addEventListener('pointerup', e => { if (drag) { drag = null; ctl.enabled = true; return; }
-    if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && e.target === R.domElement) { const h = hitAt(e); if (h) { surf = h.s; } if (sel >= 0) { sel = -1; } refresh(); ['lid', 'kb', 'bot'].forEach(paint); } down = null; });
+  let drag = null, down = null, pinch = null; const pts = new Map(), cv = R.domElement;
+  const pinchStart = () => { const [a, b] = [...pts.values()], o = items[surf][sel]; pinch = { d0: Math.hypot(a.x - b.x, a.y - b.y) || 1, a0: Math.atan2(b.y - a.y, b.x - a.x), s0: o.s, r0: o.r }; drag = null; ctl.enabled = false; };
+  cv.addEventListener('pointerdown', e => { pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pts.size === 2 && sel >= 0) { snap(); pinchStart(); e.stopImmediatePropagation(); return; }
+    down = { x: e.clientX, y: e.clientY }; const h = hitAt(e); if (!h) return; const sh = ray.intersectObjects([...STK.lid, ...STK.kb, ...STK.bot], false)[0], i = sh ? sh.object.userData.i : -1; if (sh) h.s = sh.object.userData.s;
+    if (i >= 0) { snap(); surf = h.s; sel = i; drag = { s: h.s, ox: items[h.s][i].x - h.x, oy: items[h.s][i].y - h.y }; ctl.enabled = false; idle = false; tween = null; refresh(); schedule(h.s); e.stopImmediatePropagation(); } }, { capture: true });
+  cv.addEventListener('pointermove', e => { if (pts.has(e.pointerId)) pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pinch && pts.size >= 2 && sel >= 0) { const [a, b] = [...pts.values()], o = items[surf][sel];
+      o.s = Math.min(.9, Math.max(.025, pinch.s0 * Math.hypot(a.x - b.x, a.y - b.y) / pinch.d0)); o.r = Math.round(pinch.r0 + (Math.atan2(b.y - a.y, b.x - a.x) - pinch.a0) * 180 / Math.PI);
+      $('#ssz').value = Math.round(o.s * 100); $('#srt').value = ((o.r + 540) % 360) - 180; schedule(surf); return; }
+    if (!drag) return; const h = hitAt(e, drag.s); if (!h) return; const o = items[drag.s][sel]; o.x = Math.min(1, Math.max(0, h.x + drag.ox)); o.y = Math.min(1, Math.max(0, h.y + drag.oy)); schedule(drag.s); });
+  const lift = e => { pts.delete(e.pointerId); if (pinch && pts.size < 2) { pinch = null; ctl.enabled = true; down = null; } };
+  cv.addEventListener('pointercancel', lift);
+  cv.addEventListener('wheel', e => { if (sel < 0) return; e.preventDefault(); e.stopPropagation(); const o = items[surf][sel];
+    if (e.shiftKey || e.altKey) o.r = Math.round(o.r + Math.sign(e.deltaY) * 5); else o.s = Math.min(.9, Math.max(.025, o.s * (e.deltaY < 0 ? 1.06 : 1 / 1.06)));
+    $('#ssz').value = Math.round(o.s * 100); schedule(surf); }, { passive: false, capture: true });
+  addEventListener('pointerup', e => { lift(e); if (pinch) return;  if (drag) { drag = null; ctl.enabled = true; return; }
+    if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && e.target === R.domElement) { const h = hitAt(e); if (h) { surf = h.s; } if (sel >= 0) { sel = -1; } refresh(); ['lid', 'kb', 'bot'].forEach(schedule); } down = null; });
 }
 const save3 = () => { try { localStorage.setItem('sl-design3', JSON.stringify({ i: L && L.i, n: L && `${L.brand} ${L.name}`, col, items, skin })); } catch (e) {} };
 const store = { get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
@@ -331,7 +457,7 @@ async function vEditor() {
   app.innerHTML = `<div class="ed"><div><div class="stage" id="stage"><div class="load">Building your ${esc(L.brand)}…</div>
       <div class="ovl t"><div class="name"><b>${esc(L.brand)} ${esc(L.name.replace(/ \(.+\)$/, ''))}</b><span class="lbl">${L.scr}″ · ${L.w} × ${L.d} cm</span></div>
         <a class="chg lbl" href="#pick" id="chg">Change</a></div>
-      <span class="hint">Drag to turn · pinch to zoom</span>
+      <span class="hint" id="hint">Drag to turn · pinch to zoom</span>
 </div>
       <div class="ctrl"><div class="views" id="views"><button data-v="hero">360°</button><button data-v="lid">Lid</button><button data-v="kb">Keys</button><button data-v="bot">Base</button></div>
         <label class="lidc" id="lidrow"><span class="lbl">Open</span><input type="range" id="lida" min="0" max="140" value="${lidA}"></label></div>
@@ -347,15 +473,15 @@ async function vEditor() {
   $('#stage .load').remove(); build(); const [hp, ht] = viewPos('hero'); cam.position.copy(hp); ctl.target.copy(ht); setLid(110); idle = true;
   $('#views').onclick = e => { const b = e.target.closest('[data-v]'); if (!b) return; const v = b.dataset.v; document.querySelectorAll('#views button').forEach(x => x.classList.toggle('on', x === b)); if (v !== 'hero') { surf = v; refresh(); } go(v); };
   $('#lida').oninput = e => { setLid(+e.target.value); idle = false; };
-  $('#surf').onclick = e => { const b = e.target.closest('[data-s]'); if (!b) return; surf = b.dataset.s; sel = -1; refresh(); go(surf); ['lid', 'kb', 'bot'].forEach(paint); };
+  $('#surf').onclick = e => { const b = e.target.closest('[data-s]'); if (!b) return; surf = b.dataset.s; sel = -1; refresh(); go(surf); ['lid', 'kb', 'bot'].forEach(schedule); };
   $('#tab').onclick = e => { const b = e.target.closest('[data-t]'); if (b) { tab = b.dataset.t; pane(); } };
-  $('#ssz').oninput = e => { items[surf][sel].s = e.target.value / 100; paint(surf); };
-  $('#srt').oninput = e => { items[surf][sel].r = +e.target.value; paint(surf); };
+  $('#ssz').oninput = e => { items[surf][sel].s = e.target.value / 100; schedule(surf); };
+  $('#srt').oninput = e => { items[surf][sel].r = +e.target.value; schedule(surf); };
   $('#ssz').onpointerdown = $('#srt').onpointerdown = () => snap();
-  $('#sdel').onclick = () => { snap(); items[surf].splice(sel, 1); sel = -1; refresh(); paint(surf); };
-  $('#sup').onclick = () => { snap(); items[surf].push(items[surf].splice(sel, 1)[0]); sel = items[surf].length - 1; paint(surf); };
-  $('#sok').onclick = () => { sel = -1; refresh(); paint(surf); };
-  $('#undo').onclick = () => { const h = hist.pop(); if (!h) return toast('Nothing to undo'); const o = JSON.parse(h); Object.assign(items, o.items); Object.assign(skin, o.skin); sel = -1; refresh(); ['lid', 'kb', 'bot'].forEach(paint); };
+  $('#sdel').onclick = () => { snap(); items[surf].splice(sel, 1); sel = -1; refresh(); schedule(surf); };
+  $('#sup').onclick = () => { snap(); items[surf].push(items[surf].splice(sel, 1)[0]); sel = items[surf].length - 1; schedule(surf); };
+  $('#sok').onclick = () => { sel = -1; refresh(); schedule(surf); };
+  $('#undo').onclick = () => { const h = hist.pop(); if (!h) return toast('Nothing to undo'); const o = JSON.parse(h); Object.assign(items, o.items); Object.assign(skin, o.skin); sel = -1; refresh(); ['lid', 'kb', 'bot'].forEach(x => paint(x)); };
   $('#shot').onclick = () => { const n = Object.values(items).flat().length + Object.values(skin).filter(Boolean).length; if (!n) return toast('Add a sticker or a skin first');
     saveMine(v3()); toast('Saved to Inspo → Mine'); };
   $('#cart').onclick = () => { const n = Object.values(items).flat().length, k = Object.values(skin).filter(Boolean).length; if (!n && !k) return toast('Add a sticker or a skin first');
@@ -369,20 +495,20 @@ function saveMine(d) { const mine = store.get('sl-mine', []).filter(m => m.id !=
 function refresh() { save3();
   document.querySelectorAll('#surf [data-s]').forEach(b => { b.classList.toggle('on', b.dataset.s === surf); const n = items[b.dataset.s].length + (skin[b.dataset.s] ? 1 : 0); b.querySelector('i').textContent = n || ''; });
   document.querySelectorAll('#tab [data-t]').forEach(b => b.classList.toggle('on', b.dataset.t === tab));
-  const sb = $('#selbar'); if (!sb) return; sb.hidden = sel < 0; $('.stage .hint').hidden = sel >= 0; $('.ctrl').hidden = sel >= 0;
+  const sb = $('#selbar'); if (!sb) return; sb.hidden = sel < 0; $('#hint').hidden = false; $('#hint').textContent = sel >= 0 ? (matchMedia('(pointer:coarse)').matches ? 'Drag to move · two fingers to resize & turn' : 'Drag to move · scroll to resize · shift+scroll to turn') : 'Drag to turn · pinch to zoom'; $('.ctrl').hidden = sel >= 0;
   if (sel >= 0) { const o = items[surf][sel]; $('#ssz').value = Math.round(o.s * 100); $('#srt').value = o.r; }
   const n = Object.values(items).flat().length; $('#cart').textContent = n ? `Add to cart · GH₵${n * 3}` : 'Add to cart';
 }
 function pane() {
   const p = $('#pane'); refresh();
-  if (tab === 'stickers') { const c = CAT[ccat], pk = PK[cpack];
+  if (tab === 'stickers') { const c = CAT[ccat], pk = PK[cpack]; warmAtlas(c.packs);
     p.innerHTML = `<div class="hs" id="cats">${D.cats.map(x => `<button class="chip ${x.id === ccat ? 'on' : ''}" data-c="${x.id}">${esc(x.name)}</button>`).join('')}</div>
       <div class="hs" id="packs">${c.packs.map(id => `<button class="chip ${id === cpack ? 'on' : ''}" data-p="${id}" style="height:32px;font-size:12.5px">${esc(PK[id].name)}</button>`).join('')}</div>
       <div class="tray" id="tray">${pk.items.map(it => `<button class="tile" data-k="${it[0]}">${spr(pk, it, 48)}<span class="c">${it[0]}</span></button>`).join('')}</div>`;
     $('#cats').onclick = e => { const b = e.target.closest('[data-c]'); if (b) { ccat = b.dataset.c; cpack = CAT[ccat].packs[0]; pane(); } };
     $('#packs').onclick = e => { const b = e.target.closest('[data-p]'); if (b) { cpack = b.dataset.p; pane(); } };
     $('#tray').onclick = e => { const b = e.target.closest('[data-k]'); if (!b) return; snap(); const W = surf === 'kb' ? [.2 + Math.random() * .6, .72 + Math.random() * .18] : [.2 + Math.random() * .6, .2 + Math.random() * .6];
-      items[surf].push({ c: b.dataset.k, x: W[0], y: W[1], s: Math.min(.3, 5.5 / L.w), r: Math.round(Math.random() * 16 - 8) }); sel = items[surf].length - 1; refresh(); paint(surf);
+      items[surf].push({ c: b.dataset.k, x: W[0], y: W[1], s: Math.min(.3, 5.5 / L.w), r: Math.round(Math.random() * 16 - 8) }); sel = items[surf].length - 1; refresh(); schedule(surf);
       if (!idle && !tween) {} else go(surf); };
   } else if (tab === 'skins') {
     p.innerHTML = `<div class="skins" id="sk"><button class="sk ${!skin[surf] ? 'on' : ''}" data-x=""><span style="display:grid;place-items:center;color:#777">∅</span><span class="lbl">No skin</span></button>
@@ -396,7 +522,7 @@ function pane() {
     $('#cl').onclick = e => { const b = e.target.closest('[data-c]'); if (!b) return; col = b.dataset.c; build(); pane(); };
   }
 }
-window.__lab = { pick: i => { L = LAPS[i]; col = L.cols[0]; vEditor(); }, items, skin, go, setLid, set s(v) { surf = v; }, paint, LAPS, refresh, get idle() { return idle; }, set idle(v) { idle = v; }, cam: () => cam };
+window.__lab = { sched: s => schedule(s), sync: s => syncStickers(s), R: () => R, pick: i => { L = LAPS[i]; col = L.cols[0]; vEditor(); }, items, skin, go, setLid, set s(v) { surf = v; }, paint, LAPS, refresh, get idle() { return idle; }, set idle(v) { idle = v; }, cam: () => cam };
 const st = store.get('sl-design3', null);
 if (st && st.skin) Object.assign(skin, st.skin);
 if (st && LAPS[st.i] && location.hash !== '#pick') { L = LAPS[st.i]; col = L.cols.includes(st.col) ? st.col : L.cols[0];
