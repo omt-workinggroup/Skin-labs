@@ -54,7 +54,7 @@ function updBar() {
   $('#bar-n').textContent = n;
   $('#bar-t').textContent = [np ? `${np} pack${np > 1 ? 's' : ''}` : '', ns ? `${ns} sticker${ns > 1 ? 's' : ''}` : ''].filter(Boolean).join(' + ') + ' in your cart';
   $('#bar-p').textContent = `${CUR}${money()}`;
-  $('#bar').classList.toggle('show', n > 0 && route() !== 'studio');
+  $('#bar').classList.toggle('show', n > 0);
   for (const id of ['#t-bd', '#nv-bd']) { $(id).hidden = !n; $(id).textContent = n; }
   document.querySelectorAll('.grid .tile[data-c]').forEach(t => { const q = cart[t.dataset.c]; t.classList.toggle('sel', !!q); const k = t.querySelector('.chk'); if (k) k.textContent = q > 1 ? q : '✓'; });
   document.querySelectorAll('[data-packbtn]').forEach(b => { const q = packs[b.dataset.packbtn]; b.innerHTML = q ? `In your cart (${q}) · add one more` : `Add to cart, keep shopping`; });
@@ -149,7 +149,7 @@ function vHome() {
     <div class="sech"><div><h1 class="h1">Laptop sticker packs, printed in Accra</h1><p class="sub">Pick a category to see the packs. Full sheets from ${CUR}50, or build your own from ${CUR}${PRICE} a sticker.</p></div></div>
     ${catGrid()}
     <div class="extra">
-      <a class="xcard" href="#studio"><span class="xart" id="xa1"></span><span><b>Design your own layout</b><small>Pick single stickers from any pack and arrange them on a laptop. ${CUR}${PRICE} each.</small></span></a>
+      <a class="xcard" href="#inspo"><span class="xart" id="xa1"></span><span><b>Sticker inspiration</b><small>Real setups and ideas. See one you like? We'll make it for you.</small></span></a>
       <button type="button" class="xcard" id="x-inspo"><span class="xart" id="xa2"></span><span><b>Send us your idea</b><small>Your name, picture or logo made into stickers. From ${CUR}15.</small></span></button>
     </div>
   </section>${footer}`;
@@ -167,7 +167,7 @@ function vCat(c) {
       return `<div class="pack"><a href="#${p.id}" class="pv" style="--tb:${p.bg}"><img src="sheets-sm/${p.id}.${IX}" alt="${esc(p.nice)} sticker sheet" width="${Math.round(p.sw * .44)}" height="${Math.round(p.sh * .44)}" loading="lazy" decoding="async"></a>
         <div class="meta"><a href="#${p.id}"><b>${esc(p.nice)}</b><span>${p.items.length} stickers on one sheet</span></a><span class="price">${CUR}${p.price}</span></div>
         <div class="pbtns"><button class="btn y" type="button" data-quick="${p.id}">Order this pack</button><a class="btn o" href="#${p.id}">See stickers</a></div></div>`; }).join('')}</div>
-    <a class="xcard" href="#studio" style="margin-top:16px"><span><b>Want only some of them?</b><small>Design your own layout with single stickers at ${CUR}${PRICE} each.</small></span></a>
+    <a class="xcard" href="#inspo" style="margin-top:16px"><span><b>Looking for ideas?</b><small>Browse sticker inspiration, then we'll make the one you like.</small></span></a>
   </section>${footer}`;
   app.querySelectorAll('[data-quick]').forEach(b => b.onclick = () => { const id = b.dataset.quick; if (!packs[id]) setPack(id, 1); buzz(); openCart(); });
 }
@@ -185,7 +185,7 @@ function vPack(p) {
         <div class="bigprice">${CUR}${p.price}<small>for the full pack</small></div>
         <button class="btn wa" type="button" id="orderpack">${waIcon}Order this pack</button>
         <button class="btn o" type="button" data-packbtn="${p.id}" id="addpack"></button>
-        <div class="two"><a class="btn o" href="#studio" id="diy">Design your own</a><button class="btn o" type="button" id="toinspo">Send your idea</button></div>
+        <div class="two"><a class="btn o" href="#inspo">Inspiration</a><button class="btn o" type="button" id="toinspo">Send your idea</button></div>
       </div>
     </div>
     <div class="sech" style="margin-top:26px"><div><h2 style="font-size:clamp(28px,7vw,40px)">What's inside</h2><p class="sub">Only want a few? Tap them to pick singles at ${CUR}${PRICE} each. Hold one to see it bigger.</p></div></div>
@@ -201,7 +201,6 @@ function vPack(p) {
   g.onclick = e => { const t = e.target.closest('.tile'); if (t && !held) { const was = !!cart[t.dataset.c]; toggle(t.dataset.c); if (!was && nSingles() === 1) toast(`Picked as a single, ${CUR}${PRICE}`); } held = false; };
   $('#addpack').onclick = () => { setPack(p.id, (packs[p.id] || 0) + 1); buzz(); toast(`${p.nice} pack added. Keep shopping or open your cart.`); };
   $('#orderpack').onclick = () => { if (!packs[p.id]) setPack(p.id, 1); buzz(); openCart(); };
-  $('#diy').onclick = () => { S.cat = c.id; S.pack = p.id; saveS(); };
   $('#toinspo').onclick = openInspo;
   $('#zoom').onclick = () => { $('#lb-img').src = `sheets/${p.id}.${IX}`; $('#lb').hidden = false; };
 }
@@ -221,214 +220,45 @@ function vOrder(r) {
   $('#o-add').onclick = () => { items.forEach(([c, q]) => cart[c] = q); pk.forEach(([k, q]) => packs[k] = q); saveCart(); updBar(); openCart(); };
 }
 
-// ---------- studio: lid, keyboard, mousepad, phone at real sizes ----------
-const LAP = { '13.3': [30.4, 21.2], '14': [32.2, 22.4], '15.6': [35.8, 24.2], '16': [35.6, 24.8], '17.3': [39.8, 26.8] }, SIZES = ['13.3', '14', '15.6', '16', '17.3'];
-const PADS = { std: [25, 21, 'Standard'], xl: [80, 30, 'Desk mat'] };
-const COLS = { space: ['Space grey', '#3d3e44', '#1f2023'], silver: ['Silver', '#e6e8ec', '#b8bbc2'], black: ['Black', '#232326', '#0b0b0c'], white: ['White', '#f6f5f1', '#d9d8d2'], pink: ['Pink', '#f7c9da', '#e59bb8'], blue: ['Blue', '#5f7fd8', '#2f4ea8'] };
-const SURF = {
-  lid: { name: 'Laptop lid', short: 'Lid', dims: () => LAP[S.size], def: 5.5 },
-  kb: { name: 'Keyboard area', short: 'Keyboard', dims: () => [LAP[S.size][0], Math.round(LAP[S.size][1] * 9.6) / 10], def: 3.5 },
-  pad: { name: 'Mousepad', short: 'Mousepad', dims: () => PADS[S.pad].slice(0, 2), def: 5 },
-  phone: { name: 'Phone back', short: 'Phone', dims: () => [7.5, 15.6], def: 3 },
-};
-let S = { size: '15.6', pad: 'std', surf: 'lid', col: { lid: 'space', kb: 'space', pad: 'black', phone: 'black' }, items: { lid: [], kb: [], pad: [], phone: [] } };
-(() => { const o = store.get('sl-studio', {});
-  if (Array.isArray(o.items)) o.items = { lid: o.items }; if (o.lid && COLS[o.lid]) o.col = { ...S.col, lid: o.lid };
-  Object.assign(S, o, { col: { ...S.col, ...(o.col || {}) }, items: { ...S.items, ...(o.items || {}) } });
-  for (const k in SURF) S.items[k] = (S.items[k] || []).filter(i => CODE[i.c]);
-  if (!LAP[S.size]) S.size = '15.6'; if (!PADS[S.pad]) S.pad = 'std'; if (!SURF[S.surf]) S.surf = 'lid'; S.on = -1; })();
-const saveS = () => store.set('sl-studio', { size: S.size, pad: S.pad, surf: S.surf, col: S.col, items: S.items, cat: S.cat, pack: S.pack, sized: S.sized });
-const allItems = () => Object.values(S.items).flat();
-
-// paint a surface onto a canvas context (used for the live stage and the final picture)
-function rr(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
-function paint(g, surf, W, H) {
-  const [, a, b] = COLS[S.col[surf]], lg = g.createLinearGradient(0, 0, W, H);
-  lg.addColorStop(0, a); lg.addColorStop(.62, b); lg.addColorStop(1, a);
-  g.clearRect(0, 0, W, H); g.fillStyle = lg;
-  const lightCol = ['silver', 'white', 'pink'].includes(S.col[surf]), ink = lightCol ? 'rgba(0,0,0,' : 'rgba(255,255,255,';
-  if (surf === 'lid') { rr(g, 0, 0, W, H, W * .035); g.fill();
-    g.fillStyle = ink + '.08)'; g.beginPath(); g.arc(W / 2, H / 2, W * .045, 0, 7); g.fill(); }
-  if (surf === 'kb') { rr(g, 0, 0, W, H, W * .03); g.fill();
-    const kx = W * .07, ky = H * .07, kw = W * .86, kh = H * .48, rows = [14, 14, 13, 12, 11, 8];
-    g.fillStyle = ink + '.06)'; rr(g, kx - W * .01, ky - H * .015, kw + W * .02, kh + H * .03, W * .012); g.fill();
-    rows.forEach((n, r) => { const rh = kh / rows.length, y = ky + r * rh + rh * .1, gap = kw * .006;
-      const widths = r === 5 ? [1, 1, 1, 1.4, 5, 1.4, 1, 1] : Array.from({ length: n }, (_, i) => (i === 0 || i === n - 1) && r > 1 ? 1.6 : 1);
-      const tot = widths.reduce((s, v) => s + v, 0); let x = kx;
-      widths.forEach(wv => { const w = wv / tot * (kw - gap * (widths.length - 1)); g.fillStyle = lightCol ? '#2a2b2f' : '#111214'; rr(g, x, y, w, rh * .8, rh * .14); g.fill(); x += w + gap; }); });
-    g.fillStyle = ink + '.07)'; rr(g, W * .33, H * .62, W * .34, H * .3, W * .015); g.fill(); }
-  if (surf === 'pad') { rr(g, 0, 0, W, H, Math.min(W, H) * .06); g.fill();
-    let s = 7; const rnd = () => (s = s * 16807 % 2147483647) / 2147483647; g.fillStyle = ink + '.035)';
-    for (let i = 0; i < W * H / 60; i++) g.fillRect(rnd() * W, rnd() * H, 1.2, 1.2);
-    g.strokeStyle = ink + '.22)'; g.lineWidth = Math.max(1.5, W * .004); g.setLineDash([W * .012, W * .008]);
-    const m = Math.min(W, H) * .025; rr(g, m, m, W - 2 * m, H - 2 * m, Math.min(W, H) * .05); g.stroke(); g.setLineDash([]); }
-  if (surf === 'phone') { rr(g, 0, 0, W, H, W * .16); g.fill();
-    g.fillStyle = ink + '.10)'; rr(g, W * .07, W * .07, W * .42, W * .42, W * .1); g.fill();
-    g.fillStyle = '#0a0a0b'; [[.18, .18], [.38, .18], [.18, .38]].forEach(([x, y]) => { g.beginPath(); g.arc(W * x, W * y, W * .075, 0, 7); g.fill(); });
-    g.fillStyle = 'rgba(80,90,120,.6)'; [[.18, .18], [.38, .18], [.18, .38]].forEach(([x, y]) => { g.beginPath(); g.arc(W * x, W * y, W * .03, 0, 7); g.fill(); }); }
+// ---------- inspiration: real photos, tap one to get stickers like it ----------
+const INS = window.INSPO || [];
+function vInspo() {
+  app.innerHTML = `<section class="sec" style="padding-top:18px">
+    <div class="sech"><div><h1 class="h1">Sticker inspiration</h1><p class="sub">Real setups and ideas to spark yours. Tap a photo you like and we'll make stickers like it.</p></div></div>
+    ${INS.length ? `<div class="ins">${INS.map((x, i) => `<button type="button" class="insp" data-i="${i}" aria-label="Inspiration photo ${i + 1}"><img src="inspo/sm/${x.id}.${IX}" width="${x.w}" height="${x.h}" alt="${esc(x.alt || 'Sticker inspiration')}" ${i < 4 ? '' : 'loading="lazy"'} decoding="async"></button>`).join('')}</div>`
+      : `<div class="insempty">New inspiration photos are on the way.</div>`}
+    <button type="button" class="xcard" id="ins-own" style="margin-top:16px"><span><b>Have your own idea?</b><small>Send us a picture, name or logo. From ${CUR}15.</small></span></button>
+  </section>${footer}`;
+  app.querySelector('.ins')?.addEventListener('click', e => { const b = e.target.closest('.insp'); if (b) openIv(+b.dataset.i); });
+  $('#ins-own').onclick = openInspo;
 }
-
-function vStudio() {
-  app.innerHTML = `<section class="studio">
-    <div class="stagebox">
-      <div class="surfs" role="tablist" aria-label="What are you decorating?">${Object.entries(SURF).map(([k, v]) => `<button type="button" role="tab" data-surf="${k}">${v.short}<i></i></button>`).join('')}</div>
-      <div class="hs opts" id="st-opts"></div>
-      <div class="stagewrap" id="stagewrap"><div class="stage" id="stage"><canvas id="st-bg"></canvas><div class="empty" id="st-empty"></div><div class="glare"></div><span class="cm" id="st-cm" hidden></span></div></div>
-      <div class="dims" id="st-dims"></div>
-      <div class="acts"><button class="btn o" type="button" id="st-undo">Undo</button><button class="btn o" type="button" id="st-fill">Fill</button><button class="btn o" type="button" id="st-clear">Clear</button><button class="btn y" type="button" id="st-done">Done</button></div>
-    </div>
-    <aside class="lib">
-      <h2>Pick stickers</h2>
-      <div class="hs" id="st-cats">${D.cats.map(c => `<button type="button" class="chip" data-cat="${c.id}">${esc(c.name)}</button>`).join('')}</div>
-      <div class="hs" id="st-packs"></div>
-      <div class="tray" id="tray"></div>
-    </aside>
-  </section>`;
-  const stage = $('#stage'), tray = $('#tray'), bg = $('#st-bg'), wrap = $('#stagewrap');
-  let hist = [];
-  const items = () => S.items[S.surf];
-  const snap = () => { hist.push(JSON.stringify(S.items)); if (hist.length > 50) hist.shift(); };
-  const dimsCm = () => SURF[S.surf].dims();
-
-  function opts() {
-    const s = S.surf, sz = s === 'lid' || s === 'kb' ? SIZES.map(k => `<button type="button" class="chip ${S.size === k ? 'on' : ''}" data-size="${k}">${k}″</button>`).join('')
-      : s === 'pad' ? Object.entries(PADS).map(([k, v]) => `<button type="button" class="chip ${S.pad === k ? 'on' : ''}" data-pad="${k}">${v[2]}</button>`).join('') : '';
-    $('#st-opts').innerHTML = sz + `<span class="sep"></span>` + Object.entries(COLS).map(([k, v]) => `<button type="button" class="sw ${S.col[s] === k ? 'on' : ''}" data-col="${k}" style="background:linear-gradient(140deg,${v[1]},${v[2]})" aria-label="${v[0]}"></button>`).join('');
-    document.querySelectorAll('[data-surf]').forEach(b => { b.setAttribute('aria-selected', b.dataset.surf === s); const n = S.items[b.dataset.surf].length; b.querySelector('i').textContent = n || ''; });
-  }
-  function layout() {
-    const [w, h] = dimsCm(), ar = w / h, avail = wrap.clientWidth, mob = innerWidth < 1000;
-    const maxH = mob ? Math.max(150, innerHeight * .26) : Math.min(innerHeight * .6, 560);
-    let sw = avail, sh = sw / ar; if (sh > maxH) { sh = maxH; sw = sh * ar; }
-    stage.style.width = sw + 'px'; stage.style.height = sh + 'px';
-    const dpr = Math.min(2, devicePixelRatio || 1); bg.width = sw * dpr; bg.height = sh * dpr; bg.style.width = sw + 'px'; bg.style.height = sh + 'px';
-    const g = bg.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); paint(g, S.surf, sw, sh);
-    stage.style.borderRadius = S.surf === 'phone' ? sw * .16 + 'px' : '';
-    const lbl = S.surf === 'lid' || S.surf === 'kb' ? `${S.size}″ laptop · ` : S.surf === 'pad' ? `${PADS[S.pad][2]} · ` : '';
-    $('#st-dims').textContent = `${SURF[S.surf].name} · ${lbl}${w} × ${h} cm`;
-    $('#st-empty').innerHTML = S.sized || S.surf !== 'lid' ? 'tap a sticker below to stick it here.<br>drag to move, pinch to resize' : 'First, pick your laptop size above.<br><small>Not sure? Check the sticker under your laptop.</small>';
-    draw();
-  }
-  const setCat = id => { S.cat = id; document.querySelectorAll('[data-cat]').forEach(b => b.classList.toggle('on', b.dataset.cat === id));
-    const c = CAT[id]; if (!c.packs.includes(S.pack)) S.pack = c.packs[0];
-    $('#st-packs').innerHTML = c.packs.map(pid => `<button type="button" class="chip ${pid === S.pack ? 'y' : ''}" data-pk="${pid}">${esc(PK[pid].nice)}</button>`).join('');
-    fillTray(); };
-  const fillTray = () => { const p = PK[S.pack]; document.querySelectorAll('[data-pk]').forEach(b => b.classList.toggle('y', b.dataset.pk === S.pack));
-    tray.innerHTML = p.items.map(it => `<div class="tile" data-c="${it[0]}" role="button" tabindex="0" aria-label="Stick ${it[0]}">${spr(p, it, 54)}</div>`).join(''); tray.scrollLeft = 0; saveS(); };
-  $('#st-cats').onclick = e => { const b = e.target.closest('[data-cat]'); if (b) setCat(b.dataset.cat); };
-  $('#st-packs').onclick = e => { const b = e.target.closest('[data-pk]'); if (b) { S.pack = b.dataset.pk; fillTray(); } };
-  document.querySelector('.surfs').onclick = e => { const b = e.target.closest('[data-surf]'); if (!b) return; S.surf = b.dataset.surf; S.on = -1; saveS(); opts(); layout(); };
-  $('#st-opts').onclick = e => { const b = e.target.closest('[data-size],[data-pad],[data-col]'); if (!b) return;
-    if (b.dataset.size) { S.size = b.dataset.size; S.sized = true; } if (b.dataset.pad) S.pad = b.dataset.pad; if (b.dataset.col) S.col[S.surf] = b.dataset.col;
-    saveS(); opts(); layout(); };
-
-  const add = (code, fx, fy) => { snap(); const w = dimsCm()[0];
-    items().push({ c: code, x: fx ?? .2 + Math.random() * .6, y: fy ?? .25 + Math.random() * .5, s: Math.min(.6, SURF[S.surf].def / w), r: Math.round(Math.random() * 14 - 7) });
-    S.on = items().length - 1; buzz(); saveS(); opts(); draw(); };
-  function draw() {
-    const W = stage.clientWidth, H = stage.clientHeight;
-    stage.querySelectorAll('.it').forEach(e => e.remove());
-    items().forEach((o, i) => { const { p, it } = CODE[o.c], L = o.s * W, k = L / Math.max(it[3], it[4]), w = it[3] * k, h = it[4] * k;
-      const el = document.createElement('div'); el.className = 'it' + (i === S.on ? ' on' : ''); el.dataset.i = i;
-      el.style.cssText = `width:${w}px;height:${h}px;transform:translate(${o.x * W - w / 2}px,${o.y * H - h / 2}px) rotate(${o.r}deg);background:url(atlas/${p.id}.${IX}) ${-it[1] * k}px ${-it[2] * k}px/${p.aw * k}px ${p.ah * k}px no-repeat`;
-      if (i === S.on) el.innerHTML = `<span class="h up" data-a="up" title="Bring to front">▲</span><span class="h del" data-a="del" title="Remove">×</span><span class="h rs" data-a="rs" title="Resize and rotate">⤡</span>`;
-      stage.insertBefore(el, stage.querySelector('.glare')); });
-    $('#st-empty').hidden = items().length > 0;
-    const n = allItems().length; $('#st-done').textContent = n ? `Done (${n})` : 'Done';
-  }
-  const showCm = o => { const c = $('#st-cm'); c.hidden = !o; if (o) c.textContent = `${(o.s * dimsCm()[0]).toFixed(1)} cm`; };
-  const pts = new Map(); let drag = null;
-  const R = () => stage.getBoundingClientRect();
-  stage.addEventListener('pointerdown', e => {
-    pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    const h = e.target.closest('.h'), el = e.target.closest('.it'), r = R(), its = items();
-    if (pts.size === 2 && S.on >= 0) { const [a, b] = [...pts.values()], o = its[S.on];
-      drag = { m: 'pinch', i: S.on, d0: Math.hypot(a.x - b.x, a.y - b.y) || 1, a0: Math.atan2(b.y - a.y, b.x - a.x), s0: o.s, r0: o.r }; stage.setPointerCapture(e.pointerId); e.preventDefault(); return; }
-    if (h) { e.stopPropagation(); const i = S.on, o = its[i];
-      if (h.dataset.a === 'del') { snap(); its.splice(i, 1); S.on = -1; saveS(); opts(); draw(); return; }
-      if (h.dataset.a === 'up') { snap(); its.push(its.splice(i, 1)[0]); S.on = its.length - 1; saveS(); draw(); return; }
-      snap(); const cx = r.left + o.x * r.width, cy = r.top + o.y * r.height;
-      drag = { m: 'rs', i, cx, cy, d0: Math.hypot(e.clientX - cx, e.clientY - cy) || 1, a0: Math.atan2(e.clientY - cy, e.clientX - cx), s0: o.s, r0: o.r };
-    } else if (el) { const i = +el.dataset.i; snap(); S.on = i; drag = { m: 'mv', i, ox: e.clientX, oy: e.clientY, x0: its[i].x, y0: its[i].y }; draw(); }
-    else { S.on = -1; draw(); return; }
-    stage.setPointerCapture(e.pointerId); e.preventDefault();
-  });
-  stage.addEventListener('pointermove', e => { if (pts.has(e.pointerId)) pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (!drag) return; const r = R(), o = items()[drag.i]; if (!o) return; const mx = Math.min(.9, 12 / dimsCm()[0]), mn = 1.5 / dimsCm()[0];
-    if (drag.m === 'pinch' && pts.size >= 2) { const [a, b] = [...pts.values()];
-      o.s = Math.min(mx, Math.max(mn, drag.s0 * Math.hypot(a.x - b.x, a.y - b.y) / drag.d0)); o.r = Math.round(drag.r0 + (Math.atan2(b.y - a.y, b.x - a.x) - drag.a0) * 180 / Math.PI); showCm(o); }
-    else if (drag.m === 'mv') { o.x = Math.min(1, Math.max(0, drag.x0 + (e.clientX - drag.ox) / r.width)); o.y = Math.min(1, Math.max(0, drag.y0 + (e.clientY - drag.oy) / r.height)); }
-    else if (drag.m === 'rs') { o.s = Math.min(mx, Math.max(mn, drag.s0 * Math.hypot(e.clientX - drag.cx, e.clientY - drag.cy) / drag.d0)); o.r = Math.round(drag.r0 + (Math.atan2(e.clientY - drag.cy, e.clientX - drag.cx) - drag.a0) * 180 / Math.PI); showCm(o); }
-    draw(); });
-  const end = e => { pts.delete(e.pointerId); if (drag && (drag.m !== 'pinch' || pts.size < 2)) { drag = null; showCm(null); saveS(); } };
-  stage.addEventListener('pointerup', end); stage.addEventListener('pointercancel', end);
-  let tg = null;
-  tray.addEventListener('pointerdown', e => { const t = e.target.closest('.tile'); if (!t) return; tg = { c: t.dataset.c, x: e.clientX, y: e.clientY, g: null, fine: e.pointerType === 'mouse' }; });
-  tray.addEventListener('pointermove', e => { if (!tg) return; const d = Math.hypot(e.clientX - tg.x, e.clientY - tg.y);
-    if (!tg.fine && d > 10) { tg = null; return; }
-    if (tg.fine && !tg.g && d > 8) { const { p, it } = CODE[tg.c]; tg.g = document.createElement('div'); tg.g.className = 'ghost'; tg.g.innerHTML = spr(p, it, 80); document.body.appendChild(tg.g); tray.setPointerCapture(e.pointerId); }
-    if (tg.g) { tg.g.style.left = e.clientX + 'px'; tg.g.style.top = e.clientY + 'px'; } });
-  tray.addEventListener('pointerup', e => { if (!tg) return; const r = R();
-    if (tg.g) { tg.g.remove(); if (e.clientX > r.left && e.clientX < r.right && e.clientY > r.top && e.clientY < r.bottom) add(tg.c, (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height); }
-    else add(tg.c);
-    tg = null; });
-  tray.addEventListener('pointercancel', () => { if (tg && tg.g) tg.g.remove(); tg = null; });
-  tray.addEventListener('keydown', e => { const t = e.target.closest('.tile'); if (t && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); add(t.dataset.c); } });
-  $('#st-undo').onclick = () => { if (!hist.length) { toast('Nothing to undo'); return; } S.items = JSON.parse(hist.pop()); S.on = -1; saveS(); opts(); draw(); };
-  $('#st-clear').onclick = () => { if (!items().length) return; snap(); S.items[S.surf] = []; S.on = -1; saveS(); opts(); draw(); toast('Cleared. Tap Undo to get them back.'); };
-  $('#st-fill').onclick = () => { snap(); const p = PK[S.pack], [w, h] = dimsCm(), sz = SURF[S.surf].def, cols = Math.max(1, Math.round(w / (sz * 1.35))), rows = Math.max(1, Math.round(h / (sz * 1.35)));
-    const pool = [...p.items].sort(() => Math.random() - .5).slice(0, cols * rows);
-    pool.forEach((it, k) => items().push({ c: it[0], x: (k % cols + .5) / cols + (Math.random() - .5) * .04, y: (Math.floor(k / cols) + .5) / rows + (Math.random() - .5) * .05, s: sz * (.85 + Math.random() * .3) / w, r: Math.round(Math.random() * 18 - 9) }));
-    S.on = -1; saveS(); opts(); draw(); };
-  $('#st-done').onclick = exportDesign;
-  setCat(CAT[S.cat] ? S.cat : D.cats[0].id);
-  opts(); new ResizeObserver(layout).observe(wrap); layout();
+let ivI = 0;
+function openIv(i) {
+  ivI = (i + INS.length) % INS.length; const x = INS[ivI];
+  $('#iv-img').src = `inspo/lg/${x.id}.${IX}`; $('#iv-img').alt = x.alt || 'Sticker inspiration';
+  $('#iv-n').textContent = `${ivI + 1} of ${INS.length}`; $('#iv').hidden = false;
 }
-
-const imgs = {};
-const loadImg = id => imgs[id] || (imgs[id] = new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = `atlas/${id}.${IX}`; }));
-async function exportDesign() {
-  const used = Object.keys(SURF).filter(k => S.items[k].length);
-  if (!used.length) { toast('Stick a few on first'); return; }
-  const H = 760, pad = 50, lab = 60, parts = used.map(k => { const [w, h] = SURF[k].dims(); return { k, w: Math.round(H * w / h), h: H }; });
-  const W = parts.reduce((a, p) => a + p.w, 0) + pad * (parts.length + 1), cv = document.createElement('canvas'); cv.width = Math.min(W, 4000); cv.height = H + pad * 2 + lab;
-  const sc = cv.width / W, g = cv.getContext('2d'); g.fillStyle = '#0d0d0e'; g.fillRect(0, 0, cv.width, cv.height); g.scale(sc, sc);
-  let x = pad;
-  for (const p of parts) { g.save(); g.translate(x, pad); paint(g, p.k, p.w, p.h); g.save(); rr(g, 0, 0, p.w, p.h, p.k === 'phone' ? p.w * .16 : 20); g.clip();
-      for (const o of S.items[p.k]) { const { p: pk, it } = CODE[o.c], im = await loadImg(pk.id), L = o.s * p.w, k = L / Math.max(it[3], it[4]), w = it[3] * k, h = it[4] * k;
-        g.save(); g.translate(o.x * p.w, o.y * p.h); g.rotate(o.r * Math.PI / 180); g.shadowColor = 'rgba(0,0,0,.45)'; g.shadowBlur = 10; g.shadowOffsetY = 5;
-        g.drawImage(im, it[1], it[2], it[3], it[4], -w / 2, -h / 2, w, h); g.restore(); }
-      g.restore(); g.restore();
-    g.fillStyle = '#a9a69e'; g.font = '600 30px "Bricolage Grotesque", sans-serif'; g.textAlign = 'center'; g.fillText(`${SURF[p.k].name} (${S.items[p.k].length})`, x + p.w / 2, pad + H + 44);
-    x += p.w + pad; }
-  const url = cv.toDataURL('image/jpeg', .9); $('#exp-img').src = url;
-  $('#exp-dl').hidden = framed; if (!framed) $('#exp-dl').href = url;
-  $('#exp-hint').textContent = framed ? 'Long-press the picture to save it, then send it with your order so we can see your layout.' : 'Save the picture and send it with your order so we can see your layout.';
-  const n = allItems().length;
-  $('#exp-sum').innerHTML = used.map(k => `<div><span>${SURF[k].name}</span><span>${S.items[k].length}</span></div>`).join('') + `<div class="big"><span>${n} stickers</span><span>${CUR}${n * PRICE}</span></div>`;
-  $('#exp-cart').onclick = () => { const counts = {}; allItems().forEach(o => counts[o.c] = (counts[o.c] || 0) + 1);
-    Object.entries(counts).forEach(([c, q]) => cart[c] = Math.max(cart[c] || 0, q)); saveCart(); updBar();
-    who.note = `My layout: ${used.map(k => `${SURF[k].short.toLowerCase()} (${S.items[k].length})`).join(', ')}${used.some(k => k === 'lid' || k === 'kb') ? `, ${S.size}" laptop` : ''}. Sending the picture.`; store.set('sl-who', who);
-    $('#exp').hidden = true; openCart(); };
-  $('#exp').hidden = false;
-}
-$('#exp-x').onclick = () => $('#exp').hidden = true;
+$('#iv-x').onclick = () => $('#iv').hidden = true;
+$('#iv-p').onclick = () => openIv(ivI - 1); $('#iv-n2').onclick = () => openIv(ivI + 1);
+$('#iv-go').onclick = () => { const x = INS[ivI];
+  const t = `Hello Skin Lab, I want stickers like this inspiration photo (#${ivI + 1}):\n${SITE.replace(/\/$/, '')}/inspo/lg/${x.id}.webp\n\nHow many: \nMy name: ${who.name || ''}`;
+  const u = waLink(t); if (!window.open(u, '_blank', 'noopener')) location.href = u; };
 $('#lb-x').onclick = () => $('#lb').hidden = true;
 $('#lb').onclick = e => { if (e.target.id === 'lb') e.currentTarget.hidden = true; };
 
 // ---------- router ----------
 function render() {
-  const r = route(); closeSheets(); document.body.classList.toggle('is-studio', r === 'studio');
-  if (r === 'studio') vStudio(); else if (r === 'categories') vCats(); else if (r.startsWith('order-')) vOrder(r); else if (CAT[r]) vCat(CAT[r]); else if (PK[r]) vPack(PK[r]); else vHome();
+  const r = route(); closeSheets();
+  if (r === 'inspo' || r === 'studio') vInspo(); else if (r === 'categories') vCats(); else if (r.startsWith('order-')) vOrder(r); else if (CAT[r]) vCat(CAT[r]); else if (PK[r]) vPack(PK[r]); else vHome();
   scrollTo(0, 0);
-  const tab = r === 'studio' ? 'studio' : 'home';
+  const tab = r === 'inspo' || r === 'studio' ? 'studio' : 'home';
   [['t-home', 'home'], ['t-cats', 'cats'], ['t-studio', 'studio']].forEach(([id, k]) => $('#' + id).classList.toggle('on', tab === k));
   [['nv-home', 'home'], ['nv-cats', 'cats'], ['nv-studio', 'studio']].forEach(([id, k]) => $('#' + id).classList.toggle('on', tab === k));
   updBar();
 }
 addEventListener('hashchange', render);
 let rt, lw = innerWidth;
-addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { if (innerWidth !== lw && route() !== 'studio') { lw = innerWidth; const y = scrollY; render(); scrollTo(0, y); } }, 200); });
+addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { if (innerWidth !== lw) { lw = innerWidth; const y = scrollY; render(); scrollTo(0, y); } }, 200); });
 // AVIF when the browser decodes it (almost all now), WebP otherwise. Decided before the first paint.
 let IX = 'webp';
 (() => { let done = 0; const go = () => { if (!done++) render(); };

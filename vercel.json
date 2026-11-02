@@ -3,7 +3,7 @@
  "trailingSlash": true,
  "headers": [
   {
-   "source": "/(atlas|sheets|sheets-sm|sheets-xs)/(.*)",
+   "source": "/(atlas|sheets|sheets-sm|sheets-xs|inspo)/(.*)",
    "headers": [
     {
      "key": "Cache-Control",
@@ -12,7 +12,7 @@
    ]
   },
   {
-   "source": "/(app.js|data.js)",
+   "source": "/(app.js|data.js|inspo.js)",
    "headers": [
     {
      "key": "Cache-Control",
