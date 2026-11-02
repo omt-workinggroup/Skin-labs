@@ -2,7 +2,7 @@
 <html lang="en-GH">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0c0c0d">
+<meta name="theme-color" content="#000000">
 <title>Skin Lab | Laptop Stickers &amp; Sticker Packs in Accra, Ghana</title>
 <link rel="canonical" href="https://skin-labs.vercel.app/">
 <meta name="robots" content="index,follow,max-image-preview:large">
@@ -30,7 +30,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap">
 <style>
 /* Skin Lab: a sticker table, not a template. Black workbench, yellow tape, hand-written notes. Phone first. */
 :root{
@@ -390,14 +390,131 @@ h2{font-family:var(--body);font-weight:800;font-size:clamp(26px,7vw,38px);line-h
 .empty-c b{font-family:var(--body);font-weight:700;font-size:18px}
 footer .sig{font-family:var(--body);font-weight:700;font-size:16px}
 @media (min-width:700px){.cats{gap:22px 16px}.packs{gap:26px 18px}}
+
+/* ---- Baiden Creatives system: black & white, square, serif display, mono labels ---- */
+:root{--bg:#000;--panel:#0a0a0a;--panel2:#141414;--line:rgba(255,255,255,.14);--line2:rgba(255,255,255,.3);--fg:#fff;--mute:#8c8c8c;--y:#fff;--yk:#000;
+  --serif:'Instrument Serif','Times New Roman',Georgia,serif;--body:'Geist',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;--mono:'Geist Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;--display:var(--serif)}
+*,*::before,*::after{border-radius:0!important}
+.wachat{border-radius:10px!important}.bub{border-radius:8px 2px 8px 8px!important}
+body{font-family:var(--body);font-weight:400;letter-spacing:-.005em}
+::selection{background:#fff;color:#000}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:1px solid #fff;outline-offset:3px}
+.lbl,.kick-row,.crumb,.grp,.cmeta span,.pack .meta span:not(.price),.ifil .chip,.il,.tile .code,.dims,.fld label,.no{font-family:var(--mono);text-transform:uppercase;letter-spacing:.12em;font-weight:400}
+.lbl{display:block;font-size:11px;color:var(--mute)}
+.kick-row{display:flex;justify-content:space-between;gap:16px;font-size:10.5px;color:var(--mute);padding:4px 0 14px;border-bottom:1px solid var(--line);margin-bottom:22px}
+.kick-row span:last-child{text-align:right}
+/* header */
+.top{background:rgba(0,0,0,.86);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--body);letter-spacing:0}
+.brand .wm{font-weight:700;font-size:21px;letter-spacing:-.045em;line-height:1}
+.brand .wm b{font-weight:700;color:inherit;margin-left:.18em}
+.brand i{width:1px;height:24px;background:var(--line2)}
+.brand small{display:block!important;font-family:var(--mono);font-size:7.5px;line-height:1.35;letter-spacing:.24em;text-transform:uppercase;color:#bdbdbd;margin:0}
+.wa-top{background:#fff;color:#000;border:0;font-weight:500;font-size:14px;padding:10px 14px;gap:8px}
+.wa-top .wa-i{color:#1faa53;width:18px;height:18px}
+.wa-top .dot{width:5px;height:5px;background:#000;border-radius:50%!important;margin-left:2px}
+/* type */
+h1,.h1,h2,.sheet h3,.way h3{font-family:var(--serif);font-weight:400;letter-spacing:-.02em}
+.h1{font-size:clamp(42px,11.5vw,84px);line-height:.95;margin:0}
+.hero-h{max-width:12ch}
+h2{font-size:clamp(36px,9.5vw,60px);line-height:.98}
+h1 em,.h1 em,h2 em,h3 em,.fbig em{font-style:italic;color:inherit}
+.sub{color:#b5b5b5;font-size:16px;margin-top:14px;max-width:44ch}
+.sheet h3{font-size:30px}
+.crumb{font-size:10.5px;margin-bottom:12px}.crumb a{color:var(--fg);font-weight:400;border-bottom:1px solid var(--line2)}
+/* buttons and chips */
+.btn{font-family:var(--body);font-weight:500;font-size:15.5px;min-height:52px;padding:0 18px;gap:10px;transition:background .15s,color .15s}
+.btn.y,.btn.wa{background:#fff;color:#000;justify-content:space-between}
+.btn.y::after,.btn.wa::after{content:"→";font-size:17px;margin-left:12px}
+.btn.wa .wa-i{color:#1faa53}
+.btn.o{background:transparent;border:1px solid var(--line2);color:#fff}
+@media (hover:hover){.btn.o:hover{background:#fff;color:#000}.btn.y:hover,.btn.wa:hover{background:#d9d9d9}}
+.chip{background:transparent;border:1px solid var(--line);font-weight:500;font-size:13.5px;min-height:38px}
+.chip.on{background:#fff;color:#000;border-color:#fff}
+.ifil .chip{font-size:10.5px}
+/* category + pack cards */
+.cats{gap:28px 12px}
+.catc .table{border-radius:0}
+.catc .table img{box-shadow:0 1px 1px rgba(0,0,0,.3),0 10px 22px rgba(0,0,0,.35)}
+.cmeta{display:grid;grid-template-columns:auto 1fr;column-gap:10px;padding:12px 0 0;border-top:0}
+.cmeta .no{grid-row:span 2;font-size:10.5px;color:var(--mute);padding-top:4px}
+.cmeta b{font-family:var(--serif);font-weight:400;font-size:24px;line-height:1;letter-spacing:-.01em}
+.cmeta span:not(.no){font-size:10px;color:var(--mute);margin-top:6px}
+.pack .meta b{font-family:var(--serif);font-weight:400;font-size:26px;letter-spacing:-.01em}
+.pack .meta span:not(.price){font-size:10px;margin-top:4px}
+.price,.pack .meta .price{font-family:var(--body);font-weight:500;font-size:17px;letter-spacing:-.01em}
+.bigprice{font-family:var(--serif);font-weight:400;font-size:56px;letter-spacing:-.02em}
+.bigprice small{font-family:var(--mono);text-transform:uppercase;letter-spacing:.12em;font-size:10.5px}
+.pbtns .btn{font-size:14px;padding:0 12px}
+.pbtns .btn.y::after{display:none}
+.xcard{border:1px solid var(--line);padding:16px}
+.xcard b{font-family:var(--serif);font-weight:400;font-size:24px;letter-spacing:-.01em;line-height:1.05}
+.xcard small{color:#a6a6a6}
+.again{border:1px solid var(--line);background:transparent}
+.again .go{background:#fff;color:#000;font-weight:500}
+/* grids, tiles */
+.tile{background:rgba(255,255,255,.05)}
+.tile.sel{background:rgba(255,255,255,.16);box-shadow:inset 0 0 0 2px #fff}
+.tile.sel .chk{background:#fff;border-color:#fff;color:#000}
+.tile .code{border-radius:0!important;font-size:9px}
+.il{font-size:9.5px;padding:5px 8px;background:rgba(0,0,0,.7)}
+/* bars, tabs, sheets */
+.tabs{background:rgba(0,0,0,.94);border-top:1px solid var(--line)}
+.tab{font-weight:500;font-size:11px;color:#7d7d7d}.tab.on{color:#fff}
+.tab.on::after{width:14px;height:1px;bottom:4px;background:#fff}
+.tab .bd,.nav .bd{background:#fff;color:#000;font-family:var(--mono);font-weight:500}
+.bar{background:rgba(10,10,10,.96);border-top:1px solid var(--line)}
+.bar .n{font-family:var(--serif);font-weight:400;font-size:34px}
+.sheet>.in{background:#0a0a0a;border-top:1px solid var(--line)}
+.grab{background:var(--line2);height:2px;width:36px}
+.row{background:transparent;border-bottom:1px solid var(--line);padding:8px 0}
+.row .th{background:transparent}
+.qty{background:transparent;border:1px solid var(--line)}.qty button{background:transparent}
+.sum{background:transparent;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0}
+.sum .big{color:#fff;font-family:var(--serif);font-weight:400;font-size:28px}
+.fld input,.fld textarea{border:1px solid var(--line2);background:transparent}
+.fld input:focus,.fld textarea:focus{border-color:#fff}
+.fld label{font-size:10px}
+.toast{font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.08em;font-weight:500}
+.fab{background:#fff;color:#1faa53;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+@media (min-width:1000px){.nav a,.nav button{font-weight:400;color:#cfcfcf;padding:10px 14px}.nav .on{background:transparent;color:#fff;box-shadow:inset 0 -1px 0 #fff}}
+/* order pages */
+.who{display:grid;gap:10px;margin:18px 0 0}.who div{display:grid;grid-template-columns:96px 1fr;border-top:1px solid var(--line);padding-top:10px}
+.who dt{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.12em;color:var(--mute);padding-top:3px}.who dd{margin:0}
+.orows{border-top:1px solid var(--line);margin-top:10px}
+.orow{display:grid;grid-template-columns:52px 1fr auto auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.orow .th{width:52px;height:64px;display:grid;place-items:center;overflow:hidden}.orow .th img{height:100%;width:auto}
+.orow b{display:block;font-weight:500}.orow small{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--mute)}
+.orow .q{font-family:var(--mono);color:var(--mute)}.orow .pr{font-weight:500}
+.oview{background:transparent;padding:10px 0;margin-top:10px}
+.otot{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid #fff;margin-top:20px;padding-top:12px}
+.otot span{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--mute)}.otot b{font-family:var(--serif);font-weight:400;font-size:44px;line-height:1}
+.notice{padding-top:18px;min-height:52vh}.notice .h1{margin:8px 0 6px}
+/* footer */
+footer{display:block;margin-top:56px;padding-top:28px;border-top:1px solid var(--line);color:#a6a6a6;font-size:14px}
+.fbig{font-family:var(--serif);font-size:clamp(44px,13vw,96px);line-height:.95;letter-spacing:-.02em;color:#fff;margin-bottom:26px}
+.fgrid{display:grid;gap:18px}.fgrid .lbl{margin-bottom:6px}
+.fgrid .num{color:#fff;font-family:var(--body);font-size:16px;font-weight:500;user-select:text}
+.bc{display:flex;justify-content:space-between;gap:12px;margin-top:28px;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.14em;color:#cfcfcf}
+@media (hover:hover){.bc:hover{color:#fff}}
+@media (min-width:700px){.fgrid{grid-template-columns:2fr 1fr 1fr}.cats{gap:40px 18px}.kick-row{font-size:11px}}
+.sheet h3 .chip{font-family:var(--body);font-size:14px;letter-spacing:0}
+.notice .ctas,.ord .ctas{display:grid;grid-template-columns:1fr;gap:10px}.notice .small{margin-top:14px}
+@media (min-width:700px){.notice .ctas,.ord .ctas{grid-template-columns:1fr 1fr;max-width:620px}}
+.hcol{display:none}
+@media (min-width:1000px){.hero2{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:40px;margin-bottom:34px}
+  .hcol{display:block;position:relative;height:380px}
+  .hcol img{position:absolute;width:42%;aspect-ratio:3/4;object-fit:cover;box-shadow:0 20px 40px rgba(0,0,0,.6);transition:transform .4s cubic-bezier(.2,.7,.2,1)}
+  .hcol:hover img{transform:rotate(0deg)!important}
+  .hcol .lbl{position:absolute;right:0;bottom:-8px;color:#fff}}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="wa" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></symbol></svg>
 
 <header class="top"><div class="wrap">
-  <a class="brand" href="#">SKIN <b>LAB</b><small>by Baiden Creatives</small></a>
+  <a class="brand" href="#" aria-label="Skin Lab by Baiden Creatives, home"><span class="wm">Skin<b>Lab</b></span><i></i><small>by Baiden<br>Creatives</small></a>
   <nav class="nav"><a href="#" id="nv-home">Shop</a><a href="#inspo" id="nv-studio">Inspiration</a><button type="button" id="nv-cats">Send your idea</button><button type="button" id="nv-cart">Cart<span class="bd" id="nv-bd" hidden>0</span></button></nav>
-  <a class="wa-top" href="https://wa.me/233558362423" target="_blank" rel="noopener"><svg class="wa-i"><use href="#wa"/></svg>Chat with us</a>
+  <a class="wa-top" href="https://wa.me/233558362423" target="_blank" rel="noopener"><svg class="wa-i"><use href="#wa"/></svg>Chat with us<span class="dot"></span></a>
 </div></header>
 
 <main class="wrap" id="app"></main>
