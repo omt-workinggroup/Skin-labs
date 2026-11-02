@@ -86,10 +86,26 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
   .tray{grid-auto-flow:row;grid-template-rows:none;grid-template-columns:repeat(5,1fr);max-height:260px;overflow-y:auto}.skins{grid-auto-flow:row;grid-template-rows:none;grid-template-columns:repeat(3,1fr);max-height:300px;overflow-y:auto}
   .tabs{display:none}.wrap{padding-bottom:40px}}
 .dm{display:flex;justify-content:space-between;align-items:center;height:46px;padding:0 14px;border:1px solid var(--line2);color:#fff;text-decoration:none;font-size:14px;font-weight:500}.dm span:first-child:before{content:'';display:inline-block;width:9px;height:9px;border-radius:50%;background:#1faa53;margin-right:9px}
+
+.top{gap:10px}.brand{padding:8px 0;min-height:44px}
+.chg{display:inline-flex;align-items:center;min-height:40px;padding:0 2px}
+.addto{flex-wrap:wrap;gap:8px}.addto .seg{min-width:240px}
+.tile .c{font-size:8.5px}.row .lbl{font-size:10px}.tagg{font-size:9.5px}
+.views button{min-height:42px}
+@media (max-width:380px){
+  .wa{padding:8px 10px;font-size:12px}.wa .t{display:none}
+  .brand small{display:none}.brand i{display:none}
+  .addto{display:grid;grid-template-columns:1fr}.addto .seg{margin-left:0!important;min-width:0}
+  .acts{grid-template-columns:1fr 1fr;}.acts .btn.y{grid-column:1/-1}
+  h1{font-size:40px}
+  .stage{height:min(40vh,360px)}
+  .name b{font-size:20px}
+}
+@media (max-width:999px){.ed>div:first-child{display:contents}.stage{box-shadow:0 10px 20px rgba(0,0,0,.6)}}
 </style>
 <script type="importmap">{"imports":{"three":"/vendor/three/three.module.min.js"}}</script>
 </head><body>
-<header class="top"><a class="brand" href="/" style="color:#fff;text-decoration:none"><b>Skin Lab</b><i></i><small>BY BAIDEN<br>CREATIVES</small></a><a class="wa" href="https://wa.me/233558362423" target="_blank" rel="noopener" style="text-decoration:none"><i></i>Chat with us ●</a></header>
+<header class="top"><a class="brand" href="/" style="color:#fff;text-decoration:none"><b>Skin Lab</b><i></i><small>BY BAIDEN<br>CREATIVES</small></a><a class="wa" href="https://wa.me/233558362423" target="_blank" rel="noopener" style="text-decoration:none"><i></i>Chat<span class="t">with us ●</span></a></header>
 <main class="wrap" id="app"></main>
 <nav class="tabs"><a href="/">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 11 12 3l9 8v10h-6v-6H9v6H3Z"/></svg>Home</a><a href="/design/" class="on">
@@ -99,9 +115,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 <div class="toast" id="toast" hidden></div>
 <script src="/data.4e56c2ad.js"></script>
 <script type="module">
-import * as THREE from 'three';
-import { OrbitControls } from '/vendor/three/OrbitControls.js';
-import { RoomEnvironment } from '/vendor/three/RoomEnvironment.js';
+let THREE, OrbitControls, RoomEnvironment, glP = null;
+const loadGL = () => glP || (glP = Promise.all([import('three'), import('/vendor/three/OrbitControls.js'), import('/vendor/three/RoomEnvironment.js')]).then(([a, b, c]) => { THREE = a; OrbitControls = b.OrbitControls; RoomEnvironment = c.RoomEnvironment; }));
+const warmGL = () => (window.requestIdleCallback || (f => setTimeout(f, 600)))(() => loadGL());
 const $ = s => document.querySelector(s), app = $('#app');
 const toast = m => { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 1800); };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -310,7 +326,8 @@ const snap = () => { hist.push(JSON.stringify({ items, skin })); if (hist.length
 
 // ---------- step 2: editor ----------
 let tab = 'stickers', ccat = D.cats[0].id, cpack = D.cats[0].packs[0];
-function vEditor() {
+async function vEditor() {
+  if (!THREE) { app.innerHTML = `<div class="stage" id="stage"><div class="load">Building your ${esc(L.brand)}…</div></div>`; await loadGL(); }
   app.innerHTML = `<div class="ed"><div><div class="stage" id="stage"><div class="load">Building your ${esc(L.brand)}…</div>
       <div class="ovl t"><div class="name"><b>${esc(L.brand)} ${esc(L.name.replace(/ \(.+\)$/, ''))}</b><span class="lbl">${L.scr}″ · ${L.w} × ${L.d} cm</span></div>
         <a class="chg lbl" href="#pick" id="chg">Change</a></div>
@@ -319,7 +336,7 @@ function vEditor() {
       <div class="ctrl"><div class="views" id="views"><button data-v="hero">360°</button><button data-v="lid">Lid</button><button data-v="kb">Keys</button><button data-v="bot">Base</button></div>
         <label class="lidc" id="lidrow"><span class="lbl">Open</span><input type="range" id="lida" min="0" max="140" value="${lidA}"></label></div>
       <div class="selbar" id="selbar" hidden><span class="lbl">Size</span><input type="range" id="ssz" min="4" max="60" step="1"><span class="lbl">Turn</span><input type="range" id="srt" min="-180" max="180" step="1">
-        <div class="btns"><button id="sdel">Remove</button><button id="sup">To front</button><button class="w" id="sok">Done</button></div></div></div></div>
+        <div class="btns"><button id="sdel">Remove</button><button id="sup">To front</button><button class="w" id="sok">Done</button></div></div></div>
     <aside class="drawer">
       <div class="addto"><span class="lbl">Adding to</span><div class="seg" id="surf" style="flex:1;margin-left:12px">${Object.entries(SN).map(([k, n]) => `<button data-s="${k}">${n}<i></i></button>`).join('')}</div></div>
       <div class="seg" id="tab"><button data-t="stickers">Stickers</button><button data-t="skins">Skins</button><button data-t="colour">Colour</button></div>
@@ -383,6 +400,6 @@ window.__lab = { pick: i => { L = LAPS[i]; col = L.cols[0]; vEditor(); }, items,
 const st = store.get('sl-design3', null);
 if (st && st.skin) Object.assign(skin, st.skin);
 if (st && LAPS[st.i] && location.hash !== '#pick') { L = LAPS[st.i]; col = L.cols.includes(st.col) ? st.col : L.cols[0];
-  for (const k in items) items[k] = (st.items && st.items[k] || []).filter(o => CODE[o.c]); Object.assign(skin, st.skin || {}); vEditor(); } else vPick();
+  for (const k in items) items[k] = (st.items && st.items[k] || []).filter(o => CODE[o.c]); Object.assign(skin, st.skin || {}); vEditor(); } else { vPick(); warmGL(); } warmGL();
 addEventListener('hashchange', () => { if (location.hash === '#pick') vPick(); });
 </script></body></html>
