@@ -179,8 +179,8 @@ function lastOrder() {
 function vHome() {
   app.innerHTML = `<section class="sec" style="padding-top:18px">
     ${lastOrder()}
-    <div class="kick-row"><span>Sticker shop · Accra</span><span>${D.packs.length} packs</span></div>
-    <div class="sech hero2"><div><h1 class="h1 hero-h">Laptop sticker packs, <em>printed in Accra.</em></h1><p class="sub">Pick a category to see the packs. Full sheets from ${CUR}50, or pick single stickers at ${CUR}${PRICE} each.</p></div>${INS.length > 4 ? `<a class="hcol" href="#inspo" aria-label="See sticker inspiration">${[[0, -5, 0, 4], [3, 4, 34, 0], [12, -2, 56, 14]].map(([k, r, x, y]) => `<img src="inspo/sm/${INS[k].id}.${IX}" alt="" loading="lazy" style="left:${x}%;top:${y}%;transform:rotate(${r}deg)">`).join('')}<span class="lbl">Inspiration →</span></a>` : ''}</div>
+    <div class="kick-row"><span>Laptop stickers · Accra</span><span>From ${CUR}50</span></div>
+    <div class="sech hero2"><div><h1 class="h1 hero-h">Your laptop, <em>your story.</em></h1><p class="hsub">Sticker packs, printed in Accra.</p></div>${INS.length > 4 ? `<a class="hcol" href="#inspo" aria-label="See sticker inspiration">${[[0, -5, 0, 4], [3, 4, 34, 0], [12, -2, 56, 14]].map(([k, r, x, y]) => `<img src="inspo/sm/${INS[k].id}.${IX}" alt="" loading="lazy" style="left:${x}%;top:${y}%;transform:rotate(${r}deg)">`).join('')}<span class="lbl">Inspiration →</span></a>` : ''}</div>
     ${catGrid()}
     <div class="extra">
       <a class="xcard" href="#inspo">${INS.length ? `<span class="xthumbs">${[2, 1, 0].map((k, j) => INS[k] ? `<img src="inspo/sm/${INS[k].id}.${IX}" alt="" loading="lazy" style="left:${j * 24}px;transform:rotate(${[-8, 2, 9][j]}deg)">` : '').join('')}</span>` : '<span class="xart" id="xa1"></span>'}<span><b>Inspiration</b><small>Laptops and sticker sheets to steal ideas from. Tap one, we print it.</small></span></a>
