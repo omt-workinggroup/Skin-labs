@@ -146,15 +146,15 @@ function lastOrder() {
 function vHome() {
   app.innerHTML = `<section class="sec" style="padding-top:18px">
     ${lastOrder()}
-    <div class="sech"><div><h1 class="h1">Laptop sticker packs, printed in Accra</h1><p class="sub">Pick a category to see the packs. Full sheets from ${CUR}50, or build your own from ${CUR}${PRICE} a sticker.</p></div></div>
+    <div class="sech"><div><h1 class="h1">Laptop sticker packs, printed in Accra</h1><p class="sub">Pick a category to see the packs. Full sheets from ${CUR}50, or pick single stickers at ${CUR}${PRICE} each.</p></div></div>
     ${catGrid()}
     <div class="extra">
-      <a class="xcard" href="#inspo"><span class="xart" id="xa1"></span><span><b>Sticker inspiration</b><small>Real setups and ideas. See one you like? We'll make it for you.</small></span></a>
+      <a class="xcard" href="#inspo">${INS.length ? `<span class="xthumbs">${[2, 1, 0].map((k, j) => INS[k] ? `<img src="inspo/sm/${INS[k].id}.${IX}" alt="" loading="lazy" style="left:${j * 24}px;transform:rotate(${[-8, 2, 9][j]}deg)">` : '').join('')}</span>` : '<span class="xart" id="xa1"></span>'}<span><b>Inspiration</b><small>Laptops and sticker sheets to steal ideas from. Tap one, we print it.</small></span></a>
       <button type="button" class="xcard" id="x-inspo"><span class="xart" id="xa2"></span><span><b>Send us your idea</b><small>Your name, picture or logo made into stickers. From ${CUR}15.</small></span></button>
     </div>
   </section>${footer}`;
   const art = (id, list) => { $(id).innerHTML = list.map(([pid, k], i) => spr(PK[pid], PK[pid].items[k], 52, `transform:rotate(${[-8, 7][i]}deg);margin-right:-12px`)).join(''); };
-  art('#xa1', [['p3-code-languages-1', 3], ['m2-spider-verse', 2]]); art('#xa2', [['emoji-mood', 0], ['anime-vibes', 4]]);
+  if ($('#xa1')) art('#xa1', [['p3-code-languages-1', 3], ['m2-spider-verse', 2]]); art('#xa2', [['emoji-mood', 0], ['anime-vibes', 4]]);
   $('#x-inspo').onclick = openInspo;
   if ($('#again')) $('#again').onclick = reorder;
 }
@@ -222,26 +222,51 @@ function vOrder(r) {
 
 // ---------- inspiration: real photos, tap one to get stickers like it ----------
 const INS = window.INSPO || [];
+const ITAGS = [['', 'All'], ['laptop', 'On laptops'], ['code', 'Coding'], ['pop', 'Anime & pop'], ['custom', 'Custom']];
+const hasT = (x, k) => !k || (x.t || '').split(' ').includes(k);
+let insF = '', ivList = [], ivI = 0;
 function vInspo() {
   app.innerHTML = `<section class="sec" style="padding-top:18px">
-    <div class="sech"><div><h1 class="h1">Sticker inspiration</h1><p class="sub">Real setups and ideas to spark yours. Tap a photo you like and we'll make stickers like it.</p></div></div>
-    ${INS.length ? `<div class="ins">${INS.map((x, i) => `<button type="button" class="insp" data-i="${i}" aria-label="Inspiration photo ${i + 1}"><img src="inspo/sm/${x.id}.${IX}" width="${x.w}" height="${x.h}" alt="${esc(x.alt || 'Sticker inspiration')}" ${i < 4 ? '' : 'loading="lazy"'} decoding="async"></button>`).join('')}</div>`
-      : `<div class="insempty">New inspiration photos are on the way.</div>`}
-    <button type="button" class="xcard" id="ins-own" style="margin-top:16px"><span><b>Have your own idea?</b><small>Send us a picture, name or logo. From ${CUR}15.</small></span></button>
+    <div class="ihead"><div><h1 class="h1">Inspiration</h1><p class="sub">Laptops and sticker sheets we like. Tap one and we'll print stickers like it.</p></div></div>
+    ${INS.length ? `<div class="hs ifil">${ITAGS.map(([k, n]) => { const c = INS.filter(x => hasT(x, k)).length;
+        return c ? `<button type="button" class="chip ${k === insF ? 'on' : ''}" data-f="${k}" aria-pressed="${k === insF}">${n}<span class="ct">${c}</span></button>` : ''; }).join('')}</div>
+      <div class="ins" id="ins"></div>` : `<div class="insempty">New inspiration photos are on the way.</div>`}
+    <button type="button" class="xcard" id="ins-own" style="margin-top:18px"><span><b>Got your own idea?</b><small>Send us a picture, a name or a logo. From ${CUR}15.</small></span></button>
   </section>${footer}`;
-  app.querySelector('.ins')?.addEventListener('click', e => { const b = e.target.closest('.insp'); if (b) openIv(+b.dataset.i); });
+  if (INS.length) {
+    drawIns();
+    app.querySelector('.ifil').onclick = e => { const b = e.target.closest('[data-f]'); if (!b) return; insF = b.dataset.f;
+      app.querySelectorAll('.ifil .chip').forEach(c => { const on = c === b; c.classList.toggle('on', on); c.setAttribute('aria-pressed', on); }); drawIns(); };
+    $('#ins').onclick = e => { const b = e.target.closest('.insp'); if (b) openIv(+b.dataset.n); };
+  }
   $('#ins-own').onclick = openInspo;
 }
-let ivI = 0;
-function openIv(i) {
-  ivI = (i + INS.length) % INS.length; const x = INS[ivI];
-  $('#iv-img').src = `inspo/lg/${x.id}.${IX}`; $('#iv-img').alt = x.alt || 'Sticker inspiration';
-  $('#iv-n').textContent = `${ivI + 1} of ${INS.length}`; $('#iv').hidden = false;
+function drawIns() {
+  ivList = INS.map((x, i) => i).filter(i => hasT(INS[i], insF));
+  const g = $('#ins'), nc = innerWidth >= 1000 ? 4 : innerWidth >= 700 ? 3 : 2, cols = Array.from({ length: nc }, () => ({ h: 0, html: '' }));
+  ivList.forEach((i, n) => { const x = INS[i], c = cols.reduce((a, b) => b.h < a.h - .01 ? b : a); c.h += x.h / x.w + .04;
+    c.html += `<button type="button" class="insp" data-n="${n}" style="background:${x.c};aspect-ratio:${x.w}/${x.h}" aria-label="${esc(x.alt)}"><img src="inspo/sm/${x.id}.${IX}" width="${x.w}" height="${x.h}" alt="${esc(x.alt)}" ${n < 4 ? '' : 'loading="lazy"'} decoding="async" onload="this.classList.add('ok')">${hasT(x, 'laptop') && insF !== 'laptop' ? '<span class="il">On a laptop</span>' : ''}</button>`; });
+  g.innerHTML = cols.map(c => `<div class="col">${c.html}</div>`).join('');
+  g.querySelectorAll('img').forEach(im => { if (im.complete && im.naturalWidth) im.classList.add('ok'); });
+}
+const ivSrc = x => `inspo/lg/${x.id}.${IX}`;
+function openIv(n) {
+  if (!ivList.length) return;
+  ivI = (n + ivList.length) % ivList.length; const x = INS[ivList[ivI]];
+  $('#iv-img').src = ivSrc(x); $('#iv-img').alt = x.alt; $('#iv-cap').textContent = x.alt;
+  $('#iv-n').textContent = `${ivI + 1} / ${ivList.length}`; $('#iv').hidden = false;
+  [1, -1].forEach(d => { const y = INS[ivList[(ivI + d + ivList.length) % ivList.length]]; new Image().src = ivSrc(y); });
 }
 $('#iv-x').onclick = () => $('#iv').hidden = true;
 $('#iv-p').onclick = () => openIv(ivI - 1); $('#iv-n2').onclick = () => openIv(ivI + 1);
-$('#iv-go').onclick = () => { const x = INS[ivI];
-  const t = `Hello Skin Lab, I want stickers like this inspiration photo (#${ivI + 1}):\n${SITE.replace(/\/$/, '')}/inspo/lg/${x.id}.webp\n\nHow many: \nMy name: ${who.name || ''}`;
+(() => { let x0 = null, y0 = 0; const w = $('#iv-w');
+  w.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+  w.addEventListener('touchend', e => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; x0 = null;
+    if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.4) openIv(ivI + (dx < 0 ? 1 : -1)); }, { passive: true });
+  addEventListener('keydown', e => { if ($('#iv').hidden) return; if (e.key === 'ArrowRight') openIv(ivI + 1); else if (e.key === 'ArrowLeft') openIv(ivI - 1); else if (e.key === 'Escape') $('#iv').hidden = true; });
+})();
+$('#iv-go').onclick = () => { const x = INS[ivList[ivI]], no = ivList[ivI] + 1;
+  const t = `Hello Skin Lab, I'd like stickers like this one (inspiration #${no}):\n${SITE.replace(/\/$/, '')}/inspo/lg/${x.id}.webp\n\nHow many: \nName: ${who.name || ''}`;
   const u = waLink(t); if (!window.open(u, '_blank', 'noopener')) location.href = u; };
 $('#lb-x').onclick = () => $('#lb').hidden = true;
 $('#lb').onclick = e => { if (e.target.id === 'lb') e.currentTarget.hidden = true; };

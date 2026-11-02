@@ -267,17 +267,31 @@ h2{font-family:var(--display);font-weight:400;font-size:clamp(34px,9vw,52px);lin
 .bub u{color:#53bdeb;text-decoration:none}
 .bub .tm{position:absolute;right:8px;bottom:4px;font-size:11px;color:#8fbfb3}
 /* inspiration gallery */
-.ins{columns:2;column-gap:10px}
-.insp{display:block;width:100%;margin:0 0 10px;break-inside:avoid;border-radius:14px;overflow:hidden;background:var(--panel);position:relative}
-.insp img{display:block;width:100%;height:auto}
-.insp:active{transform:scale(.98)}
-.inv{display:grid;gap:12px}
-.inv img{width:100%;max-height:62vh;object-fit:contain;border-radius:14px;background:#000}
-.inv .nav2{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center}
-.inv .nav2 span{text-align:center;font-size:13px;color:var(--mute)}
+.ihead{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.ifil{margin-bottom:14px}
+.ifil .chip{min-height:38px;padding:0 14px;font-size:13.5px;background:transparent;border:1px solid var(--line);color:var(--mute)}
+.ifil .chip.on{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.ifil .ct{margin-left:7px;font-weight:600;opacity:.55;font-variant-numeric:tabular-nums}
+.ins{display:flex;gap:8px;align-items:flex-start}
+.ins .col{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.insp{display:block;width:100%;break-inside:avoid;border-radius:12px;overflow:hidden;position:relative;cursor:zoom-in}
+.insp img{display:block;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .35s ease,transform .5s cubic-bezier(.2,.7,.2,1)}
+.insp img.ok{opacity:1}
+.insp:active img{transform:scale(.98)}
+@media (hover:hover){.insp:hover img{transform:scale(1.025)}}
+.il{position:absolute;left:8px;bottom:8px;font-size:11px;font-weight:700;letter-spacing:.01em;padding:4px 8px;border-radius:999px;background:rgba(10,10,11,.62);color:#fff;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.inv{gap:10px!important}
+.inv .ivw{position:relative;border-radius:14px;overflow:hidden;background:#000;display:grid;place-items:center;touch-action:pan-y}
+.inv .ivw img{width:100%;max-height:64vh;object-fit:contain;display:block;transition:opacity .2s}
+.inv .cap{font-size:14px;color:var(--mute);margin:0;line-height:1.4}
+.inv .nav2{display:flex;align-items:center;gap:8px}
+.inv .nav2 .chip{min-height:42px;width:46px;padding:0;justify-content:center}.inv .nav2 svg{width:20px;height:20px}
+.inv .nav2 span{flex:1;text-align:center;font-size:13px;color:var(--mute);font-variant-numeric:tabular-nums}
 .insempty{text-align:center;color:var(--mute);padding:40px 10px;border:1px dashed var(--line);border-radius:16px}
-@media (min-width:700px){.ins{columns:3;column-gap:14px}.insp{margin-bottom:14px}}
-@media (min-width:1000px){.ins{columns:4}}
+.xthumbs{display:flex;flex:none;width:92px;height:62px;position:relative}
+.xthumbs img{position:absolute;top:2px;width:40px;height:56px;object-fit:cover;border-radius:6px;box-shadow:0 4px 10px rgba(0,0,0,.35)}
+@media (min-width:700px){.ins,.ins .col{gap:12px}}
+@media (min-width:1000px){#iv>.in{max-width:760px}.inv .ivw img{max-height:70vh}}
 
 .seo{padding-top:10px}.seo h2{font-size:clamp(26px,6vw,36px);margin:26px 0 10px}.seo p{color:var(--mute);max-width:70ch}
 .dir{list-style:none;padding:0;margin:0;display:grid;gap:8px;font-size:14px;color:var(--mute)}.dir a{color:var(--fg)}.dir li>a:first-child{color:var(--y);font-weight:700}
@@ -436,10 +450,11 @@ footer .sig{font-family:var(--body);font-weight:700;font-size:16px}
 <div class="sheet" id="iv" hidden><div class="in inv" role="dialog" aria-label="Inspiration photo">
   <div class="grab"></div>
   <h3><span>Like this one?</span><button type="button" class="chip" id="iv-x">Close</button></h3>
-  <img id="iv-img" alt="Sticker inspiration">
-  <div class="nav2"><button type="button" class="chip" id="iv-p" aria-label="Previous photo">‹ Prev</button><span id="iv-n"></span><button type="button" class="chip" id="iv-n2" aria-label="Next photo">Next ›</button></div>
+  <div class="ivw" id="iv-w"><img id="iv-img" alt=""></div>
+  <p class="cap" id="iv-cap"></p>
+  <div class="nav2"><button type="button" class="chip" id="iv-p" aria-label="Previous photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button><span id="iv-n"></span><button type="button" class="chip" id="iv-n2" aria-label="Next photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button></div>
   <button class="btn wa" type="button" id="iv-go"><svg class="wa-i"><use href="#wa"/></svg>Get stickers like this</button>
-  <p class="small">We'll design stickers in this style for you. Custom stickers start from GH₵15.</p>
+  <p class="small">Send it and we'll redo it with your own picks. Custom stickers start from GH₵15.</p>
 </div></div>
 <div class="lb" id="lb" hidden><button type="button" class="chip" id="lb-x">Close</button><img id="lb-img" alt="Sticker sheet"></div>
 <div class="toast" id="toast" hidden></div>
