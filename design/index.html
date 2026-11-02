@@ -44,7 +44,7 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(42px,11vw,78px);line
 .more{width:100%;height:48px;border:1px solid var(--line2);margin-top:14px}
 /* editor */
 .ed{display:grid;grid-template-columns:minmax(0,1fr)}
-.stage{position:sticky;top:58px;z-index:20;height:min(44vh,420px);margin:0 calc(-1*var(--gut));background:radial-gradient(120% 90% at 50% 30%,#1b1b1d 0%,#070707 60%,#000 100%);overflow:hidden;touch-action:none}
+.stage{position:sticky;top:58px;z-index:20;height:min(44vh,420px);margin:0 calc(-1*var(--gut));background:radial-gradient(120% 100% at 50% 40%,#ffffff 0%,#f6f6f6 55%,#ececec 100%);overflow:hidden;touch-action:none;color:#111}
 .stage canvas{display:block;width:100%;height:100%}
 .ovl{position:absolute;left:var(--gut);right:var(--gut);display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none}.ovl>*{pointer-events:auto}
 .ovl.t{top:12px}
@@ -102,6 +102,12 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
   .name b{font-size:20px}
 }
 @media (max-width:999px){.ed>div:first-child{display:contents}.stage{box-shadow:0 10px 20px rgba(0,0,0,.6)}}
+
+.stage .name b{color:#111}.stage .lbl{color:#777}
+.stage .chg{color:#111;border-bottom-color:rgba(0,0,0,.25)}
+.stage .hint{background:rgba(255,255,255,.85);color:#666;border:1px solid rgba(0,0,0,.08)}
+.stage .load{color:#999}
+@media (max-width:999px){.stage{box-shadow:0 1px 0 rgba(255,255,255,.08)!important}}
 </style>
 <script type="importmap">{"imports":{"three":"/vendor/three/three.module.min.js"}}</script>
 </head><body>
@@ -372,6 +378,9 @@ function build() {
   const lb = body(w, d, tl, r, mat); lb.position.z = d / 2; lid.add(lb);
   const lo = panel(w - .3, d - .3, r * .85, (x, z) => [(w / 2 - .15 - x) / (w - .3), (d / 2 - .15 - z) / (d - .3)], dm(TX.lid)); lo.position.y = tl + .005; lo.geometry.translate(0, 0, d / 2); lid.add(lo);
   const sc = panel(w - .3, d - .3, r * .85, (x, z) => [(x + w / 2 - .15) / (w - .3), (d / 2 - .15 - z) / (d - .3)], (() => { const t = screenTex(w, d); return new THREE.MeshBasicMaterial({ map: t, toneMapped: false, side: THREE.DoubleSide, color: 0xe8e8e8 }); })()); sc.position.y = -.005; sc.geometry.translate(0, 0, d / 2); lid.add(sc);
+  { const c = document.createElement('canvas'); c.width = 256; c.height = 256; const g = c.getContext('2d'), gr = g.createLinearGradient(0, 0, 256, 256); gr.addColorStop(0, 'rgba(255,255,255,.22)'); gr.addColorStop(.38, 'rgba(255,255,255,.04)'); gr.addColorStop(.4, 'rgba(255,255,255,0)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, 256, 256);
+    const gl = panel(w - .3, d - .3, r * .85, (x, z) => [(x + w / 2) / w, (d / 2 - z) / d], new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false, toneMapped: false, side: THREE.DoubleSide }));
+    gl.position.y = -.012; gl.geometry.translate(0, 0, d / 2); lid.add(gl); }
   if (['biz', 'game', 'budget'].includes(L.style)) { const h = new THREE.Mesh(new THREE.CylinderGeometry(tb * .45, tb * .45, w * .78, 20), mat); h.rotation.z = Math.PI / 2; h.position.set(0, tb * .55, -d / 2 + .1); lap.add(h); }
   const portM = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: .9 }), pinM = new THREE.MeshStandardMaterial({ color: 0x3a3a3a, metalness: .6, roughness: .4 });
   const mk = (side, z, kind) => { const S = { a: [.45, 1.25], c: [.28, .85], h: [.5, 1.45], rj: [Math.min(tb * .8, 1.05), 1.4], sd: [.18, 2.2], mag: [.3, 1.6], dc: [.5, .5] }[kind];
@@ -386,15 +395,15 @@ function build() {
     : L.style === 'chrome' ? [[-1, ['c', 'a', 'au']], [1, ['c', 'a', 'sd']]]
     : [[-1, ['c', 'c', 'a']], [1, ['au', 'a', 'sd']]];
   P.forEach(([side, list]) => { let z = -d * .3; list.forEach(k => { const len = { a: 1.25, c: .85, h: 1.45, rj: 1.4, sd: 2.2, mag: 1.6, dc: .5, au: .4 }[k]; mk(side, z + len / 2, k); z += len + .7; }); });
-  decals = { lid: lo, kb, bot }; lap.position.y = 0; setLid(lidA);
+  decals = { lid: lo, kb, bot }; if (window.__ao) __ao.scale.set(w * 1.35, d * 1.6, 1), __ao.position.z = -d * .05; lap.position.y = 0; setLid(lidA);
   ['lid', 'kb', 'bot'].forEach(x => paint(x));
   const s = Math.max(w, d); ctl.minDistance = s * .7; ctl.maxDistance = s * 3;
 }
 function setLid(a) { lidA = a; lid.rotation.x = -a * Math.PI / 180; kick(); }
 // direction from target, lid angle, target as fractions of (w, d)
-const VIEWS = { hero: [[.62, .55, .78], 110, [0, .2, -.12]], lid: [[0, .32, -1], 102, [0, .5, -.55]], kb: [[0, 1, .38], 108, [0, 0, .05]], bot: [[.1, -1, .25], 0, [0, 0, 0]] };
+const VIEWS = { hero: [[-.62, .5, .9], 106, [0, .3, -.12]], lid: [[0, .32, -1], 102, [0, .5, -.55]], kb: [[0, 1, .38], 108, [0, 0, .05]], bot: [[.1, -1, .25], 0, [0, 0, 0]] };
 const fitDist = v => { const span = v === 'lid' ? Math.max(L.w, L.d * 1.1) : v === 'hero' ? Math.max(L.w, L.d) * 1.05 : Math.max(L.w, L.d * 1.25);
-  const f = Math.tan(cam.fov * Math.PI / 360); return span / 2 / f / Math.min(1, cam.aspect) * 1.18; };
+  const f = Math.tan(cam.fov * Math.PI / 360); return span / 2 / f / Math.min(1, cam.aspect) * (v === 'hero' ? 1.5 : 1.22); };
 const viewPos = v => { const [p, , t] = VIEWS[v]; return [new THREE.Vector3(...p).normalize().multiplyScalar(fitDist(v)).add(new THREE.Vector3(t[0] * L.w, t[1] * L.d, t[2] * L.d)), new THREE.Vector3(t[0] * L.w, t[1] * L.d, t[2] * L.d)]; };
 function go(v, ms = 700) {
   const a = VIEWS[v][1], [to, tt] = viewPos(v), a0 = lidA, from = cam.position.clone(), t0 = ctl.target.clone(), st = performance.now();
@@ -403,13 +412,15 @@ function go(v, ms = 700) {
   idle = v === 'hero';
 }
 function initGL(host) {
-  R = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true }); R.setPixelRatio(Math.min(innerWidth < 700 ? 1.75 : 2, devicePixelRatio)); R.toneMapping = THREE.ACESFilmicToneMapping; R.toneMappingExposure = 1.05;
+  R = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true }); R.setPixelRatio(Math.min(innerWidth < 700 ? 1.75 : 2, devicePixelRatio)); R.toneMapping = THREE.NeutralToneMapping || THREE.ACESFilmicToneMapping; R.toneMappingExposure = 1.05;
   R.shadowMap.enabled = true; R.shadowMap.type = THREE.PCFSoftShadowMap; R.shadowMap.autoUpdate = false; host.appendChild(R.domElement);
-  scene = new THREE.Scene(); const pm = new THREE.PMREMGenerator(R); scene.environment = pm.fromScene(new RoomEnvironment(), .04).texture;
+  scene = new THREE.Scene(); const pm = new THREE.PMREMGenerator(R); scene.environment = pm.fromScene(new RoomEnvironment(), .04).texture; scene.environmentIntensity = .95;
   cam = new THREE.PerspectiveCamera(32, 1, .5, 800);
-  const key = new THREE.DirectionalLight(0xffffff, 1.6); key.position.set(30, 60, 25); key.castShadow = true; key.shadow.mapSize.set(1024, 1024); Object.assign(key.shadow.camera, { left: -45, right: 45, top: 45, bottom: -45 }); key.shadow.radius = 6; scene.add(key);
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x222222, .35));
-  floor = new THREE.Mesh(new THREE.CircleGeometry(80, 64), new THREE.ShadowMaterial({ opacity: .45 })); floor.rotation.x = -Math.PI / 2; floor.position.y = -.02; floor.receiveShadow = true; scene.add(floor);
+  const key = new THREE.DirectionalLight(0xffffff, 1.1); key.position.set(-18, 70, 30); key.castShadow = true; key.shadow.mapSize.set(1024, 1024); Object.assign(key.shadow.camera, { left: -45, right: 45, top: 45, bottom: -45 }); key.shadow.radius = 14; key.shadow.blurSamples = 20; scene.add(key);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0xd8d8d8, .7)); const rim = new THREE.DirectionalLight(0xffffff, .45); rim.position.set(40, 20, -40); scene.add(rim);
+  floor = new THREE.Mesh(new THREE.CircleGeometry(80, 64), new THREE.ShadowMaterial({ opacity: .16 })); floor.rotation.x = -Math.PI / 2; floor.position.y = -.02; floor.receiveShadow = true; scene.add(floor);
+  { const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d'), gr = g.createRadialGradient(128, 128, 10, 128, 128, 128); gr.addColorStop(0, 'rgba(0,0,0,.32)'); gr.addColorStop(.55, 'rgba(0,0,0,.12)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(0, 0, 256, 256);
+    const t = new THREE.CanvasTexture(c); window.__ao = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false, toneMapped: false })); __ao.rotation.x = -Math.PI / 2; __ao.position.y = -.01; scene.add(__ao); }
   ctl = new OrbitControls(cam, R.domElement); ctl.enableDamping = true; ctl.enablePan = false; ctl.minPolarAngle = 0; ctl.maxPolarAngle = Math.PI; ctl.rotateSpeed = .8;
   ctl.addEventListener('start', () => { idle = false; tween = null; }); ctl.addEventListener('change', () => { dirty = true; });
   RO = new ResizeObserver(() => resize()); RO.observe(host); resize();
