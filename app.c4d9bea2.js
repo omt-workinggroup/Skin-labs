@@ -184,11 +184,11 @@ function vHome() {
     ${catGrid()}
     <div class="extra">
       <a class="xcard" href="#inspo">${INS.length ? `<span class="xthumbs">${[2, 1, 0].map((k, j) => INS[k] ? `<img src="inspo/sm/${INS[k].id}.${IX}" alt="" loading="lazy" style="left:${j * 24}px;transform:rotate(${[-8, 2, 9][j]}deg)">` : '').join('')}</span>` : '<span class="xart" id="xa1"></span>'}<span><b>Inspiration</b><small>Laptops and sticker sheets to steal ideas from. Tap one, we print it.</small></span></a>
-      <button type="button" class="xcard" id="x-inspo"><span class="xart" id="xa2"></span><span><b>Send us your idea</b><small>Your name, picture or logo made into stickers. From ${CUR}15.</small></span></button>
+      <button type="button" class="xcard" id="x-inspo"><span class="xicon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/><path d="M8.5 9.5h7M8.5 12.5h4"/></svg></span><span><b>Send us your idea</b><small>Your name, picture or logo made into stickers. From ${CUR}15.</small></span></button>
     </div>
   </section>${footer}`;
   const art = (id, list) => { $(id).innerHTML = list.map(([pid, k], i) => spr(PK[pid], PK[pid].items[k], 52, `transform:rotate(${[-8, 7][i]}deg);margin-right:-12px`)).join(''); };
-  if ($('#xa1')) art('#xa1', [['p3-code-languages-1', 3], ['m2-spider-verse', 2]]); art('#xa2', [['emoji-mood', 0], ['anime-vibes', 4]]);
+  if ($('#xa1')) art('#xa1', [['p3-code-languages-1', 3], ['m2-spider-verse', 2]]); 
   $('#x-inspo').onclick = openInspo;
   if ($('#again')) $('#again').onclick = reorder;
 }
@@ -353,7 +353,7 @@ function render() {
   const tab = r === 'inspo' || r === 'studio' ? 'studio' : 'home';
   [['t-home', 'home'], ['t-cats', 'cats'], ['t-studio', 'studio']].forEach(([id, k]) => $('#' + id).classList.toggle('on', tab === k));
   [['nv-home', 'home'], ['nv-cats', 'cats'], ['nv-studio', 'studio']].forEach(([id, k]) => $('#' + id).classList.toggle('on', tab === k));
-  updBar();
+  updBar(); document.documentElement.classList.remove('nh');
 }
 addEventListener('hashchange', render);
 let rt, lw = innerWidth;
