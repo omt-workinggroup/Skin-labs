@@ -1,0 +1,78 @@
+# Skin Lab by Baiden Creatives
+
+> Laptop sticker packs and custom vinyl stickers, printed in Accra, Ghana. Orders are placed on WhatsApp (055 836 2423, +233 55 836 2423) and paid with Mobile Money (MoMo).
+
+## Prices
+- Full sticker pack (one printed sheet): GH₵60 for 25+ stickers, GH₵50 for smaller sheets
+- Single stickers picked from any pack: GH₵3 each
+- Custom stickers from your own picture, name or logo: from GH₵15
+
+## How to order
+1. Browse packs at https://skin-labs.vercel.app/ or the category pages below
+2. Add packs or single stickers to the cart, enter name and location
+3. Tap "Send order on WhatsApp"; the order arrives as one message; pay with MoMo; delivery or pickup is arranged
+
+## Details
+- Material: die-cut vinyl, laminated
+- Typical size: 3 to 6 cm per sticker
+- Online designer: place stickers on a laptop lid (13.3–17.3 inch), keyboard area, mousepad or phone at real size: https://skin-labs.vercel.app/#studio
+- Instagram: https://www.instagram.com/baidencreatives/
+
+## Categories and packs
+- [Programmers stickers](https://skin-labs.vercel.app/stickers/programmers/): Stickers for developers, computer science students and anyone who lives in a terminal: programming language logos, hacker and cybersecurity designs, AI and vibe-coding tools, and the dev jokes that only make sense at 2am.
+  - [Hacker Mode](https://skin-labs.vercel.app/stickers/programmers/p1-hacker-mode/): 33 stickers, GH₵60
+  - [AI & Vibe Coding](https://skin-labs.vercel.app/stickers/programmers/p2-ai-vibe-coding/): 25 stickers, GH₵60
+  - [Code Languages I](https://skin-labs.vercel.app/stickers/programmers/p3-code-languages-1/): 29 stickers, GH₵60
+  - [Code Languages II](https://skin-labs.vercel.app/stickers/programmers/p4-code-languages-2/): 29 stickers, GH₵60
+  - [Code Languages III](https://skin-labs.vercel.app/stickers/programmers/p5-code-languages-3/): 28 stickers, GH₵60
+  - [Dev Jokes I](https://skin-labs.vercel.app/stickers/programmers/p6-dev-jokes-1/): 27 stickers, GH₵60
+  - [Dev Jokes II](https://skin-labs.vercel.app/stickers/programmers/p7-dev-jokes-2/): 27 stickers, GH₵60
+  - [Dev Jokes III](https://skin-labs.vercel.app/stickers/programmers/p8-dev-jokes-3/): 27 stickers, GH₵60
+- [Gaming stickers](https://skin-labs.vercel.app/stickers/gaming/): For gamers: GTA and Rockstar, Call of Duty and Warzone, PlayStation buttons, retro controllers and gamer-mode signs.
+  - [GTA & Rockstar](https://skin-labs.vercel.app/stickers/gaming/g1-gta-rockstar/): 26 stickers, GH₵60
+  - [Warzone & COD](https://skin-labs.vercel.app/stickers/gaming/g2-warzone-cod/): 36 stickers, GH₵60
+  - [Gamer Mode](https://skin-labs.vercel.app/stickers/gaming/g3-gamer-mode/): 28 stickers, GH₵60
+  - [Player One](https://skin-labs.vercel.app/stickers/gaming/g4-player-one/): 28 stickers, GH₵60
+- [Football stickers](https://skin-labs.vercel.app/stickers/football/): Club crests from the Premier League, La Liga, Serie A, Bundesliga and beyond, plus football legends, trophies and red cards.
+  - [Club Crests I](https://skin-labs.vercel.app/stickers/football/f1-club-crests-i/): 30 stickers, GH₵60
+  - [Club Crests II](https://skin-labs.vercel.app/stickers/football/f2-club-crests-ii/): 30 stickers, GH₵60
+  - [Football Legends](https://skin-labs.vercel.app/stickers/football/f3-football-legends/): 29 stickers, GH₵60
+- [Anime stickers](https://skin-labs.vercel.app/stickers/anime/): One Piece, Naruto and other anime favourites, plus kawaii food, Japanese text and main-character energy.
+  - [Anime Legends](https://skin-labs.vercel.app/stickers/anime/an1-anime-legends/): 31 stickers, GH₵60
+  - [Anime Vibes](https://skin-labs.vercel.app/stickers/anime/anime-vibes/): 27 stickers, GH₵60
+- [Cartoons stickers](https://skin-labs.vercel.app/stickers/cartoons/): Chibi superheroes and classic cartoons, from Marvel minis to SpongeBob and Looney Tunes style chaos.
+  - [Heroes & Cartoons I](https://skin-labs.vercel.app/stickers/cartoons/c1-marvel-chibis/): 32 stickers, GH₵60
+  - [Heroes & Cartoons II](https://skin-labs.vercel.app/stickers/cartoons/c2-cartoon-chaos/): 32 stickers, GH₵60
+- [Streetwear stickers](https://skin-labs.vercel.app/stickers/streetwear/): Hip-hop, skate and 90s street culture: graffiti, sneakers, fast cars and attitude.
+  - [Street Culture](https://skin-labs.vercel.app/stickers/streetwear/s1-street-culture/): 28 stickers, GH₵60
+  - [Cars & Culture](https://skin-labs.vercel.app/stickers/streetwear/s2-cars-and-culture/): 28 stickers, GH₵60
+- [Quotes & Vibes stickers](https://skin-labs.vercel.app/stickers/quotes/): Short quotes and good-vibes lettering for laptops, journals and water bottles.
+  - [Quotes & Vibes](https://skin-labs.vercel.app/stickers/quotes/q1-quotes-and-vibes/): 25 stickers, GH₵60
+- [Girly & Cute stickers](https://skin-labs.vercel.app/stickers/girly/): Soft, cute and pretty stickers: drippy smileys, cherries, bows, Y2K icons, emoji moods and Gen Z quotes.
+  - [Good Vibes Doodles](https://skin-labs.vercel.app/stickers/girly/good-vibes-doodles/): 22 stickers, GH₵50
+  - [Y2K Dreamgirl](https://skin-labs.vercel.app/stickers/girly/y2k-dreamgirl/): 20 stickers, GH₵50
+  - [Emoji Mood](https://skin-labs.vercel.app/stickers/girly/emoji-mood/): 19 stickers, GH₵50
+  - [Gen Z Girlies](https://skin-labs.vercel.app/stickers/girly/gen-z-girlies/): 27 stickers, GH₵60
+- [Marvel & Heroes stickers](https://skin-labs.vercel.app/stickers/marvel/): Avengers and Spider-Man stickers: Iron Man, Thor, Captain America, Venom and the whole Spider-Verse.
+  - [Marvel Avengers](https://skin-labs.vercel.app/stickers/marvel/m1-marvel-avengers/): 29 stickers, GH₵60
+  - [Spider-verse](https://skin-labs.vercel.app/stickers/marvel/m2-spider-verse/): 31 stickers, GH₵60
+- [Sneakers & Hype stickers](https://skin-labs.vercel.app/stickers/sneakers/): For sneakerheads: Jordans, Air Force 1s, Dunks, swooshes and limited-drop energy.
+  - [Sneakerhead I](https://skin-labs.vercel.app/stickers/sneakers/k1-sneakerhead-1/): 25 stickers, GH₵60
+  - [Sneakerhead II](https://skin-labs.vercel.app/stickers/sneakers/k1-sneakerhead-2/): 25 stickers, GH₵60
+- [Cars & JDM stickers](https://skin-labs.vercel.app/stickers/cars/): Car badges and JDM and Euro icons: BMW M, AMG, Supra, Skyline R34, Mustang, Golf GTI and more.
+  - [Car Badges](https://skin-labs.vercel.app/stickers/cars/v1-car-badges/): 25 stickers, GH₵60
+  - [JDM & Euro](https://skin-labs.vercel.app/stickers/cars/v2-jdm-and-euro/): 31 stickers, GH₵60
+- [Moto & Bike Life stickers](https://skin-labs.vercel.app/stickers/moto/): Motocross and bike-life stickers: helmets, wheelies, racing brands and ride-or-die lettering.
+  - [Moto & Bike Life I](https://skin-labs.vercel.app/stickers/moto/b1-moto-bike-life-1/): 21 stickers, GH₵50
+  - [Moto & Bike Life II](https://skin-labs.vercel.app/stickers/moto/b1-moto-bike-life-2/): 21 stickers, GH₵50
+- [Dark Street Art stickers](https://skin-labs.vercel.app/stickers/dark/): Black-and-white street art: skulls, graffiti, Thug Life, Bad Boys and no-rules designs.
+  - [Dark Street Art I](https://skin-labs.vercel.app/stickers/dark/d1-dark-street-art-1/): 21 stickers, GH₵50
+  - [Dark Street Art II](https://skin-labs.vercel.app/stickers/dark/d1-dark-street-art-2/): 21 stickers, GH₵50
+
+## FAQ
+**How much are the sticker packs?** A full printed sheet costs GH₵60 for packs with 25 or more stickers and GH₵50 for smaller sheets. Single stickers you pick yourself cost GH₵3 each. Custom stickers made from your own picture, name or logo start at GH₵15.
+**How do I order?** Choose a pack or pick single stickers on the website, add your name and location, and tap "Send order on WhatsApp". Your order arrives as one message on WhatsApp (055 836 2423). We confirm, you pay with MoMo, and we arrange delivery or pickup.
+**Where are you based and do you deliver?** Skin Lab is run by Baiden Creatives in Accra, Ghana. Delivery or pickup is arranged with you on WhatsApp after you order, including to university campuses.
+**Will the stickers peel off?** They are printed on vinyl and laminated, so they handle bags, sweaty palms and rain. Clean and dry the surface before sticking and press down firmly for a few seconds.
+**How big are the stickers?** Most stickers are between 3 and 6 cm, sized for a laptop lid, the area around the keyboard, a mousepad, a phone case or a water bottle.
+**Can I design my own layout?** Yes. The designer on the website lets you place stickers on a laptop lid (13.3 to 17.3 inch), the keyboard area, a mousepad or a phone, at real size, then order them as singles.
