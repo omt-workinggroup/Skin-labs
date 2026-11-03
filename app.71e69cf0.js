@@ -299,6 +299,16 @@ async function vView(s) {
     orderBody((o.p || []).filter(([i]) => D.packs[i]).map(([i, q]) => [D.packs[i].id, q]), (o.s || []).filter(([c]) => CODE[c]), o, ref, true); }
   catch (e) { app.innerHTML = `<section class="sec notice"><div class="kick-row"><span>Order ${ref}</span><span>Error</span></div><h1 class="h1">This link is <em>incomplete.</em></h1><p class="sub">Part of it was probably cut off when it was copied. Tap the full link in the WhatsApp chat, or read the order in the message.</p><div class="ctas" style="margin-top:20px"><a class="btn o" href="#">Back to the shop</a></div></section>${footer}`; }
 }
+// links from the old private format: the full order is always written out in the WhatsApp message itself
+function vOldLink(ref) {
+  app.innerHTML = `<section class="sec notice">
+    <div class="kick-row"><span>${ref ? `Order ${ref}` : 'Order'}</span><span>Skin Lab</span></div>
+    <h1 class="h1">This order is in <em>the chat.</em></h1>
+    <p class="sub">This link was made by an older version of the shop, so it can't show the order here. Every item, the prices and the total are written out in the WhatsApp message above the link.</p>
+    <p class="small">New orders get a link that shows the full order to you and to Skin Lab.</p>
+    <div class="ctas" style="margin-top:20px"><a class="btn wa" href="https://wa.me/${WA}" target="_blank" rel="noopener">${waIcon}Open the chat</a><a class="btn o" href="#">Back to the shop</a></div>
+  </section>${footer}`;
+}
 function vNotice(ref) {
   app.innerHTML = `<section class="sec notice">
     <div class="kick-row"><span>${ref ? `Order ${ref}` : 'Your order'}</span><span>Skin Lab</span></div>
@@ -311,10 +321,10 @@ function vNotice(ref) {
 async function vSealed(s) {
   app.innerHTML = `<section class="sec notice"><div class="kick-row"><span>Order</span><span>Opening…</span></div></section>`;
   const ref = await orderRef(s).catch(() => '');
-  if (!isOwner()) return vNotice(ref);
+  if (!isOwner()) return vOldLink(ref);
   try { const o = await openSealed(s);
     orderBody((o.p || []).filter(([i]) => D.packs[i]).map(([i, q]) => [D.packs[i].id, q]), (o.s || []).filter(([c]) => CODE[c]), o, ref); }
-  catch (e) { app.innerHTML = `<section class="sec notice"><div class="kick-row"><span>Order ${ref}</span><span>Error</span></div><h1 class="h1">This link is <em>incomplete.</em></h1><p class="sub">Part of it was probably cut off when it was copied. Ask the customer to send it again, or read the order in their message.</p></section>${footer}`; }
+  catch (e) { vOldLink(ref); }
 }
 function vOrder(r) {
   if (!isOwner()) return vNotice('');
