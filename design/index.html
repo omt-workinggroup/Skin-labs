@@ -44,7 +44,7 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(42px,11vw,78px);line
 .more{width:100%;height:48px;border:1px solid var(--line2);margin-top:14px}
 /* editor */
 .ed{display:grid;grid-template-columns:minmax(0,1fr)}
-.stage{position:sticky;top:58px;z-index:20;height:min(44vh,420px);margin:0 calc(-1*var(--gut));background:radial-gradient(120% 100% at 50% 40%,#ffffff 0%,#f6f6f6 55%,#ececec 100%);overflow:hidden;touch-action:none;color:#111}
+.stage{position:sticky;top:58px;z-index:20;height:min(44vh,420px);height:min(44svh,420px);margin:0 calc(-1*var(--gut));background:radial-gradient(120% 100% at 50% 40%,#ffffff 0%,#f6f6f6 55%,#ececec 100%);overflow:hidden;touch-action:none;color:#111}
 .stage canvas{display:block;width:100%;height:100%}
 .ovl{position:absolute;left:var(--gut);right:var(--gut);display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none}.ovl>*{pointer-events:auto}
 .ovl.t{top:12px}
@@ -98,7 +98,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
   .addto{display:grid;grid-template-columns:1fr}.addto .seg{margin-left:0!important;min-width:0}
   .acts{grid-template-columns:1fr 1fr;}.acts .btn.y{grid-column:1/-1}
   h1{font-size:40px}
-  .stage{height:min(40vh,360px)}
+  .stage{height:min(40vh,360px);height:min(40svh,360px)}
   .name b{font-size:20px}
 }
 @media (max-width:999px){.ed>div:first-child{display:contents}.stage{box-shadow:0 10px 20px rgba(0,0,0,.6)}}
@@ -156,7 +156,7 @@ const SN = { lid: 'Lid', kb: 'Keyboard', bot: 'Bottom' };
 
 // ---------- step 1: find your laptop ----------
 let q = '', fTag = '', fBrand = '', shown = 40;
-const TAGS = [['', 'All'], ['r', 'Real photos'], ['s', 'Student'], ['p', 'Programmer'], ['g', 'Gamer'], ['c', 'Creator']];
+const TAGS = [['', 'All'], ['s', 'Student'], ['p', 'Programmer'], ['g', 'Gamer'], ['c', 'Creator']];
 const BRANDS = [...new Set(LAPS.map(l => l.brand))];
 function vPick() {
   app.innerHTML = `<div class="kr lbl"><span>Design · step 1 of 2</span><span>${LAPS.length} laptops</span></div>
@@ -167,12 +167,12 @@ function vPick() {
     <div class="lbl" id="cnt" style="margin-top:16px"></div><div class="res" id="res"></div>`;
   const draw = () => {
     const words = q.toLowerCase().split(/\s+/).filter(Boolean);
-    const r = LAPS.filter(l => (!fTag || (fTag === 'r' ? realSet(l) : l.tags.includes(fTag))) && (!fBrand || l.brand === fBrand) && words.every(w => (l.brand + ' ' + l.name).toLowerCase().includes(w)));
+    const r = LAPS.filter(l => (!fTag || l.tags.includes(fTag)) && (!fBrand || l.brand === fBrand) && words.every(w => (l.brand + ' ' + l.name).toLowerCase().includes(w)));
     $('#cnt').textContent = `${r.length} match${r.length === 1 ? '' : 'es'}`;
     $('#res').innerHTML = r.slice(0, shown).map(l => { const a = l.w / l.d, h = 36, w = Math.min(54, h * a);
-      const rs = realSet(l); return `<button class="row" data-i="${l.i}"><span class="ic">${rs ? `<img src="${shotSrc(rs.shots[0], 't')}" alt="" loading="lazy">` : `<span style="width:${w}px;height:${w / a}px;margin:auto;background:${LCOL[l.cols[0]]}"></span>`}</span>
+      return `<button class="row" data-i="${l.i}"><span class="ic"><span style="width:${w}px;height:${w / a}px;margin:auto;background:${LCOL[l.cols[0]]}"></span></span>
       <span><b>${esc(l.brand)} ${esc(l.name)}</b><span class="lbl">${l.scr}″ · ${l.w} × ${l.d} cm · ${l.t} mm</span></span>
-      <span class="tagg">${rs ? 'Photo' : l.tags.includes('g') ? 'Gamer' : l.tags.includes('p') ? 'Dev' : 'Student'}</span></button>`; }).join('') +
+      <span class="tagg">${l.tags.includes('g') ? 'Gamer' : l.tags.includes('p') ? 'Dev' : 'Student'}</span></button>`; }).join('') +
       (r.length > shown ? `<button class="more lbl" id="more" style="color:#fff">Show ${Math.min(40, r.length - shown)} more</button>` : '');
     const m = $('#more'); if (m) m.onclick = () => { shown += 40; draw(); };
   };
@@ -386,7 +386,8 @@ function screenTex(w, h) { const c = document.createElement('canvas'); c.width =
 setInterval(() => { if (SCR && L) drawScreen(); }, 20000);
 
 // ---------- 3D ----------
-let RO, resize = () => { const h = $('#stage'); if (!h || !R) return; const r = h.getBoundingClientRect(); if (r.width < 10 || r.height < 10) return; R.setSize(r.width, r.height, false); cam.aspect = r.width / r.height; cam.updateProjectionMatrix(); kick(); phLayout(); };
+let RO, lastSz = '', resize = () => { const h = $('#stage'); if (!h || !R) return; const r = h.getBoundingClientRect(); if (r.width < 10 || r.height < 10) return;
+  const sz = Math.round(r.width) + 'x' + Math.round(r.height); if (sz === lastSz) return; lastSz = sz;   /* scrolling never rebuilds the canvas */ R.setSize(r.width, r.height, false); cam.aspect = r.width / r.height; cam.updateProjectionMatrix(); kick(); phLayout(); };
 let R, scene, cam, ctl, lap, lid, decals, floor, raf, idle = true, tween = null, dirty = true, idleT = 0;
 const kick = () => { dirty = true; if (R) R.shadowMap.needsUpdate = true; };
 function shapeRR(w, d, r) { const s = new THREE.Shape(), x = -w / 2, y = -d / 2; s.moveTo(x + r, y); s.lineTo(x + w - r, y); s.quadraticCurveTo(x + w, y, x + w, y + r); s.lineTo(x + w, y + d - r); s.quadraticCurveTo(x + w, y + d, x + w - r, y + d); s.lineTo(x + r, y + d); s.quadraticCurveTo(x, y + d, x, y + d - r); s.lineTo(x, y + r); s.quadraticCurveTo(x, y, x + r, y); return s; }
@@ -440,14 +441,16 @@ const VIEWS = { hero: [[-.62, .5, .9], 106, [0, .3, -.12]], lid: [[0, .32, -1], 
 const fitDist = v => { const span = v === 'lid' ? Math.max(L.w, L.d * 1.1) : v === 'hero' ? Math.max(L.w, L.d) * 1.05 : Math.max(L.w, L.d * 1.25);
   const f = Math.tan(cam.fov * Math.PI / 360); return span / 2 / f / Math.min(1, cam.aspect) * (v === 'hero' ? 1.5 : 1.22); };
 const viewPos = v => { const [p, , t] = VIEWS[v]; return [new THREE.Vector3(...p).normalize().multiplyScalar(fitDist(v)).add(new THREE.Vector3(t[0] * L.w, t[1] * L.d, t[2] * L.d)), new THREE.Vector3(t[0] * L.w, t[1] * L.d, t[2] * L.d)]; };
-function go(v, ms = 700) {
+let curView = 'hero', lastTouch = 0; const busy = () => sel >= 0 || !!document.querySelector('.stage.drag');
+function go(v, ms = 700) { curView = v; lastTouch = performance.now();
   const a = VIEWS[v][1], [to, tt] = viewPos(v), a0 = lidA, from = cam.position.clone(), t0 = ctl.target.clone(), st = performance.now();
   tween = now => { const k = Math.min(1, (now - st) / ms), e = k < .5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2;
     cam.position.lerpVectors(from, to, e); ctl.target.lerpVectors(t0, tt, e); setLid(a0 + (a - a0) * e); const sl = $('#lida'); if (sl) sl.value = lidA; if (k >= 1) tween = null; };
   idle = v === 'hero';
 }
 function initGL(host) {
-  R = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true }); R.setPixelRatio(Math.min(innerWidth < 700 ? 1.75 : 2, devicePixelRatio)); R.toneMapping = THREE.NeutralToneMapping || THREE.ACESFilmicToneMapping; R.toneMappingExposure = 1.05;
+  R = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true }); let PR = Math.min(innerWidth < 700 ? 1.6 : 2, devicePixelRatio); R.setPixelRatio(PR); window.__pr = () => PR;
+  let ft = 0, fn = 0, fl = 0; const guard = now => { if (fl) { ft += now - fl; fn++; } fl = now; if (fn >= 40) { if (ft / fn > 30 && PR > 1) { PR = Math.max(1, PR - .25); R.setPixelRatio(PR); lastSz = ''; resize(); } ft = fn = 0; } }; R.toneMapping = THREE.NeutralToneMapping || THREE.ACESFilmicToneMapping; R.toneMappingExposure = 1.05;
   R.shadowMap.enabled = true; R.shadowMap.type = THREE.PCFSoftShadowMap; R.shadowMap.autoUpdate = false; host.appendChild(R.domElement);
   scene = new THREE.Scene(); const pm = new THREE.PMREMGenerator(R); scene.environment = pm.fromScene(new RoomEnvironment(), .04).texture; scene.environmentIntensity = .95;
   cam = new THREE.PerspectiveCamera(32, 1, .5, 800);
@@ -457,11 +460,11 @@ function initGL(host) {
   { const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d'), gr = g.createRadialGradient(128, 128, 10, 128, 128, 128); gr.addColorStop(0, 'rgba(0,0,0,.32)'); gr.addColorStop(.55, 'rgba(0,0,0,.12)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(0, 0, 256, 256);
     const t = new THREE.CanvasTexture(c); window.__ao = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false, toneMapped: false })); __ao.rotation.x = -Math.PI / 2; __ao.position.y = -.01; scene.add(__ao); }
   ctl = new OrbitControls(cam, R.domElement); ctl.enableDamping = true; ctl.enablePan = false; ctl.minPolarAngle = 0; ctl.maxPolarAngle = Math.PI; ctl.rotateSpeed = .8;
-  ctl.addEventListener('start', () => { idle = false; tween = null; }); ctl.addEventListener('change', () => { dirty = true; });
+  ctl.addEventListener('start', () => { idle = false; tween = null; lastTouch = performance.now(); }); ctl.addEventListener('end', () => { lastTouch = performance.now(); }); ctl.addEventListener('change', () => { dirty = true; });
   RO = new ResizeObserver(() => resize()); RO.observe(host); resize();
-  const loop = now => { raf = requestAnimationFrame(loop); if (mode === 'ph') return; if (idle && !idleT) idleT = now; if (idle && now - idleT > 9000) { idle = false; } if (!idle) idleT = 0;
+  const loop = now => { raf = requestAnimationFrame(loop); if (!idle && !tween && !busy() && curView === 'hero' && now - lastTouch > 5000) idle = true;   // showroom spin, back on its own
     const moving = !!tween || idle; if (tween) tween(now); else if (idle) { const a = .0025, t = ctl.target, x = cam.position.x - t.x, z = cam.position.z - t.z; cam.position.x = t.x + x * Math.cos(a) - z * Math.sin(a); cam.position.z = t.z + x * Math.sin(a) + z * Math.cos(a); }
-    const ch = ctl.update(); if (!(moving || ch || dirty)) return; dirty = false; floor.visible = cam.position.y > 0; R.render(scene, cam); }; raf = requestAnimationFrame(loop);
+    const ch = ctl.update(); if (!(moving || ch || dirty)) { fl = 0; return; } guard(now); dirty = false; floor.visible = cam.position.y > 0; R.render(scene, cam); }; raf = requestAnimationFrame(loop);
   // sticker picking and dragging on the 3D surfaces
   const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
   const hitAt = (e, only) => { const r = R.domElement.getBoundingClientRect(); ndc.set((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1); ray.setFromCamera(ndc, cam);
@@ -492,111 +495,27 @@ function initGL(host) {
 const save3 = () => { if (LL) return; try { localStorage.setItem('sl-design3', JSON.stringify({ i: L && L.i, n: L && `${L.brand} ${L.name}`, col, items, skin })); } catch (e) {} };
 const store = { get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
 function thumb(w = 420) {
-  if (mode === 'ph') {   // the photo view hides the 3D model: take the picture from the 3D laptop in its hero pose instead
-    const cv = R.domElement, v = cv.style.visibility; cv.style.visibility = ''; const sv = ['lid', 'kb', 'bot'].reduce((m, k) => items[k].length + (skin[k] ? 3 : 0) > items[m].length + (skin[m] ? 3 : 0) ? k : m, 'lid');   // show the side with the design
-    const [hp, ht] = viewPos(sv); cam.position.copy(hp); ctl.target.copy(ht); ctl.update(); setLid(VIEWS[sv][1]);
-    R.render(scene, cam); const t = thumbOf(w); cv.style.visibility = v; return t; }
   R.render(scene, cam); return thumbOf(w); }
 function thumbOf(w) { const c = document.createElement('canvas'), src = R.domElement; c.width = w; c.height = Math.round(w * src.height / src.width);
   const g = c.getContext('2d'); g.fillStyle = '#f4f4f4'; g.fillRect(0, 0, c.width, c.height); g.drawImage(src, 0, 0, c.width, c.height); return c.toDataURL('image/jpeg', .72); }
 const v3 = () => ({ v: 3, name: `${L.brand} ${L.name}`, li: L.i, col, skin: { ...skin }, items: JSON.parse(JSON.stringify(items)) });
 const snap = () => { hist.push(JSON.stringify({ items, skin })); if (hist.length > 60) hist.shift(); };
 
-// ---------- real photos: the actual machine on white, live screen, stickers placed in true perspective ----------
-const REAL = await fetch('/laptops-real/real.json').then(r => r.ok ? r.json() : null).catch(() => null);
-const realSet = l => l && REAL && REAL.sets.find(s => new RegExp(s.re).test(l.name + ' '));
-const shotSrc = (n, t) => `/laptops-real/${n}-${t}.${IX}`;
-// 4-point homography (unit square or any quad -> quad), solved by Gaussian elimination
-function homog(src, dst) { const A = [], b = [];
-  for (let i = 0; i < 4; i++) { const [x, y] = src[i], [X, Y] = dst[i]; A.push([x, y, 1, 0, 0, 0, -x * X, -y * X]); b.push(X); A.push([0, 0, 0, x, y, 1, -x * Y, -y * Y]); b.push(Y); }
-  for (let i = 0; i < 8; i++) { let m = i; for (let r = i + 1; r < 8; r++) if (Math.abs(A[r][i]) > Math.abs(A[m][i])) m = r; [A[i], A[m]] = [A[m], A[i]]; [b[i], b[m]] = [b[m], b[i]];
-    for (let r = 0; r < 8; r++) if (r !== i) { const f = A[r][i] / A[i][i]; for (let c = i; c < 8; c++) A[r][c] -= f * A[i][c]; b[r] -= f * b[i]; } }
-  return [...b.map((v, i) => v / A[i][i]), 1]; }
-const m3d = h => `matrix3d(${h[0]},${h[3]},0,${h[6]},${h[1]},${h[4]},0,${h[7]},0,0,1,0,${h[2]},${h[5]},0,${h[8]})`;
-const hApply = (h, x, y) => { const w = h[6] * x + h[7] * y + h[8]; return [(h[0] * x + h[1] * y + h[2]) / w, (h[3] * x + h[4] * y + h[5]) / w]; };
-let mode = '3d', shot = 0;
-const PV = { k: 1, tx: 0, ty: 0, cw: 0, ch: 0, ox: 0, oy: 0, hi: false, inv: null };
-const curShot = () => { const rs = realSet(L); return rs && REAL.shots[rs.shots[shot]] && { n: rs.shots[shot], ...REAL.shots[rs.shots[shot]] }; };
-function phLayout() { const st = $('#stage'), S = curShot(); if (!st || !S || mode !== 'ph') return;
-  const r = st.getBoundingClientRect(), ov = $('.ovl.t'), top = (ov ? ov.offsetHeight + 12 : 60) + 2, bot = 26, side = r.width < 700 ? 8 : 40, aw = r.width - 2 * side, ah = r.height - top - bot, a = S.w / S.h;
-  PV.cw = Math.min(aw, ah * a); PV.ch = PV.cw / a; PV.ox = (r.width - PV.cw) / 2; PV.oy = top + (ah - PV.ch) / 2;
-  const z = $('#phz'); z.style.width = PV.cw + 'px'; z.style.height = PV.ch + 'px'; phXform();
-  const Q = q => q.map(([x, y]) => [x * PV.cw, y * PV.ch]);
-  const lc = $('#phl'), sc = $('#phs');
-  if (S.lid) { lc.hidden = false; const W = lc.width, H = lc.height, hm = homog([[0, 0], [W, 0], [W, H], [0, H]], Q(S.lid)); lc.style.transform = m3d(hm); PV.inv = homog(Q(S.lid), [[0, 0], [W, 0], [W, H], [0, H]]); } else { lc.hidden = true; PV.inv = null; }
-  if (S.scr) { sc.hidden = false; const hm = homog([[0, 0], [sc.width, 0], [sc.width, sc.height], [0, sc.height]], Q(S.scr)); sc.style.transform = m3d(hm); } else sc.hidden = true;
-}
-function phXform() { const z = $('#phz'); if (!z) return; const k = PV.k, mx = PV.cw * (k - 1) / 2 + 40, my = PV.ch * (k - 1) / 2 + 40;
-  if (k <= 1.001) { PV.tx = PV.ty = 0; } else { PV.tx = Math.max(-mx, Math.min(mx, PV.tx)); PV.ty = Math.max(-my, Math.min(my, PV.ty)); }
-  z.style.transform = `translate(${PV.ox + PV.tx - PV.cw * (k - 1) / 2}px,${PV.oy + PV.ty - PV.ch * (k - 1) / 2}px) scale(${k})`;
-  if (k > 1.25 && !PV.hi) { PV.hi = true; const S = curShot(), i = new Image(); i.src = shotSrc(S.n, 'x'); i.decode().then(() => { if (curShot() && curShot().n === S.n) $('#phi').src = i.src; $('#phq').textContent = `${S.w} × ${S.h} px`; }).catch(() => {}); }
-  $('#phzoom').textContent = k > 1.01 ? `${k.toFixed(1)}×` : ''; $('#stage').classList.toggle('zm', k > 1.01); }
-async function phLid() { const S = curShot(), c = $('#phl'); if (!S || !S.lid || !c) return; const g = c.getContext('2d'), W = c.width, H = c.height; g.clearRect(0, 0, W, H);
-  g.save(); rr(g, 0, 0, W, H, W * .025); g.clip();
-  if (skin.lid) { await paintSkin(g, skin.lid, W, H); const sh = g.createLinearGradient(0, 0, W, H); sh.addColorStop(0, 'rgba(255,255,255,.10)'); sh.addColorStop(.5, 'rgba(255,255,255,0)'); sh.addColorStop(1, 'rgba(0,0,0,.10)'); g.fillStyle = sh; g.fillRect(0, 0, W, H); }
-  drawStickers(g, 'lid', W, H); g.restore(); }
-function phScreen() { const c = $('#phs'); if (!c || c.hidden) return; const g = c.getContext('2d'), W = c.width, H = c.height; paintDesk(g, 0, 0, W, H);
-  const gl = g.createLinearGradient(0, 0, W * .7, H); gl.addColorStop(0, 'rgba(255,255,255,.09)'); gl.addColorStop(.42, 'rgba(255,255,255,.02)'); gl.addColorStop(.43, 'rgba(255,255,255,0)'); g.fillStyle = gl; g.fillRect(0, 0, W, H); }
-function phShow(i) { const rs = realSet(L); if (!rs) return; shot = (i + rs.shots.length) % rs.shots.length; const S = curShot(); PV.k = 1; PV.hi = false;
-  const im = $('#phi'), src = shotSrc(S.n, 'm'); if (!im.src.endsWith(src)) { if (im.src) im.style.opacity = .35; const pre = new Image(); pre.src = src; pre.decode().catch(() => {}).then(() => { if (curShot().n === S.n) { im.src = src; im.style.opacity = 1; } }); }
-  $('#phq').textContent = S.scr ? 'Live screen' : S.lid ? 'Stickers placed in perspective' : 'Real photo';
-  document.querySelectorAll('#shots [data-n]').forEach((b, k) => b.classList.toggle('on', k === shot));
-  const tex = TX.lid && TX.lid.image, lc = $('#phl'); lc.width = 1600; lc.height = Math.round(1600 * (tex ? tex.height / tex.width : L.d / L.w));
-  phLayout(); phLid(); phScreen(); }
-function setMode(m) { const rs = realSet(L); if (m === 'ph' && !rs) m = '3d'; mode = m; const ph = $('#ph'); if (!ph) return;
-  ph.hidden = m !== 'ph'; if (R) R.domElement.style.visibility = m === 'ph' ? 'hidden' : ''; $('.ctrl').hidden = m === 'ph' || sel >= 0; $('#shots').hidden = m !== 'ph';
-  document.querySelectorAll('#md [data-m]').forEach(b => b.classList.toggle('on', b.dataset.m === m)); $('#hint').hidden = m === 'ph';
-  if (m === 'ph') phShow(shot); else { kick(); const sv = ['lid', 'kb', 'bot'].find(k => items[k].length || skin[k]); if (sv && L) go(sv, 900); } }
-const lidShot = () => { const rs = realSet(L); return rs ? rs.shots.findIndex(n => REAL.shots[n].lid) : -1; };
-function hitSticker(s, x, y, W, H) { for (let i = items[s].length - 1; i >= 0; i--) { const o = items[s][i], { it } = CODE[o.c], k = o.s * W / Math.max(it[3], it[4]), w = it[3] * k / 2 + W * .01, h = it[4] * k / 2 + W * .01;
-  const dx = (x - o.x) * W, dy = (y - o.y) * H, a = -o.r * Math.PI / 180, rx = dx * Math.cos(a) - dy * Math.sin(a), ry = dx * Math.sin(a) + dy * Math.cos(a); if (Math.abs(rx) < w && Math.abs(ry) < h) return i; } return -1; }
-function phGestures(el) {
-  const pts = new Map(); let g = null, last = 0;
-  const local = e => { const r = $('#stage').getBoundingClientRect(), k = PV.k; return [(e.clientX - r.left - (PV.ox + PV.tx - PV.cw * (k - 1) / 2)) / k, (e.clientY - r.top - (PV.oy + PV.ty - PV.ch * (k - 1) / 2)) / k]; };
-  const lidUV = e => { if (!PV.inv) return null; const [x, y] = local(e), [u, v] = hApply(PV.inv, x, y), c = $('#phl'); return [u / c.width, v / c.height]; };
-  el.addEventListener('pointerdown', e => { el.setPointerCapture(e.pointerId); pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (pts.size === 2) { const [a, b] = [...pts.values()], d = Math.hypot(a.x - b.x, a.y - b.y) || 1, an = Math.atan2(b.y - a.y, b.x - a.x);
-      g = sel >= 0 && surf === 'lid' && PV.inv ? { t: 'sp', d, an, s0: items.lid[sel].s, r0: items.lid[sel].r } : { t: 'zoom', d, k0: PV.k }; return; }
-    const uv = lidUV(e), c = $('#phl'); const i = uv && uv[0] > -.05 && uv[0] < 1.05 && uv[1] > -.05 && uv[1] < 1.05 ? hitSticker('lid', uv[0], uv[1], c.width, c.height) : -1;
-    if (i >= 0) { snap(); surf = 'lid'; sel = i; g = { t: 'drag', ox: items.lid[i].x - uv[0], oy: items.lid[i].y - uv[1] }; refresh(); phLid(); }
-    else g = { t: 'pan', x: e.clientX, y: e.clientY, tx: PV.tx, ty: PV.ty, moved: 0 }; });
-  el.addEventListener('pointermove', e => { if (!pts.has(e.pointerId) || !g) return; pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (pts.size >= 2) { const [a, b] = [...pts.values()], d = Math.hypot(a.x - b.x, a.y - b.y), an = Math.atan2(b.y - a.y, b.x - a.x);
-      if (g.t === 'sp') { const o = items.lid[sel]; o.s = Math.min(.9, Math.max(.025, g.s0 * d / g.d)); o.r = Math.round(g.r0 + (an - g.an) * 180 / Math.PI); schedule('lid'); }
-      else if (g.t === 'zoom') { PV.k = Math.min(5, Math.max(1, g.k0 * d / g.d)); phXform(); } return; }
-    if (g.t === 'drag') { const uv = lidUV(e); if (!uv) return; const o = items.lid[sel]; o.x = Math.min(1, Math.max(0, uv[0] + g.ox)); o.y = Math.min(1, Math.max(0, uv[1] + g.oy)); schedule('lid'); }
-    else if (g.t === 'pan') { const dx = e.clientX - g.x, dy = e.clientY - g.y; g.moved = Math.max(g.moved, Math.hypot(dx, dy)); if (PV.k > 1) { PV.tx = g.tx + dx; PV.ty = g.ty + dy; phXform(); } } });
-  const up = e => { pts.delete(e.pointerId); if (pts.size) return; const was = g; g = null; if (!was) return;
-    if (was.t === 'drag') { refresh(); return; }
-    if (was.t === 'pan') { const dx = e.clientX - was.x;
-      if (PV.k <= 1.01 && Math.abs(dx) > 60 && was.moved > 60) { phShow(shot + (dx < 0 ? 1 : -1)); return; }
-      if (was.moved < 6) { const now = performance.now();
-        if (now - last < 320) { const r = $('#stage').getBoundingClientRect(); if (PV.k > 1.01) PV.k = 1; else { PV.k = 2.6; PV.tx = (r.width / 2 - (e.clientX - r.left)) * 1.6; PV.ty = (r.height / 2 - (e.clientY - r.top)) * 1.6; } phXform(); last = 0; }
-        else { last = now; if (sel >= 0) { sel = -1; refresh(); schedule('lid'); } } } } };
-  el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
-  el.addEventListener('wheel', e => { e.preventDefault();
-    if (sel >= 0 && surf === 'lid' && PV.inv) { const o = items.lid[sel]; if (e.shiftKey || e.altKey) o.r = Math.round(o.r + Math.sign(e.deltaY) * 5); else o.s = Math.min(.9, Math.max(.025, o.s * (e.deltaY < 0 ? 1.06 : 1 / 1.06))); $('#ssz').value = Math.round(o.s * 100); schedule('lid'); return; }
-    const r = $('#stage').getBoundingClientRect(), k0 = PV.k, k = Math.min(5, Math.max(1, k0 * (e.deltaY < 0 ? 1.15 : 1 / 1.15))), cx = e.clientX - r.left - r.width / 2, cy = e.clientY - r.top - r.height / 2;
-    PV.tx = cx - (cx - PV.tx) * k / k0; PV.ty = cy - (cy - PV.ty) * k / k0; PV.k = k; phXform(); }, { passive: false });
-}
-addEventListener('resize', () => phLayout());
-setInterval(() => { if (mode === 'ph') phScreen(); }, 20000);
+// one laptop look everywhere: our own 3D model (the photo view was removed to keep the designer fast)
+const mode = '3d', realSet = () => null, phLayout = () => {}, phLid = () => {};
 
 // ---------- step 2: editor ----------
 const C0 = D.cats.find(c => !['xl', 'mix'].includes(c.id)) || D.cats[0];   // open on a full category, not the one-sticker lid centrepieces
 let tab = 'stickers', ccat = C0.id, cpack = C0.packs[0];
 async function vEditor() {
-  const RS = realSet(L);
   if (!THREE) { app.innerHTML = `<div class="stage" id="stage"><div class="load">Building your ${esc(L.brand)}…</div></div>`; await loadGL(); }
   app.innerHTML = `<div class="ed"><div><div class="stage" id="stage"><div class="load">Building your ${esc(L.brand)}…</div>
-      ${RS ? `<div class="ph" id="ph" hidden><div class="phz" id="phz"><img id="phi" src="${shotSrc(RS.shots[0], 'm')}" alt="${esc(RS.t)}, real photo" draggable="false"><canvas id="phl" width="1600" height="1000"></canvas><canvas id="phs" width="1600" height="1000"></canvas></div><div class="phm"><span class="lbl" id="phq"></span><span class="lbl" id="phzoom"></span></div></div>` : ''}
       <div class="ovl t"><div class="name"><b>${esc(L.brand)} ${esc(L.name.replace(/ \(.+\)$/, ''))}</b><span class="lbl">${L.scr}″ · ${L.w} × ${L.d} cm · <a class="chg lbl" href="#pick" id="chg">Change</a></span></div>
-        <div class="ovr">${RS ? '<div class="md" id="md"><button data-m="ph">Photo</button><button data-m="3d">3D</button></div>' : ''}<button class="fsb" id="fsb" aria-label="Full screen"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button></div></div>
+        <div class="ovr"><button class="fsb" id="fsb" aria-label="Full screen"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button></div></div>
       <span class="hint" id="hint">Drag to turn · pinch to zoom</span>
 </div>
       <div class="ctrl"><div class="views" id="views"><button data-v="hero">360°</button><button data-v="lid">Lid</button><button data-v="kb">Keys</button><button data-v="bot">Base</button></div>
         <label class="lidc" id="lidrow"><span class="lbl">Open</span><input type="range" id="lida" min="0" max="140" value="${lidA}"></label></div>
-      <div class="shots" id="shots" hidden>${RS ? RS.shots.map(n => `<button data-n="${n}" aria-label="Photo"><img src="${shotSrc(n, 't')}" alt="" loading="lazy"></button>`).join('') + `<span class="lbl">Real ${esc(RS.t)} · double-tap to zoom</span>` : ''}</div>
       <div class="selbar" id="selbar" hidden><span class="lbl">Size <b id="szl" style="color:#fff;font-weight:500;letter-spacing:.04em"></b></span><input type="range" id="ssz" min="4" max="60" step="1"><span class="lbl">Turn</span><input type="range" id="srt" min="-180" max="180" step="1">
         <div class="btns"><button id="sdel">Remove</button><button id="sup">To front</button><button class="w" id="sok">Done</button></div></div></div>
     <aside class="drawer">
@@ -607,12 +526,9 @@ async function vEditor() {
     </aside></div>`;
   if (!R) initGL($('#stage')); else { $('#stage').appendChild(R.domElement); RO.disconnect(); RO.observe($('#stage')); resize(); }
   $('#stage .load').remove(); build(); const [hp, ht] = viewPos('hero'); cam.position.copy(hp); ctl.target.copy(ht); setLid(110); idle = true;
-  if (RS) { phGestures($('#ph')); shot = 0; $('#md').onclick = e => { const b = e.target.closest('[data-m]'); if (b) setMode(b.dataset.m); };
-    $('#shots').onclick = e => { const b = e.target.closest('[data-n]'); if (b) phShow(RS.shots.indexOf(b.dataset.n)); }; }
-  mode = RS ? 'ph' : '3d';
   const fs = on => { const st = $('#stage'); st.classList.toggle('fs', on); document.body.style.overflow = on ? 'hidden' : ''; $('#fsb').innerHTML = on ? '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg>' : '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>'; setTimeout(() => { resize(); phLayout(); }, 30); };
   $('#fsb').onclick = () => fs(!$('#stage').classList.contains('fs')); addEventListener('keydown', e => { if (e.key === 'Escape' && $('#stage')?.classList.contains('fs')) fs(false); });
-  $('#views').onclick = e => { const b = e.target.closest('[data-v]'); if (!b) return; const v = b.dataset.v; document.querySelectorAll('#views button').forEach(x => x.classList.toggle('on', x === b)); if (v !== 'hero') { surf = v; refresh(); } if (mode === 'ph') setMode('3d'); go(v); };
+  $('#views').onclick = e => { const b = e.target.closest('[data-v]'); if (!b) return; const v = b.dataset.v; document.querySelectorAll('#views button').forEach(x => x.classList.toggle('on', x === b)); if (v !== 'hero') { surf = v; refresh(); } go(v); };
   $('#lida').oninput = e => { setLid(+e.target.value); idle = false; };
   $('#surf').onclick = e => { const b = e.target.closest('[data-s]'); if (!b) return; surf = b.dataset.s; sel = -1; refresh(); go(surf); ['lid', 'kb', 'bot'].forEach(schedule); };
   $('#tab').onclick = e => { const b = e.target.closest('[data-t]'); if (b) { tab = b.dataset.t; pane(); } };
@@ -629,9 +545,9 @@ async function vEditor() {
     const cart = store.get('sl-cart', {}), counts = {}; Object.values(items).flat().forEach(o => counts[o.c] = (counts[o.c] || 0) + 1);
     Object.entries(counts).forEach(([c, q]) => cart[c] = Math.max(cart[c] || 0, q)); store.set('sl-cart', cart);
     const d = v3(); d.thumb = thumb(); store.set('sl-dsg', d); saveMine(d); location.href = '/#cart'; };
-  pane(); refresh(); setMode(mode);
+  pane(); refresh();
 }
-const toPhotoOrGL = () => { if (mode !== 'ph') return false; if (surf === 'lid' && lidShot() >= 0) { if (!curShot().lid) phShow(lidShot()); return true; } setMode('3d'); toast(`${SN[surf]} is shown on the 3D model`); return false; };
+const toPhotoOrGL = () => false;
 // fill a surface with a whole pack, packed like a real sticker-bomb (big ones first, a little overlap, random turns)
 const BOMBN = 26;
 function bomb(pk) { snap(); const s = surf, rnd = (a, b) => a + Math.random() * (b - a), list = pk.items.slice(0, BOMBN).map(it => it[0]);
@@ -675,7 +591,7 @@ function pane() {
     $('#cl').onclick = e => { const b = e.target.closest('[data-c]'); if (!b) return; col = b.dataset.c; build(); pane(); };
   }
 }
-window.__lab = { setMode, phShow, get mode() { return mode; }, PV, sched: s => schedule(s), sync: s => syncStickers(s), R: () => R, pick: i => { L = LAPS[i]; col = L.cols[0]; vEditor(); }, items, skin, go, setLid, set s(v) { surf = v; }, paint, LAPS, refresh, get idle() { return idle; }, set idle(v) { idle = v; }, cam: () => cam };
+window.__lab = { get mode() { return mode; }, sched: s => schedule(s), sync: s => syncStickers(s), R: () => R, pick: i => { L = LAPS[i]; col = L.cols[0]; vEditor(); }, items, skin, go, setLid, set s(v) { surf = v; }, paint, LAPS, refresh, get idle() { return idle; }, set idle(v) { idle = v; }, cam: () => cam };
 // a design opened from an order link: show it, never overwrite this phone's own saved design
 let fromLink = null; if (location.hash.startsWith('#d-')) try { fromLink = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(location.hash.slice(3).replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0)))); } catch (e) {}
 const LL = fromLink && LAPS.find(l => `${l.brand} ${l.name}` === fromLink.n);
