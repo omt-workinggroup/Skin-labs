@@ -8,12 +8,23 @@ D.cats.forEach(c => CAT[c.id] = c);
 const KEEP = new Set(['GTA', 'COD', 'AI', 'JDM', 'II', 'III', 'I', 'Y2K']);
 const nice = s => s.split(' ').map(w => KEEP.has(w) ? w : w === '&' ? '&' : w.charAt(0) + w.slice(1).toLowerCase()).join(' ');
 D.packs.forEach(p => { p.nice = nice(p.name); PK[p.id] = p; p.items.forEach(it => { if (!CODE[it[0]]) CODE[it[0]] = { p, it }; }); });
+// ---------- shop drops: packs added in /admin, loaded live (no rebuild needed) ----------
+function addDrops(cat) { if (!cat || !Array.isArray(cat.packs)) return 0; let n = 0;
+  for (const d of [...cat.packs].reverse()) { if (PK[d.id] || !d.items || !d.items.length || !CAT[d.cat]) continue;
+    const items = d.items.map(s => [s.code, 0, 0, s.w, s.h, s.small || s.url, s.url]);
+    const p = { id: d.id, cat: d.cat, name: String(d.name).toUpperCase(), tag: d.tag || 'fresh from the shop', bg: d.bg || '#111111', fg: '#ffffff', aw: 1, ah: 1, items, drop: 1, new: 1,
+      size: 'A4', price: 60, p5: 30, a5: items.slice(0, 14).map(i => i[0]), sheet: d.sheet || items[0][6], sw: d.sw || 1000, sh: d.sh || 1414, sw5: d.sw || 1000, sh5: d.sh || 1414 };
+    p.nice = typeof nice === 'function' ? nice(p.name) : d.name; PK[p.id] = p; D.packs.push(p); items.forEach(it => { if (!CODE[it[0]]) CODE[it[0]] = { p, it }; }); CAT[d.cat].packs.unshift(p.id); n++; }
+  return n; }
+const sh = (id, dir) => { const p = PK[String(id).replace(/-a5$/, '')]; return p && p.drop ? p.sheet : `${dir}/${id}.${IX}`; };
+try { addDrops(JSON.parse(localStorage.getItem('sl-drops') || 'null')); } catch (e) {}
 const total = Object.keys(CODE).length;
 const light = hex => { const n = parseInt(hex.slice(1), 16); return ((n >> 16) * 299 + ((n >> 8) & 255) * 587 + (n & 255) * 114) / 1000 > 150; };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const waIcon = '<svg class="wa-i"><use href="#wa"/></svg>';
 function spr(p, it, box, extra = '') {
   const [, x, y, w, h] = it, s = box / Math.max(w, h);
+  if (it[5]) return `<span class="s" style="display:block;width:${w * s}px;height:${h * s}px;background:url('${it[5]}') center/contain no-repeat;${extra}"></span>`;
   return `<span class="s" style="display:block;width:${w * s}px;height:${h * s}px;background:url(atlas/${p.id}.${IX}) ${-x * s}px ${-y * s}px/${p.aw * s}px ${p.ah * s}px no-repeat;${extra}"></span>`;
 }
 const store = { get(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
@@ -102,7 +113,7 @@ function updBar() {
   const n = count(), np = nPacks(), ns = nSingles();
   $('#bar-n').textContent = n;
   const nk = dsgSkins(); $('#bar-t').textContent = [np ? `${np} pack${np > 1 ? 's' : ''}` : '', ns ? `${ns} sticker${ns > 1 ? 's' : ''}` : '', curDsg() ? 'your pack' : '', nk ? `${nk} skin${nk > 1 ? 's' : ''}` : ''].filter(Boolean).join(' + ') + ' in your cart';
-  $('#bar-p').textContent = `${CUR}${money()}${nk ? ' + skin (price on DM)' : ''}`;
+  $('#bar-p').textContent = priceTxt(money(), !!nk);
   $('#bar').classList.toggle('show', n > 0);
   for (const id of ['#t-bd', '#nv-bd']) { $(id).hidden = !n; $(id).textContent = n; }
   document.querySelectorAll('.grid .tile[data-c]').forEach(t => { const q = cart[t.dataset.c]; t.classList.toggle('sel', !!q); const k = t.querySelector('.chk'); if (k) k.textContent = q > 1 ? q : '✓'; });
@@ -117,6 +128,8 @@ document.querySelectorAll('.sheet').forEach(s => s.addEventListener('click', e =
 // WhatsApp-style preview of the exact message we will receive
 const waFmt = t => esc(t).replace(/\*([^*\n]+)\*/g, '<b>$1</b>').replace(/(https?:\/\/\S+)/g, '<u>$1</u>').replace(/\n/g, '<br>');
 // ---------- cart + checkout: the order goes straight to the Skin Lab admin (no long WhatsApp text) ----------
+// skins have no price on the site: they are always "price on DM"
+const priceTxt = (t, skin) => skin ? (t > 0 ? `${CUR}${t} + skin (price on DM)` : 'Skin · price on DM') : `${CUR}${t}`;
 const dsgPrice = d => d ? (d.price ?? Object.values(d.items || {}).flat().length * PRICE) : 0;
 function openCart(focus) {
   const items = Object.entries(cart), pk = Object.entries(packs), b = $('#c-body'), dg = curDsg();
@@ -127,19 +140,19 @@ function openCart(focus) {
   const dn = dg ? Object.values(dg.items || {}).flat().length : 0;
   b.innerHTML = `${dg ? `<div class="mypk">${dg.sheet ? `<button type="button" class="mys" id="c-sheet" aria-label="See your sheet bigger"><img src="${dg.sheet}" alt="Your sticker sheet"></button>` : ''}
       <div class="myt">${dg.thumb ? `<img src="${dg.thumb}" alt="Your laptop design">` : ''}<span class="lbl">Your own pack</span><b>${esc(dg.packName || 'Your laptop design')}</b>
-        <span>${dg.sheetSize ? `${dg.sheetSize} sheet · ` : ''}${dn} sticker${dn === 1 ? '' : 's'}${dsgSkins() ? ' · + skin' : ''}</span><span class="pr">${CUR}${dsgPrice(dg)}${dsgSkins() ? ' + skin' : ''}</span>
+        <span>${dg.sheetSize ? `${dg.sheetSize} sheet · ` : ''}${dn} sticker${dn === 1 ? '' : 's'}${dsgSkins() ? ' · + skin' : ''}</span><span class="pr">${dn ? priceTxt(dsgPrice(dg), dsgSkins()) : 'Skin · price on DM'}</span>
         <span class="dl"><a href="/design/" id="c-edit">Edit</a><button type="button" class="lnk" id="c-rmd">Remove</button></span></div></div>` : ''}
-    ${pk.length ? `<div class="rows">${pk.map(([k, q]) => `<div class="row"><div class="th"><img src="sheets-sm/${pkOf(k).img}.${IX}" alt="" loading="lazy" style="height:54px;width:auto;border-radius:3px"></div><div class="nm"><b style="font-family:var(--body)">${esc(pkOf(k).p.nice)}</b><span>${SZ[pkOf(k).size]} · ${pkOf(k).n} stickers · ${CUR}${pkOf(k).price}</span></div>
+    ${pk.length ? `<div class="rows">${pk.map(([k, q]) => `<div class="row"><div class="th"><img src="${sh(pkOf(k).img, 'sheets-sm')}" alt="" loading="lazy" style="height:54px;width:auto;border-radius:3px"></div><div class="nm"><b style="font-family:var(--body)">${esc(pkOf(k).p.nice)}</b><span>${SZ[pkOf(k).size]} · ${pkOf(k).n} stickers · ${CUR}${pkOf(k).price}</span></div>
       <div class="qty"><button type="button" data-p="${k}" data-d="-1" aria-label="One less ${esc(pkOf(k).label)}">−</button><span>${q}</span><button type="button" data-p="${k}" data-d="1" aria-label="One more ${esc(pkOf(k).label)}">+</button></div></div>`).join('')}</div>` : ''}
     ${items.length ? `<div class="grp">Single stickers · ${CUR}${PRICE} each</div><div class="rows">${items.map(([c, q]) => `<div class="row"><div class="th">${spr(CODE[c].p, CODE[c].it, 50)}</div><div class="nm"><b>${c}</b><span>${esc(CODE[c].p.nice)}</span></div>
       <div class="qty"><button type="button" data-q="${c}" data-d="-1" aria-label="One less ${c}">−</button><span>${q}</span><button type="button" data-q="${c}" data-d="1" aria-label="One more ${c}">+</button></div></div>`).join('')}</div>` : ''}
-    <div class="sum"><div class="big" style="border:0;padding:0;margin:0"><span>Total</span><span>${CUR}${money()}${dsgSkins() ? ' + skin' : ''}</span></div><div class="small"><span>Pay with MoMo when we confirm · delivery agreed with you</span></div></div>
+    <div class="sum"><div class="big" style="border:0;padding:0;margin:0"><span>Total</span><span>${priceTxt(money(), dsgSkins())}</span></div><div class="small"><span>${dsgSkins() ? 'We send you the skin price on WhatsApp · ' : ''}Pay with MoMo when we confirm · delivery agreed with you</span></div></div>
     <form class="ck" id="ck" novalidate>
       <div class="grp">Your details</div>
       <div class="fld" id="f-name"><label for="c-name">Name</label><input id="c-name" autocomplete="name" placeholder="e.g. Ama Mensah" value="${esc(who.name)}" required></div>
       <div class="fld" id="f-phone"><label for="c-phone">WhatsApp number</label><input id="c-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="e.g. 024 123 4567" value="${esc(who.phone || '')}" required></div>
       <div class="fld"><label for="c-loc">Location</label><input id="c-loc" autocomplete="address-level2" placeholder="e.g. East Legon" value="${esc(who.loc)}"></div>
-      <button class="btn y" type="submit" id="c-send">Place order · ${CUR}${money()}${dsgSkins() ? ' + skin' : ''}</button>
+      <button class="btn y" type="submit" id="c-send">Place order${money() ? ` · ${CUR}${money()}` : ''}</button>
       <p class="small ckn">We'll message you on WhatsApp to confirm, then you pay with MoMo.</p>
     </form>
     <button class="btn o" type="button" id="c-clear">Empty cart</button>`;
@@ -227,7 +240,7 @@ const HERO = [['p1-hacker-mode', 4, 6, 30], ['g1-gta-rockstar', 33, 3, 26], ['m2
 // category covers: the real printed sheets of that category, laid on a table like a product photo
 function catGrid() {
   return `<div class="cats">${D.cats.map((c, ci) => { const ps = c.packs.map(id => PK[id]), lo = Math.min(...ps.map(p => p.p5 || p.price));
-    return `<a class="catc" href="#${c.id}"><div class="table" style="--tb:${ps[0].bg}">${ps.slice(0, 2).reverse().map((p, i, a) => `<img src="sheets-xs/${p.id}.${IX}" alt="${esc(p.nice)} sticker pack" width="${Math.round(p.sw * .3)}" height="${Math.round(p.sh * .3)}" ${ci < 4 ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async" style="--r:${[-5, 9][a.length - 1 - i]}deg;--x:${[-10, 24][a.length - 1 - i]}%">`).join('')}</div>
+    return `<a class="catc" href="#${c.id}"><div class="table" style="--tb:${ps[0].bg}">${ps.slice(0, 2).reverse().map((p, i, a) => `<img src="${sh(p.id, 'sheets-xs')}" alt="${esc(p.nice)} sticker pack" width="${Math.round(p.sw * .3)}" height="${Math.round(p.sh * .3)}" ${ci < 4 ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async" style="--r:${[-5, 9][a.length - 1 - i]}deg;--x:${[-10, 24][a.length - 1 - i]}%">`).join('')}</div>
       <div class="cmeta"><span class="no">${String(ci + 1).padStart(2, '0')}</span><b>${esc(c.name)}${ps.some(p => p.new) ? '<i class="newb in">New</i>' : ''}</b><span>${c.packs.length} pack${c.packs.length > 1 ? 's' : ''} · from ${CUR}${lo}</span></div></a>`; }).join('')}</div>`;
 }
 function lastOrder() {
@@ -240,12 +253,12 @@ function lastOrder() {
 // newest packs first on the home page, so nobody misses them
 function newDrops() {
   const TOP = ['fc-lamine-yamal', 'fc-barca-crests', 'fc-messi', 'v5-bmw-m', 'an2-itachi', 'fc-hala-madrid', 'gr5-boss-girl', 'g7-pubg', 'an4-monkey-d-luffy', 'm3-spider-man', 'fc-madrid-squad', 'k3-nba-classics', 'q2-gen-z-ghana', 'q3-nasa-space'];
-  const ps = TOP.map(id => PK[id]).filter(Boolean);
+  const ps = [...D.packs.filter(p => p.drop), ...TOP.map(id => PK[id])].filter(Boolean);
   const xl = D.packs.filter(p => p.size === 'XL').slice(0, 4);
   const all = [...ps.slice(0, 6), ...xl.slice(0, 2), ...ps.slice(6), ...xl.slice(2)];
   if (!all.length) return '';
   return `<div class="drops"><div class="dh"><span class="lbl">New drops</span><span class="lbl">${all.length} new · swipe →</span></div>
-    <div class="dl">${all.map(p => `<a class="dc" href="#${p.id}"><span class="di" style="--tb:${p.bg}"><img src="sheets-xs/${p.id}.${IX}" alt="${esc(p.nice)}" loading="lazy" decoding="async"></span>
+    <div class="dl">${all.map(p => `<a class="dc" href="#${p.id}"><span class="di" style="--tb:${p.bg}"><img src="${sh(p.id, 'sheets-xs')}" alt="${esc(p.nice)}" loading="lazy" decoding="async"></span>
       <b>${esc(p.nice)}</b><small>${p.size === 'XL' ? `XL · ${CUR}${p.price}` : p.size === 'A3' ? `A3 · ${CUR}${p.price}` : `from ${CUR}${p.p5 || p.price}`}</small></a>`).join('')}</div></div>`;
 }
 function vHome() {
@@ -275,7 +288,7 @@ function vCat(c) {
     <div class="crumb"><a href="#">Categories</a> / <span>${esc(c.name)}</span></div>
     <div class="sech"><div><h2>${esc(c.name)} <em>packs</em></h2><p class="sub">Tap a pack to see every sticker on it.</p></div></div>
     <div class="packs">${c.packs.map(id => { const p = PK[id];
-      return `<div class="pack"><a href="#${p.id}" class="pv" style="--tb:${p.bg}">${p.new ? '<span class="newb">New</span>' : ''}<img src="sheets-sm/${p.id}.${IX}" alt="${esc(p.nice)} sticker sheet" width="${Math.round(p.sw * .44)}" height="${Math.round(p.sh * .44)}" loading="lazy" decoding="async"></a>
+      return `<div class="pack"><a href="#${p.id}" class="pv" style="--tb:${p.bg}">${p.new ? '<span class="newb">New</span>' : ''}<img src="${sh(p.id, 'sheets-sm')}" alt="${esc(p.nice)} sticker sheet" width="${Math.round(p.sw * .44)}" height="${Math.round(p.sh * .44)}" loading="lazy" decoding="async"></a>
         <div class="meta"><a href="#${p.id}"><b>${esc(p.nice)}</b><span>${p.a5 ? `A5 ${p.a5.length} · A4 ${p.items.length} stickers` : p.size === 'XL' ? 'XL · about 18 cm · lid centrepiece' : `${p.items.length} stickers · A3 pick & mix`}</span></a><span class="price">${p.a5 ? `from ${CUR}${p.p5}` : `${CUR}${p.price}`}</span></div>
         <div class="pbtns"><a class="btn y" href="#${p.id}">${waIcon}Order</a><a class="btn o" href="#${p.id}">See stickers</a></div></div>`; }).join('')}</div>
     <a class="xcard" href="#inspo" style="margin-top:16px"><span><b>Looking for ideas?</b><small>Browse sticker inspiration, then we'll make the one you like.</small></span></a>
@@ -287,7 +300,7 @@ function vPack(p) {
     <div class="crumb"><a href="#">Categories</a> / <a href="#${c.id}">${esc(c.name)}</a></div>
     ${c.packs.length > 1 ? `<div class="hs" style="margin:2px 0 12px">${c.packs.map(id => `<a class="chip ${id === p.id ? 'on' : ''}" href="#${id}">${esc(PK[id].nice)}</a>`).join('')}</div>` : ''}
     <div class="phero">
-      <button type="button" class="sheetimg" id="zoom" style="--tb:${p.bg}" aria-label="See the ${esc(p.nice)} sheet bigger"><img id="sheetim" src="sheets/${p.id}.${IX}" alt="${esc(p.nice)} sticker sheet" width="${p.sw}" height="${p.sh}" fetchpriority="high" decoding="async"><span class="zm">Tap to zoom</span></button>
+      <button type="button" class="sheetimg" id="zoom" style="--tb:${p.bg}" aria-label="See the ${esc(p.nice)} sheet bigger"><img id="sheetim" src="${sh(p.id, 'sheets')}" alt="${esc(p.nice)} sticker sheet" width="${p.sw}" height="${p.sh}" fetchpriority="high" decoding="async"><span class="zm">Tap to zoom</span></button>
       <div class="pinfo">
         <span class="lbl">${p.new ? 'New · ' : ''}${esc(c.name)}</span>
         <h2>${esc(p.nice)}</h2>
@@ -316,14 +329,14 @@ function vPack(p) {
   let key = p.a5 ? (store.get('sl-size', '4') === '5' ? p.id + '~5' : p.id) : p.id;
   const showSize = () => { const o = pkOf(key); $('#addpack').dataset.packbtn = key; updBar();
     document.querySelectorAll('#sizes [data-sz]').forEach(b => { const on = (b.dataset.sz === '5') === o.a5; b.classList.toggle('on', on); b.setAttribute('aria-checked', on); });
-    const im = $('#sheetim'); im.src = `sheets/${o.img}.${IX}`; im.width = o.a5 ? p.sw5 : p.sw; im.height = o.a5 ? p.sh5 : p.sh;
+    const im = $('#sheetim'); im.src = `${sh(o.img, 'sheets')}`; im.width = o.a5 ? p.sw5 : p.sw; im.height = o.a5 ? p.sh5 : p.sh;
     $('#op-t').textContent = `Order ${o.size} · ${CUR}${o.price}`;
     const in5 = new Set(p.a5 || []); g.querySelectorAll('.tile').forEach(t => t.classList.toggle('dim', o.a5 && !in5.has(t.dataset.c))); };
   if ($('#sizes')) $('#sizes').onclick = e => { const b = e.target.closest('[data-sz]'); if (!b) return; key = b.dataset.sz === '5' ? p.id + '~5' : p.id; store.set('sl-size', b.dataset.sz); buzz(); showSize(); };
   $('#addpack').onclick = () => { setPack(key, (packs[key] || 0) + 1); buzz(); toast(`${pkOf(key).label} added. Tap Order now when you're ready.`); };
   $('#orderpack').onclick = () => orderNow([[key, 1]], []);
   $('#toinspo') && ($('#toinspo').onclick = openInspo);
-  $('#zoom').onclick = () => { $('#lb-img').src = `sheets/${pkOf(key).img}.${IX}`; $('#lb').hidden = false; };
+  $('#zoom').onclick = () => { $('#lb-img').src = `${sh(pkOf(key).img, 'sheets')}`; $('#lb').hidden = false; };
   showSize();
 }
 // order pages. Owner phone: full order. Anyone else (the customer included): a notice.
@@ -334,7 +347,7 @@ function orderBody(pk, items, o, ref, open = false) {
     <div class="kick-row"><span>${ref ? `Order ${ref}` : 'Order'}</span><span>${when}</span></div>
     <h1 class="h1">${o && o.n ? esc(o.n) : 'Sticker order'}</h1>
     ${o && (o.l || o.m) ? `<dl class="who">${o.l ? `<div><dt>Location</dt><dd>${esc(o.l)}</dd></div>` : ''}${o.m ? `<div><dt>Note</dt><dd>${esc(o.m)}</dd></div>` : ''}</dl>` : ''}
-    ${pk.length ? `<div class="lbl" style="margin-top:22px">Sticker sheets</div><div class="orows">${pk.map(([k, q]) => `<a class="orow" href="#${pkOf(k).id}"><span class="th" style="background:${pkOf(k).p.bg}"><img src="sheets-sm/${pkOf(k).img}.${IX}" alt="" loading="lazy"></span><span class="nm"><b>${esc(pkOf(k).p.nice)}</b><small>${SZ[pkOf(k).size]} · ${pkOf(k).n} stickers · ${CUR}${pkOf(k).price}</small></span><span class="q">×${q}</span><span class="pr">${CUR}${q * pkOf(k).price}</span></a>`).join('')}</div>` : ''}
+    ${pk.length ? `<div class="lbl" style="margin-top:22px">Sticker sheets</div><div class="orows">${pk.map(([k, q]) => `<a class="orow" href="#${pkOf(k).id}"><span class="th" style="background:${pkOf(k).p.bg}"><img src="${sh(pkOf(k).img, 'sheets-sm')}" alt="" loading="lazy"></span><span class="nm"><b>${esc(pkOf(k).p.nice)}</b><small>${SZ[pkOf(k).size]} · ${pkOf(k).n} stickers · ${CUR}${pkOf(k).price}</small></span><span class="q">×${q}</span><span class="pr">${CUR}${q * pkOf(k).price}</span></a>`).join('')}</div>` : ''}
     ${items.length ? `<div class="lbl" style="margin-top:22px">Single stickers · ${n} × ${CUR}${PRICE} = ${CUR}${n * PRICE}</div><div class="oview" id="ov"></div>` : ''}
     ${o && o.d ? `<div class="lbl" style="margin-top:22px">Laptop design</div><p style="margin:8px 0">${esc(dsgLine(dsgUnpack(o.d)))}</p><div class="odsg" id="o-dsg"></div>` : ''}
     <div class="otot"><span>Total</span><b>${CUR}${tot}</b></div>
@@ -810,6 +823,8 @@ function render() {
   updBar(); document.documentElement.classList.remove('nh');
 }
 addEventListener('hashchange', render);
+fetch('/api/catalog/').then(r => r.ok ? r.json() : null).then(c => { if (!c) return; try { localStorage.setItem('sl-drops', JSON.stringify(c)); } catch (e) {}
+  if (addDrops(c) && !document.querySelector('.sheet:not([hidden])')) { const y = scrollY; render(); scrollTo(0, y); } }).catch(() => {});
 let rt, lw = innerWidth;
 addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { if (innerWidth !== lw) { lw = innerWidth; const y = scrollY; render(); scrollTo(0, y); } }, 200); });
 // AVIF when the browser decodes it (almost all now), WebP otherwise. Decided before the first paint.

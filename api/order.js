@@ -26,7 +26,7 @@ export default async function handler(req, res) {
   const order = { id, at: Date.now(), status: 'new', history: [{ s: 'new', at: Date.now() }], name, phone, loc, note, packs, singles, design, total, skinOnDM: !!(design && design.skins.length) };
   await saveOrder(dir, order);
   const what = [packs.length ? `${packs.reduce((a, p) => a + p.q, 0)} sheet(s)` : '', singles.length ? `${singles.reduce((a, s) => a + s.q, 0)} single sticker(s)` : '', design ? `custom ${design.size} pack (${design.n} stickers)` : ''].filter(Boolean).join(' + ');
-  const ping = pushAll({ title: `New order ${id} · GH₵${total}${order.skinOnDM ? ' + skin' : ''}`, body: `${name}${loc ? ' · ' + loc : ''}\n${what}`, url: `/admin/#${id}`, tag: id, image: design && (design.sheet || design.mock) || undefined }).catch(() => 'failed');
-  const alert = await notifyOwner(`🛒 New Skin Lab order ${id}\n${name} · +${phone.replace(/^\+/, '')}${loc ? ' · ' + loc : ''}\n${what}\nTotal GH₵${total}${order.skinOnDM ? ' + skin' : ''}\n${SITE}/admin/#${id}`);
+  const ping = pushAll({ title: `New order ${id} · ${order.skinOnDM ? (total ? `GH₵${total} + skin` : 'skin · price on DM') : `GH₵${total}`}`, body: `${name}${loc ? ' · ' + loc : ''}\n${what}`, url: `/admin/#${id}`, tag: id, image: design && (design.sheet || design.mock) || undefined }).catch(() => 'failed');
+  const alert = await notifyOwner(`🛒 New Skin Lab order ${id}\n${name} · +${phone.replace(/^\+/, '')}${loc ? ' · ' + loc : ''}\n${what}\n${order.skinOnDM ? 'Skin: send the price · ' : ''}Total GH₵${total}${order.skinOnDM ? ' + skin' : ''}\n${SITE}/admin/#${id}`);
   return json(res, 200, { id, url: `${SITE}/o/${id}/`, alert, push: await ping });
 }

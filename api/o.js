@@ -26,9 +26,9 @@ ul{list-style:none;padding:0;margin:10px 0;border-top:1px solid #222}li{display:
 <p class="lbl">${esc(o.name)} · ${new Date(o.at).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Accra' })}</p>
 ${o.status !== 'cancelled' ? `<div class="steps">${ORDER.map((s, i) => `<i class="${i <= at ? 'on' : ''}"></i>`).join('')}</div><p class="lbl">${ORDER.map(s => STEP[s]).join(' → ')}</p>` : ''}
 ${d ? `<div class="pics">${d.sheet ? `<a href="${esc(d.sheet)}"><img src="${esc(d.sheet)}" alt="Your sticker sheet"></a>` : ''}${d.mock ? `<a href="${esc(d.mock)}"><img src="${esc(d.mock)}" alt="Your laptop design"></a>` : ''}</div>
-<p><b>${esc(d.packName || 'Your custom pack')}</b> · ${esc(d.size)} sheet · ${d.n} stickers<br><small>${esc(d.laptop)}${d.skins.length ? ' · skin price on WhatsApp' : ''}</small></p>` : ''}
+<p><b>${esc(d.packName || 'Your custom pack')}</b> · ${esc(d.size)} sheet · ${d.n} stickers<br><small>${esc(d.laptop)}${d.skins.length ? ' · skin: price on DM' : ''}</small></p>` : ''}
 ${lines ? `<ul>${lines}</ul>` : ''}
-<div class="tot"><span>Total</span><b>GH₵${o.total}${o.skinOnDM ? ' + skin' : ''}</b></div>
+<div class="tot"><span>Total</span><b>${o.skinOnDM ? (o.total > 0 ? `GH₵${o.total} + skin (price on DM)` : 'Skin · price on DM') : `GH₵${o.total}`}</b></div>
 <p class="lbl" style="margin-top:8px">We'll message you on WhatsApp to confirm delivery and payment (MoMo).</p>
 <a class="btn" href="https://wa.me/233558362423?text=${encodeURIComponent(`Hello Skin Lab, about my order ${o.id}`)}">Chat with Skin Lab</a></div></body></html>`);
 }

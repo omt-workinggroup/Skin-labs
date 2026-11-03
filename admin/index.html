@@ -46,6 +46,16 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(40px,10vw,64px);line
 .login button{height:54px;background:#fff;color:#000;font-weight:600}.err{color:#ff6b6b;font-size:14px}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#fff;color:#000;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:9px 14px;z-index:90}
 @media (min-width:760px){.list{grid-template-columns:1fr 1fr}}
+.nav{display:flex;border:1px solid var(--line2)}.nav button{height:36px;padding:0 12px;font-size:13px;color:#bbb;position:relative}.nav button.on{background:#fff;color:#000}.nav i{font-style:normal;font-size:10px;background:#1faa53;color:#fff;border-radius:9px;padding:1px 6px;margin-left:6px}
+.add{border:1px solid var(--line2);padding:16px;display:grid;gap:12px;margin-top:16px}.ah{font-weight:600;display:flex;gap:10px;align-items:center}.ah b{width:24px;height:24px;border-radius:50%;background:#fff;color:#000;display:grid;place-items:center;font-size:13px}
+.pick{display:grid;gap:4px;place-items:center;text-align:center;border:1px dashed var(--line2);padding:22px 12px;cursor:pointer}.pick input{display:none}.pick span{font-weight:600}
+.ck{display:flex;gap:10px;align-items:center;font-size:14px;color:#ddd}.ck input[type=checkbox]{width:20px;height:20px}
+.stg,.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px}.stg:empty{display:none}
+.sti{position:relative;background:#1a1a1a;aspect-ratio:1;display:grid;place-items:center;padding:6px}.sti img{max-width:100%;max-height:100%;display:block}.sti button{position:absolute;top:2px;right:2px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.75);font-size:11px}
+.sti small{position:absolute;left:4px;bottom:2px;font-family:var(--mono);font-size:9px;color:#888}
+select,.np input{height:48px;background:#000;border:1px solid var(--line2);color:#fff;padding:0 12px;font-size:15px;width:100%}.np{display:grid;gap:8px}.np input[type=color]{width:48px;height:32px;padding:0;border:0}
+.go{height:52px;background:#fff;color:#000;font-weight:600}.go:disabled{opacity:.4}
+.pkx{border:1px solid var(--line);padding:12px;margin-bottom:12px;display:grid;gap:10px}.pkh{display:grid;grid-template-columns:90px 1fr;gap:12px;align-items:start}.pkh img{width:90px;display:block}.pkh b{display:block;font-size:17px}.row2{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
 </style></head><body>
 <div id="app"></div><div class="toast" id="toast" hidden></div>
 <script>
@@ -55,8 +65,9 @@ const toast = m => { const t = $('#toast'); t.textContent = m; t.hidden = false;
 const KEY = () => { try { return localStorage.getItem('sl-admin') || ''; } catch (e) { return ''; } };
 const ST = { new: 'New', confirmed: 'Confirmed', printing: 'Printing', 'on-the-way': 'On the way', delivered: 'Delivered', cancelled: 'Cancelled' };
 const ACTIVE = ['confirmed', 'printing', 'on-the-way'];
-let orders = [], filter = 'new', q = '', alerts = 'off', seen = new Set(JSON.parse(localStorage.getItem('sl-admin-seen') || '[]')), timer = 0;
+let view = 'orders', orders = [], filter = 'new', q = '', alerts = 'off', seen = new Set(JSON.parse(localStorage.getItem('sl-admin-seen') || '[]')), timer = 0;
 const ago = t => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : new Date(t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }); };
+const moneyTxt = o => o.skinOnDM ? (o.total > 0 ? `₵${o.total} + skin (price on DM)` : 'Skin · price on DM') : `₵${o.total}`;
 const first = n => (n || '').split(' ')[0];
 const what = o => [o.design ? `${o.design.packName || 'Custom pack'} (${o.design.size || '–'}, ${o.design.n} stickers)` : '', ...(o.packs || []).map(p => `${p.q}× ${p.label}`), (o.singles || []).length ? `${o.singles.reduce((a, s) => a + s.q, 0)} singles` : ''].filter(Boolean).join(' · ');
 async function api(path, opt = {}) { const r = await fetch(path, { ...opt, headers: { 'Content-Type': 'application/json', 'x-admin-key': KEY(), ...(opt.headers || {}) } }); if (r.status === 401) throw Object.assign(new Error('Wrong password'), { code: 401 }); const j = await r.json(); if (!r.ok) throw new Error(j.error || 'Error'); return j; }
@@ -72,7 +83,7 @@ async function load(first) {
   try { const j = await api('/api/orders/'); const before = new Set(orders.map(o => o.id)); orders = j.orders; alerts = j.alerts;
     const fresh = orders.filter(o => o.status === 'new' && !before.has(o.id) && before.size);
     if (fresh.length) { ding(); toast(`${fresh.length} new order${fresh.length > 1 ? 's' : ''}`); }
-    if (first) { list(); clearInterval(timer); timer = setInterval(() => load(), 20000); const h = decodeURIComponent(location.hash.slice(1)); if (h) open(h); } else if (!$('.dv')) list(); else badge();
+    if (first) { const h = decodeURIComponent(location.hash.slice(1)); if (h === 'stickers') stickers(); else list(); clearInterval(timer); timer = setInterval(() => load(), 20000); if (h && h !== 'stickers') open(h); } else if (view === 'orders' && !$('.dv')) list(); else badge();
   } catch (e) { if (e.code === 401) { try { localStorage.removeItem('sl-admin'); } catch (x) {} login('Wrong password'); } else if (first) login(e.message); }
 }
 function ding() { try { const c = new (window.AudioContext || window.webkitAudioContext)(), o = c.createOscillator(), g = c.createGain(); o.frequency.value = 880; o.connect(g); g.connect(c.destination); g.gain.setValueAtTime(.2, c.currentTime); g.gain.exponentialRampToValueAtTime(.001, c.currentTime + .6); o.start(); o.stop(c.currentTime + .6); } catch (e) {} try { navigator.vibrate && navigator.vibrate([80, 60, 80]); } catch (e) {} }
@@ -82,7 +93,7 @@ function list() {
   const today = orders.filter(o => Date.now() - o.at < 864e5), money = orders.filter(o => o.status !== 'cancelled').reduce((a, o) => a + (o.total || 0), 0);
   const show = orders.filter(o => (filter === 'all' || (filter === 'new' ? o.status === 'new' : filter === 'active' ? ACTIVE.includes(o.status) : !ACTIVE.includes(o.status) && o.status !== 'new'))
     && (!q || `${o.id} ${o.name} ${o.phone} ${o.loc}`.toLowerCase().includes(q.toLowerCase())));
-  app.innerHTML = `<header class="top"><b>Skin Lab</b><div class="r"><span class="lbl">Admin</span><button class="ib" id="rf">Refresh</button><button class="ib" id="lo">Log out</button></div></header>
+  view = 'orders'; app.innerHTML = `${topbar('orders')}
   <div class="w"><span class="lbl">${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}</span><h1>Orders<em>.</em></h1>
     <div class="alert" id="nt"></div>
     <div class="stats"><div><b>${cnt.new}</b><span class="lbl">New</span></div><div><b>${cnt.active}</b><span class="lbl">In progress</span></div><div><b>${today.length}</b><span class="lbl">Today</span></div><div><b>₵${money}</b><span class="lbl">All time</span></div></div>
@@ -92,17 +103,17 @@ function list() {
       const pp = !pic && (o.packs || [])[0], img = pic || (pp ? `/sheets-xs/${pp.key.replace('~5', '-a5')}.webp` : '');
       return `<button class="card ${o.status === 'new' ? 'new' : ''}" data-id="${o.id}"><span class="pic" ${img ? `style="background-image:url('${esc(img)}')"` : ''}>${img ? '' : 'SINGLES'}</span>
         <span><span class="meta"><span><b>${esc(o.name)}</b><p>${esc(o.id)} · ${ago(o.at)}</p></span><span class="pill ${o.status}">${ST[o.status]}</span></span>
-        <p>${esc(what(o))}</p><p>${esc(o.loc || '')}</p><div class="tot">₵${o.total}${o.skinOnDM ? ' + skin' : ''}</div></span></button>`; }).join('')
+        <p>${esc(what(o))}</p><p>${esc(o.loc || '')}</p><div class="tot">${moneyTxt(o)}</div></span></button>`; }).join('')
       : `<div class="empty">${orders.length ? 'Nothing here.' : 'No orders yet. They land here the moment a customer taps “Place order”.'}</div>`}</div>
   </div>`;
   notifCard();
   $('#tabs').onclick = e => { const b = e.target.closest('[data-f]'); if (b) { filter = b.dataset.f; list(); } };
   $('#q').oninput = e => { q = e.target.value; const p = e.target.selectionStart; list(); const i = $('#q'); i.focus(); i.setSelectionRange(p, p); };
-  $('#rf').onclick = () => load(); $('#lo').onclick = () => { try { localStorage.removeItem('sl-admin'); } catch (e) {} login(); };
+  wireTop();
   app.querySelectorAll('.card').forEach(c => c.onclick = () => open(c.dataset.id));
 }
 const MSG = {
-  confirmed: o => `Hi ${first(o.name)}, it's Skin Lab 👋\nYour order ${o.id} is confirmed: ${what(o)}.\nTotal: GH₵${o.total}${o.skinOnDM ? ' + skin (price below)' : ''}.\nPlease pay with MoMo and send the screenshot here, then we start printing.`,
+  confirmed: o => `Hi ${first(o.name)}, it's Skin Lab 👋\nYour order ${o.id} is confirmed: ${what(o)}.\n${o.skinOnDM ? `Stickers: GH₵${o.total}. Skin price: ` : `Total: GH₵${o.total}.`}\nPlease pay with MoMo and send the screenshot here, then we start printing.`,
   printing: o => `Hi ${first(o.name)}, your Skin Lab order ${o.id} is printing now 🖨️ We'll tell you when it's on the way.`,
   'on-the-way': o => `Hi ${first(o.name)}, your Skin Lab order ${o.id} is on the way 🚚 We'll call you when we're close${o.loc ? ' to ' + o.loc : ''}.`,
   delivered: o => `Hi ${first(o.name)}, enjoy your stickers! 🙌 Show us your laptop: tag @baidencreatives on Instagram. Thanks for ordering from Skin Lab.`,
@@ -121,10 +132,10 @@ function open(id) {
     <div class="cust"><b>${esc(o.name)}</b><a href="tel:+${esc(o.phone)}">+${esc(o.phone)}</a><span class="lbl">${esc(o.loc || 'No location given')}</span></div>
     ${d ? `<div class="pics">${d.sheet ? `<a href="${esc(d.sheet)}" target="_blank" rel="noopener"><img src="${esc(d.sheet)}" alt=""><small>${esc(d.packName || 'Custom pack')} · ${esc(d.size)} sheet${d.scaled ? ' · scaled to fit' : ''} · tap for full size</small></a>` : ''}${d.mock ? `<a href="${esc(d.mock)}" target="_blank" rel="noopener"><img src="${esc(d.mock)}" alt=""><small>${esc(d.laptop)}</small></a>` : ''}</div>` : ''}
     <div class="sec"><h3>What they ordered</h3><div class="rows">
-      ${d ? `<div><span>${esc(d.packName || 'Custom pack')}<br><small>${esc(d.size)} sheet · ${d.n} stickers${d.skins && d.skins.length ? ' · skin: ' + esc(d.skins.join(', ')) : ''}</small></span><b>₵${d.n * 3}</b></div>` : ''}
+      ${d ? `<div><span>${esc(d.packName || 'Custom pack')}<br><small>${esc(d.size)} sheet · ${d.n} stickers${d.skins && d.skins.length ? ' · skin: ' + esc(d.skins.join(', ')) : ''}</small></span><b>${d.n ? '₵' + d.n * 3 : 'Price on DM'}</b></div>` : ''}
       ${(o.packs || []).map(p => `<div><span>${esc(p.label)}<br><small>${p.n} stickers</small></span><b>${p.q} × ₵${p.price}</b></div>`).join('')}
       ${(o.singles || []).map(s => `<div><span>${esc(s.code)}<br><small>${esc(s.pack)}</small></span><b>× ${s.q}</b></div>`).join('')}
-      <div><b>Total</b><b>₵${o.total}${o.skinOnDM ? ' + skin' : ''}</b></div></div></div>
+      <div><b>Total</b><b>${moneyTxt(o)}</b></div></div></div>
     ${printList ? `<div class="sec"><h3>Print list for the custom sheet</h3><textarea class="msg" readonly style="min-height:120px;font-family:var(--mono);font-size:12px">${esc(printList)}</textarea><button class="btn" id="cpl">Copy print list</button></div>` : ''}
     <div class="sec"><h3>Status</h3><div class="st" id="st">${Object.entries(ST).map(([k, n]) => `<button data-s="${k}" class="${k === o.status ? 'on' : ''}">${n}</button>`).join('')}</div></div>
     <div class="sec"><h3>Message ${esc(first(o.name))} on WhatsApp</h3><textarea class="msg" id="msg">${esc((MSG[next] || MSG.new)(o))}</textarea>
@@ -141,6 +152,102 @@ function open(id) {
     try { const j = await api('/api/status/', { method: 'POST', body: JSON.stringify({ id: o.id, status: b.dataset.s }) }); Object.assign(o, j.order); v.remove(); document.body.style.overflow = ''; open(o.id);
       $('#msg').value = (MSG[o.status] || MSG.new)(o); wa(); toast(ST[o.status]); } catch (x) { toast(x.message); b.textContent = ST[b.dataset.s]; } };
 }
+// ---------- top bar: Orders | Stickers ----------
+const topbar = v => `<header class="top"><b>Skin Lab</b><div class="r"><div class="nav"><button class="${v === 'orders' ? 'on' : ''}" data-v="orders">Orders${orders.filter(o => o.status === 'new').length ? `<i>${orders.filter(o => o.status === 'new').length}</i>` : ''}</button><button class="${v === 'stickers' ? 'on' : ''}" data-v="stickers">Stickers</button></div><button class="ib" id="lo" aria-label="Log out">⎋</button></div></header>`;
+function wireTop() { app.querySelector('.nav').onclick = e => { const b = e.target.closest('[data-v]'); if (!b) return; if (b.dataset.v === 'stickers') { history.replaceState(null, '', '#stickers'); stickers(); } else { history.replaceState(null, '', location.pathname); list(); } };
+  $('#lo').onclick = () => { if (!confirm('Log out of the admin?')) return; try { localStorage.removeItem('sl-admin'); } catch (e) {} login(); }; }
+
+// ---------- stickers: add your own, they go live in the shop and the designer ----------
+const CATS = [['programmers', 'Programmers'], ['gaming', 'Gaming'], ['football', 'Football'], ['anime', 'Anime'], ['cartoons', 'Cartoons'], ['streetwear', 'Streetwear'], ['quotes', 'Quotes & Vibes'], ['girly', 'Girly & Cute'], ['marvel', 'Marvel & Heroes'], ['sneakers', 'Sneakers & Hype'], ['cars', 'Cars & JDM'], ['moto', 'Moto & Bike Life'], ['dark', 'Dark Street Art'], ['mix', 'Pick & Mix']];
+let drops = [], staged = [];
+const loadImg = src => new Promise((ok, no) => { const i = new Image(); i.crossOrigin = 'anonymous'; i.onload = () => ok(i); i.onerror = no; i.src = src; });
+const canWebp = (() => { try { return document.createElement('canvas').toDataURL('image/webp').startsWith('data:image/webp'); } catch (e) { return false; } })();
+const enc = (c, q = .9) => canWebp ? c.toDataURL('image/webp', q) : c.toDataURL('image/png');
+async function prep(file, cut, outline) {   // picture -> sticker: background away, trimmed, thin white outline
+  const bm = await createImageBitmap(file), L = 1180, k = Math.min(1, L / Math.max(bm.width, bm.height)), W = Math.round(bm.width * k), H = Math.round(bm.height * k);
+  const c = Object.assign(document.createElement('canvas'), { width: W, height: H }), g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(bm, 0, 0, W, H);
+  const id = g.getImageData(0, 0, W, H), d = id.data;
+  if (cut) {   // flood the plain background from the edges
+    const edge = []; for (let x = 0; x < W; x += 4) edge.push((x) * 4, ((H - 1) * W + x) * 4); for (let y = 0; y < H; y += 4) edge.push((y * W) * 4, (y * W + W - 1) * 4);
+    const med = j => { const v = edge.map(i => d[i + j]).sort((a, b) => a - b); return v[v.length >> 1]; }, bg = [med(0), med(1), med(2)], T = 46;
+    const near = i => d[i + 3] < 20 || (Math.abs(d[i] - bg[0]) < T && Math.abs(d[i + 1] - bg[1]) < T && Math.abs(d[i + 2] - bg[2]) < T);
+    const seen = new Uint8Array(W * H), st = []; for (let x = 0; x < W; x++) st.push(x, (H - 1) * W + x); for (let y = 0; y < H; y++) st.push(y * W, y * W + W - 1);
+    while (st.length) { const p = st.pop(); if (seen[p]) continue; seen[p] = 1; if (!near(p * 4)) continue; d[p * 4 + 3] = 0; const x = p % W;
+      if (x > 0) st.push(p - 1); if (x < W - 1) st.push(p + 1); if (p >= W) st.push(p - W); if (p < W * (H - 1)) st.push(p + W); }
+    g.putImageData(id, 0, 0);
+  }
+  let x0 = W, y0 = H, x1 = 0, y1 = 0; const a = g.getImageData(0, 0, W, H).data;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (a[(y * W + x) * 4 + 3] > 24) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  if (x1 <= x0) throw new Error('Nothing left after removing the background');
+  const tw = x1 - x0 + 1, th = y1 - y0 + 1, B = outline ? Math.round(Math.max(tw, th) * 4 / 292) : 0;
+  const t = Object.assign(document.createElement('canvas'), { width: tw, height: th }); t.getContext('2d').drawImage(c, x0, y0, tw, th, 0, 0, tw, th);
+  const o = Object.assign(document.createElement('canvas'), { width: tw + 2 * B, height: th + 2 * B }), og = o.getContext('2d');
+  if (B) { const sil = Object.assign(document.createElement('canvas'), { width: tw, height: th }), sg = sil.getContext('2d'); sg.drawImage(t, 0, 0); sg.globalCompositeOperation = 'source-in'; sg.fillStyle = '#fff'; sg.fillRect(0, 0, tw, th);
+    for (let a = 0; a < 360; a += 12) og.drawImage(sil, B + Math.cos(a * Math.PI / 180) * B, B + Math.sin(a * Math.PI / 180) * B); og.drawImage(sil, B, B); }
+  og.drawImage(t, B, B);
+  const sm = Object.assign(document.createElement('canvas'), { width: Math.round(o.width * Math.min(1, 400 / Math.max(o.width, o.height))), height: Math.round(o.height * Math.min(1, 400 / Math.max(o.width, o.height))) });
+  sm.getContext('2d').drawImage(o, 0, 0, sm.width, sm.height);
+  return { img: enc(o), small: enc(sm, .86), w: o.width, h: o.height, prev: sm.toDataURL('image/png') };
+}
+async function makeSheet(p) {   // the pack's Skin Lab sheet (A4) from its stickers
+  const ims = await Promise.all(p.items.map(s => loadImg(s.url).then(im => ({ im, w: s.w, h: s.h })).catch(() => null))), list_ = ims.filter(Boolean);
+  const PX = 1240, Wm = 210, Hm = 297, k = PX / Wm, c = Object.assign(document.createElement('canvas'), { width: PX, height: Math.round(Hm * k) }), g = c.getContext('2d'), W = c.width, H = c.height, hd = Wm * .15 * k;
+  g.fillStyle = '#efefef'; g.fillRect(0, 0, W, H); g.fillStyle = p.bg || '#111'; g.fillRect(0, 0, W, hd);
+  const m = W * .04; g.strokeStyle = '#fff'; g.lineWidth = W * .004; g.beginPath(); g.roundRect(m, hd * .17, W - 2 * m, hd * .66, hd * .14); g.stroke();
+  g.textBaseline = 'middle'; g.fillStyle = '#fff'; g.font = `800 ${hd * .26}px Geist, Arial, sans-serif`; g.fillText('SKIN', m * 1.6, hd * .44); const sw = g.measureText('SKIN ').width;
+  g.fillStyle = '#FFD21F'; g.fillText('LAB', m * 1.6 + sw, hd * .44); g.fillStyle = '#ccc'; g.font = `italic 400 ${hd * .1}px Georgia, serif`; g.fillText('by Baiden Creatives', m * 1.6, hd * .64);
+  const tx = W * .36; g.fillStyle = 'rgba(255,255,255,.3)'; g.fillRect(tx - W * .025, hd * .27, 2, hd * .46);
+  g.fillStyle = '#fff'; g.font = `800 ${hd * .17}px Geist, Arial, sans-serif`; g.fillText(String(p.name).toUpperCase().slice(0, 22), tx, hd * .38);
+  g.font = `500 ${hd * .085}px Geist, Arial, sans-serif`; g.fillStyle = '#ddd'; g.fillText(p.tag || 'fresh from the shop', tx, hd * .55);
+  let cx = tx; g.font = `700 ${hd * .07}px Geist, Arial, sans-serif`;
+  for (const t of [`${list_.length} STICKERS`, 'A4 SHEET', 'PEEL • STICK • FLEX']) { const w = g.measureText(t).width + hd * .14; g.strokeStyle = '#fff'; g.lineWidth = 2; g.beginPath(); g.roundRect(cx, hd * .63, w, hd * .13, hd * .065); g.stroke(); g.fillStyle = '#fff'; g.fillText(t, cx + hd * .07, hd * .698); cx += w + hd * .05; }
+  // shelf layout: biggest size that fits, between 7 cm and 2 cm long side
+  const x0 = 6 * k, y0 = hd + 6 * k, x1 = W - 6 * k, y1 = H - 12 * k, gap = 2.2 * k;
+  for (let cm = 7; cm >= 2; cm -= .25) { const L = cm * 10 * k, out = []; let x = x0, y = y0, row = 0, ok = true;
+    for (const s of [...list_].sort((a, b) => b.h / b.w - a.h / a.w)) { const r = s.w / s.h, w = r >= 1 ? L : L * r, h = r >= 1 ? L / r : L;
+      if (x + w > x1) { x = x0; y += row + gap; row = 0; } if (y + h > y1) { ok = false; break; } out.push({ s, x, y, w, h }); x += w + gap; row = Math.max(row, h); }
+    if (ok) { const by = Math.max(...out.map(o => o.y + o.h)), dy = (y1 - by) / 2; out.forEach(o => g.drawImage(o.s.im, o.x + (x1 - Math.max(...out.filter(q => q.y === o.y).map(q => q.x + q.w))) / 2 * 0, o.y + dy, o.w, o.h)); break; } }
+  g.fillStyle = '#111'; g.font = `700 ${W * .014}px Geist, Arial, sans-serif`; g.fillText('SKIN LAB', m, H - W * .022); g.textAlign = 'right'; g.fillStyle = '#555'; g.font = `500 ${W * .011}px Geist, Arial, sans-serif`; g.fillText('PEEL • STICK • FLEX · PRINTED IN ACCRA', W - m, H - W * .022); g.textAlign = 'left';
+  return { img: c.toDataURL('image/jpeg', .86), w: W, h: H };
+}
+async function stickers() {
+  view = 'stickers'; app.innerHTML = `${topbar('stickers')}<div class="w"><span class="lbl">Your own stickers</span><h1>Add <em>stickers.</em></h1><div id="sk" class="lbl" style="margin-top:20px">Loading your packs…</div></div>`; wireTop();
+  try { drops = (await api('/api/catalog/', { method: 'POST', body: JSON.stringify({ action: 'list' }) })).packs || []; } catch (e) { $('#sk').textContent = e.message; return; }
+  drawStickers();
+}
+function drawStickers() {
+  const box = $('#sk'); if (!box) return;
+  box.className = ''; box.innerHTML = `
+    <div class="add"><div class="ah"><b>1</b> Pictures</div>
+      <label class="pick"><input type="file" id="files" accept="image/*" multiple><span>Choose sticker pictures</span><small class="lbl">PNG with a clear background is best · screenshots and JPGs work too</small></label>
+      <label class="ck"><input type="checkbox" id="cut" checked> Remove plain background</label><label class="ck"><input type="checkbox" id="ol" checked> Add the thin white sticker outline</label>
+      <div class="stg" id="stg">${staged.map((x, i) => `<span class="sti"><img src="${x.prev}" alt=""><button data-x="${i}" aria-label="Remove">✕</button></span>`).join('')}</div>
+      <div class="ah"><b>2</b> Pack</div>
+      <select id="pk"><option value="">＋ New pack</option>${drops.map(p => `<option value="${p.id}">${esc(p.name)} · ${p.items.length} stickers</option>`).join('')}</select>
+      <div id="np" class="np"><input id="pn" maxlength="40" placeholder="Pack name, e.g. Money Moves"><select id="pc">${CATS.map(([k, n]) => `<option value="${k}">${n}</option>`).join('')}</select>
+        <input id="pt" maxlength="60" placeholder="Short line, e.g. hustle, bag & no days off"><label class="ck">Sheet colour <input type="color" id="pb" value="#111111"></label></div>
+      <button class="go" id="pub" ${staged.length ? '' : 'disabled'}>${staged.length ? `Publish ${staged.length} sticker${staged.length > 1 ? 's' : ''}` : 'Choose pictures first'}</button><p class="lbl" id="prog"></p></div>
+    <div class="sec"><h3>Your packs · live in the shop</h3>${drops.length ? drops.map(p => `<div class="pkx"><div class="pkh">${p.sheet ? `<a href="${esc(p.sheet)}" target="_blank" rel="noopener"><img src="${esc(p.sheet)}" alt=""></a>` : ''}<span><b>${esc(p.name)}</b><span class="lbl">${esc((CATS.find(c => c[0] === p.cat) || ['', p.cat])[1])} · ${p.items.length} stickers · A5 ₵30 / A4 ₵60</span>
+        <span class="row2"><button class="ib" data-sheet="${p.id}">Remake sheet</button><button class="ib" data-delp="${p.id}" style="color:#ff6b6b">Delete pack</button></span></span></div>
+        <div class="grid">${p.items.map(s => `<span class="sti"><a href="${esc(s.url)}" target="_blank" rel="noopener"><img src="${esc(s.small)}" alt="${s.code}" loading="lazy"></a><small>${s.code}</small><button data-dels="${s.code}" aria-label="Delete ${s.code}">✕</button></span>`).join('')}</div></div>`).join('') : '<div class="empty">No packs yet. Add your first stickers above.</div>'}</div>`;
+  const np = () => { $('#np').hidden = !!$('#pk').value; }; $('#pk').onchange = np; np();
+  $('#files').onchange = async e => { const fs = [...e.target.files]; $('#prog').textContent = `Preparing ${fs.length} picture${fs.length > 1 ? 's' : ''}…`;
+    for (const f of fs) { try { staged.push(await prep(f, $('#cut').checked, $('#ol').checked)); } catch (x) { toast(x.message); } }
+    const keep = { pk: $('#pk').value, pn: $('#pn').value, pc: $('#pc').value, pt: $('#pt').value, pb: $('#pb').value }; drawStickers(); Object.entries(keep).forEach(([k, v]) => { $('#' + k).value = v; }); $('#np').hidden = !!keep.pk; };
+  $('#stg').onclick = e => { const b = e.target.closest('[data-x]'); if (b) { staged.splice(+b.dataset.x, 1); drawStickers(); } };
+  $('#pub').onclick = async () => { const pk = $('#pk').value, name = $('#pn').value.trim(); if (!pk && !name) return toast('Name the new pack');
+    const btn = $('#pub'); btn.disabled = true; let packId = pk, pack = null;
+    for (let i = 0; i < staged.length; i++) { $('#prog').textContent = `Uploading ${i + 1} of ${staged.length}…`; const s = staged[i];
+      try { const r = await api('/api/catalog/', { method: 'POST', body: JSON.stringify({ action: 'add', packId, name, cat: $('#pc').value, tag: $('#pt').value, bg: $('#pb').value, img: s.img, small: s.small, w: s.w, h: s.h }) }); packId = r.pack.id; pack = r.pack; }
+      catch (x) { toast(x.message); btn.disabled = false; $('#prog').textContent = `Stopped at ${i + 1}: ${x.message}`; staged = staged.slice(i); return; } }
+    $('#prog').textContent = 'Making the pack sheet…';
+    try { const sh = await makeSheet(pack); await api('/api/catalog/', { method: 'POST', body: JSON.stringify({ action: 'sheet', packId, img: sh.img, w: sh.w, h: sh.h }) }); } catch (x) { toast('Stickers are live; sheet failed: ' + x.message); }
+    staged = []; toast('Live in the shop'); stickers(); };
+  box.querySelectorAll('[data-dels]').forEach(b => b.onclick = async () => { if (!confirm(`Delete sticker ${b.dataset.dels}?`)) return; await api('/api/catalog/', { method: 'POST', body: JSON.stringify({ action: 'del-sticker', code: b.dataset.dels }) }); toast('Deleted'); stickers(); });
+  box.querySelectorAll('[data-delp]').forEach(b => b.onclick = async () => { const p = drops.find(x => x.id === b.dataset.delp); if (!confirm(`Delete the whole pack “${p.name}” (${p.items.length} stickers)?`)) return; await api('/api/catalog/', { method: 'POST', body: JSON.stringify({ action: 'del-pack', packId: p.id }) }); toast('Pack deleted'); stickers(); });
+  box.querySelectorAll('[data-sheet]').forEach(b => b.onclick = async () => { const p = drops.find(x => x.id === b.dataset.sheet); b.textContent = 'Making…'; try { const sh = await makeSheet(p); await api('/api/catalog/', { method: 'POST', body: JSON.stringify({ action: 'sheet', packId: p.id, img: sh.img, w: sh.w, h: sh.h }) }); toast('Sheet updated'); stickers(); } catch (x) { toast(x.message); b.textContent = 'Remake sheet'; } });
+}
+
 // ---------- phone notifications for new orders ----------
 const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent), standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
 let swReg = null; if ('serviceWorker' in navigator) navigator.serviceWorker.register('/admin/sw.js', { scope: '/admin/' }).then(r => swReg = r).catch(() => {});

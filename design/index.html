@@ -157,8 +157,16 @@ const $ = s => document.querySelector(s), app = $('#app');
 const toast = m => { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 1800); };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const D = window.SL, PK = {}, CODE = {}, CAT = {}; D.packs.forEach(p => { PK[p.id] = p; p.items.forEach(it => CODE[it[0]] ||= { p, it }); }); D.cats.forEach(c => CAT[c.id] = c);
+// packs added in /admin: loaded live, each sticker has its own picture (it[5] small, it[6] full)
+function addDrops(cat) { if (!cat || !Array.isArray(cat.packs)) return 0; let n = 0;
+  for (const d of [...cat.packs].reverse()) { if (PK[d.id] || !d.items || !d.items.length || !CAT[d.cat]) continue;
+    const items = d.items.map(s => [s.code, 0, 0, s.w, s.h, s.small || s.url, s.url]);
+    const p = { id: d.id, cat: d.cat, name: String(d.name).toUpperCase(), aw: 1, ah: 1, items, drop: 1 }; PK[p.id] = p; D.packs.push(p); items.forEach(it => CODE[it[0]] ||= { p, it }); CAT[d.cat].packs.unshift(p.id); n++; }
+  return n; }
+try { addDrops(JSON.parse(localStorage.getItem('sl-drops') || 'null')); } catch (e) {}
+const hdSrc = c => (CODE[c] && CODE[c].it[6]) || `/hd/${c}.avif`;
 let IX = 'webp'; try { if (localStorage.getItem('sl-ix') === 'avif') IX = 'avif'; } catch (e) {}
-const spr = (p, it, box) => { const s = box / Math.max(it[3], it[4]); return `<span class="s" style="width:${it[3] * s}px;height:${it[4] * s}px;background:url(/atlas/${p.id}.${IX}) ${-it[1] * s}px ${-it[2] * s}px/${p.aw * s}px ${p.ah * s}px no-repeat"></span>`; };
+const spr = (p, it, box) => { const s = box / Math.max(it[3], it[4]); if (it[5]) return `<span class="s" style="width:${it[3] * s}px;height:${it[4] * s}px;background:url('${it[5]}') center/contain no-repeat"></span>`; return `<span class="s" style="width:${it[3] * s}px;height:${it[4] * s}px;background:url(/atlas/${p.id}.${IX}) ${-it[1] * s}px ${-it[2] * s}px/${p.aw * s}px ${p.ah * s}px no-repeat"></span>`; };
 const CAT_ = await (await fetch('/laptops3d.json')).json(), LCOL = CAT_.cols;
 const LAPS = CAT_.l.map((l, i) => ({ i, brand: l[0], name: l[1], scr: l[2], w: l[3], d: l[4], t: l[5], style: l[6], tags: l[7], cols: l[8].split(',') }));
 const PHOTO = [['ph-jinx', 'Jinx'], ['ph-tanjiro', 'Demon Slayer'], ['ph-graffiti', 'Red graffiti'], ['ph-starry', 'Starry Night'], ['ph-boondocks', 'Boondocks'], ['ph-joker', 'Joker'], ['ph-marvel', 'Marvel comics'], ['ph-girlpower', 'Girl power'], ['ph-pink', 'Pink waves'], ['ph-rose', 'Rose waves'], ['ph-avengers', 'Avengers'], ['ph-bvs', 'Batman v Superman']];
@@ -202,7 +210,7 @@ function vPick() {
 const TW = 2048;   // laptop surfaces drawn at 2048 px on every device (sharp lid, keys and logo)
 const MAXA = () => (R && R.capabilities.getMaxAnisotropy()) || 8;
 const imgCache = {};
-const img = src => imgCache[src] || (imgCache[src] = new Promise(ok => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => ok(null); i.src = src; }));
+const img = src => imgCache[src] || (imgCache[src] = new Promise(ok => { const i = new Image(); if (/^https?:/.test(src)) i.crossOrigin = 'anonymous'; i.onload = () => ok(i); i.onerror = () => ok(null); i.src = src; }));
 function rr(g, x, y, w, h, r) { g.beginPath(); g.roundRect(x, y, w, h, r); }
 async function paintSkin(g, id, W, H) {
   if (!id) return;
@@ -213,7 +221,7 @@ async function paintSkin(g, id, W, H) {
 const isLight = c => ['silver', 'starlight', 'gold', 'white', 'platinum', 'pink', 'beige', 'sage', 'mercury'].includes(c);
 // sticker atlases: one decoded image per pack, kept for the whole visit
 const atlas = id => img(`/atlas/${id}.${IX}`), ready = {};
-const warmAtlas = ids => ids.forEach(id => atlas(id).then(im => { if (im) ready[id] = im; }));
+const warmAtlas = ids => ids.filter(id => !(PK[id] && PK[id].drop)).forEach(id => atlas(id).then(im => { if (im) ready[id] = im; }));
 function drawStickers(g, s, W, H) {
   g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
   for (const [i, o] of items[s].entries()) { const { p, it } = CODE[o.c], im = ready[p.id]; if (!im) { atlas(p.id).then(m => { if (m) { ready[p.id] = m; schedule(s); } }); continue; }
@@ -249,7 +257,7 @@ const atlasTex = p => ATX[p.id] || (ATX[p.id] = (() => { const t = new THREE.Tex
 const HDM = {}, HDUV = [[0, 1], [1, 1], [1, 0], [0, 0]];
 const hdMat = c => HDM[c] || (HDM[c] = (() => { const t = new THREE.Texture(); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = MAXA(); t.minFilter = THREE.LinearMipmapLinearFilter; t.generateMipmaps = true;
   const m = new THREE.MeshBasicMaterial({ map: t, transparent: true, alphaTest: .02, depthWrite: false, toneMapped: false, polygonOffset: true, polygonOffsetFactor: -4, side: THREE.DoubleSide }); m.userData.ok = false;
-  img(`/hd/${c}.avif`).then(im => { if (!im) return; t.image = im; t.needsUpdate = true; m.userData.ok = true; ['lid', 'kb', 'bot'].forEach(s => syncStickers(s)); kick(); }); return m; })());
+  img(hdSrc(c)).then(im => { if (!im) return; t.image = im; t.needsUpdate = true; m.userData.ok = true; ['lid', 'kb', 'bot'].forEach(s => syncStickers(s)); kick(); }); return m; })());
 function quad(o, s) { const { p, it } = CODE[o.c], C = surfPos(s, o.x, o.y), R = surfPos(s, o.x + 1, o.y).sub(C), Dv = surfPos(s, o.x, o.y + 1).sub(C);
   const pw = R.length(), Rn = R.normalize(), Dn = Dv.normalize(), k = o.s * popK(o) * pw / Math.max(it[3], it[4]), hw = it[3] * k / 2, hh = it[4] * k / 2, a = o.r * Math.PI / 180;
   const Rr = Rn.clone().multiplyScalar(Math.cos(a)).addScaledVector(Dn, Math.sin(a)), Dr = Rn.clone().multiplyScalar(-Math.sin(a)).addScaledVector(Dn, Math.cos(a));
@@ -259,7 +267,7 @@ function syncStickers(s) { if (!GEO || !lap) return; dirty = true; const parent 
   while (pool.length > list.length) { const m = pool.pop(); parent.remove(m); m.geometry.dispose(); }
   list.forEach((o, i) => { const { p } = CODE[o.c]; let m = pool[i];
     if (!m) { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(12, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(8, 2)); g.setIndex([0, 2, 1, 0, 3, 2]); m = new THREE.Mesh(g, atlasTex(p)); m.renderOrder = 2; parent.add(m); pool[i] = m; }
-    const hm = hdMat(o.c), hd = hm && hm.userData.ok, want = hd ? hm : atlasTex(p); if (m.material !== want) m.material = want;
+    const hm = hdMat(o.c), hd = hm && hm.userData.ok, want = hd ? hm : atlasTex(p); if (m.material !== want) m.material = want; m.visible = hd || !p.drop;
     const q = quad(o, s), P = q.P, uv = hd ? HDUV : q.uv, pa = m.geometry.attributes.position, ua = m.geometry.attributes.uv;
     P.forEach((v, j) => pa.setXYZ(j, v.x, v.y, v.z)); uv.forEach(([u, v], j) => ua.setXY(j, u, v)); pa.needsUpdate = ua.needsUpdate = true; m.geometry.computeBoundingSphere(); m.geometry.computeBoundingBox();
     m.renderOrder = 2 + i; m.userData = { s, i }; });
@@ -628,7 +636,7 @@ function stickerImg(c) { const m = HDM[c]; if (m && m.userData.ok) return { im: 
   const { p, it } = CODE[c], im = ready[p.id]; return im ? { im, sx: it[1], sy: it[2], sw: it[3], sh: it[4] } : null; }
 async function drawSheet(name) {
   const all = Object.values(items).flat(); if (!all.length) return null;
-  await Promise.all(all.map(o => img(`/hd/${o.c}.avif`).then(im => { if (im) hdMat(o.c); })));
+  await Promise.all(all.map(o => img(hdSrc(o.c)).then(im => { if (im) hdMat(o.c); })));
   await new Promise(r => setTimeout(r, 60));
   const list = all.map(o => { const { it } = CODE[o.c], L_ = cmOf(o) * 10, a = it[3] / it[4]; return { c: o.c, w: a >= 1 ? L_ : L_ * a, h: a >= 1 ? L_ / a : L_ }; });
   const lay = layoutSheet(list); if (!lay) return null;
@@ -710,4 +718,5 @@ if (LL) { L = LL; col = L.cols.includes(fromLink.c) ? fromLink.c : L.cols[0]; fo
   Object.assign(skin, { lid: '', kb: '', bot: '', ...(fromLink.k || {}) }); vEditor(); toast('Design from an order'); } else if (st && LAPS[st.i] && location.hash !== '#pick') { L = LAPS[st.i]; col = L.cols.includes(st.col) ? st.col : L.cols[0];
   for (const k in items) items[k] = (st.items && st.items[k] || []).filter(o => CODE[o.c]); Object.assign(skin, st.skin || {}); vEditor(); } else { vPick(); warmGL(); } warmGL();
 addEventListener('hashchange', () => { if (location.hash === '#pick') vPick(); });
+fetch('/api/catalog/').then(r => r.ok ? r.json() : null).then(c => { if (!c) return; try { localStorage.setItem('sl-drops', JSON.stringify(c)); } catch (e) {} if (addDrops(c) && $('#tray')) pane(); }).catch(() => {});
 </script></body></html>
