@@ -16,7 +16,7 @@ function addDrops(cat) { if (!cat || !Array.isArray(cat.packs)) return 0; let n 
       size: 'A4', price: 60, p5: 30, a5: items.slice(0, 14).map(i => i[0]), sheet: d.sheet || items[0][6], sw: d.sw || 1000, sh: d.sh || 1414, sw5: d.sw || 1000, sh5: d.sh || 1414 };
     p.nice = typeof nice === 'function' ? nice(p.name) : d.name; PK[p.id] = p; D.packs.push(p); items.forEach(it => { if (!CODE[it[0]]) CODE[it[0]] = { p, it }; }); CAT[d.cat].packs.unshift(p.id); n++; }
   return n; }
-const sh = (id, dir) => { if (String(id).startsWith('skin:')) return `skins/${String(id).slice(5)}.${IX}`; const p = PK[String(id).replace(/-a5$/, '')]; return p && p.drop ? p.sheet : `${dir}/${id}.${IX}`; };
+const sh = (id, dir) => { if (String(id).startsWith('skin:')) return `skins/${String(id).slice(5)}-s.${IX}`; const p = PK[String(id).replace(/-a5$/, '')]; return p && p.drop ? p.sheet : `${dir}/${id}.${IX}`; };
 try { addDrops(JSON.parse(localStorage.getItem('sl-drops') || 'null')); } catch (e) {}
 const total = Object.keys(CODE).length;
 const light = hex => { const n = parseInt(hex.slice(1), 16); return ((n >> 16) * 299 + ((n >> 8) & 255) * 587 + (n & 255) * 114) / 1000 > 150; };
@@ -37,7 +37,7 @@ Object.keys(cart).forEach(c => { if (!CODE[c] || !(cart[c] > 0)) delete cart[c];
 // a pack in the cart: "<id>" is the big sheet (A4, or the A3 pick & mix), "<id>~5" the small A5 sheet
 const SZ = { A3: 'A3 pick & mix', A4: 'A4 big sheet', A5: 'A5 small sheet', XL: 'XL lid centrepiece', S: 'Small skin', M: 'Medium skin', L: 'Large skin', C: 'Custom skin' };
 // laptop skins: priced by size (change the numbers here)
-const SKINP = { S: { name: 'Small', fit: 'up to 13.3″', price: 100 }, M: { name: 'Medium', fit: '14″ – 15.6″', price: 120 }, L: { name: 'Large', fit: '16″ – 17.3″', price: 150 }, C: { name: 'Custom', fit: 'full wrap or your own picture', price: 200 } };
+const SKINP = { S: { name: 'Small', fit: 'up to 13.3″', price: 70 }, M: { name: 'Medium', fit: '14″ – 15.6″', price: 80 }, L: { name: 'Large', fit: '16″ – 17.3″', price: 90 }, C: { name: 'Custom', fit: 'full wrap or your own picture', price: 120 } };
 const skinFor = inch => !inch ? 'M' : inch <= 13.5 ? 'S' : inch <= 15.7 ? 'M' : 'L';
 function pkOf(k) { if (String(k).startsWith('skin~')) { const [, id, z] = String(k).split('~'), sk = SKIN[id], t = SKINP[z]; if (!sk || !t) return null;
     return { k, id, skin: 1, p: { nice: `${sk[1]} skin`, bg: '#111' }, a5: false, size: z, price: t.price, n: 0, img: 'skin:' + id, label: `${sk[1]} skin · ${t.name}`, fit: t.fit }; }
@@ -257,7 +257,7 @@ function lastOrder() {
 }
 // newest packs first on the home page, so nobody misses them
 function newDrops() {
-  const TOP = ['fc-lamine-yamal', 'fc-barca-crests', 'fc-messi', 'v5-bmw-m', 'an2-itachi', 'fc-hala-madrid', 'gr5-boss-girl', 'g7-pubg', 'an4-monkey-d-luffy', 'm3-spider-man', 'fc-madrid-squad', 'k3-nba-classics', 'q2-gen-z-ghana', 'q3-nasa-space'];
+  const TOP = ['an7-my-hero-academia', 'p11-database-backend', 'xl-barca-crest', 'fc-lamine-yamal', 'fc-barca-crests', 'fc-messi', 'v5-bmw-m', 'an2-itachi', 'fc-hala-madrid', 'gr5-boss-girl', 'g7-pubg', 'an4-monkey-d-luffy', 'm3-spider-man', 'fc-madrid-squad', 'k3-nba-classics', 'q2-gen-z-ghana', 'q3-nasa-space'];
   const ps = [...D.packs.filter(p => p.drop), ...TOP.map(id => PK[id])].filter(Boolean);
   const xl = D.packs.filter(p => p.size === 'XL').slice(0, 4);
   const all = [...ps.slice(0, 6), ...xl.slice(0, 2), ...ps.slice(6), ...xl.slice(2)];
@@ -534,7 +534,7 @@ const skinCache = {};
 async function skinArt(id, W, H) {             // returns a canvas with the skin artwork at W×H
   const key = `${id}|${Math.round(W)}|${Math.round(H)}`; if (skinCache[key]) return skinCache[key];
   const s = SKIN[id], c = document.createElement('canvas'); c.width = Math.round(W); c.height = Math.round(H); const g = c.getContext('2d'), r = rng(97);
-  if (s[2] === 'photo') { const im = await new Promise(ok => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => ok(null); i.src = `skins/${id}.${IX}`; });
+  if (s[2] === 'photo') { const im = await new Promise(ok => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => ok(null); i.src = `skins/${id}${W > 700 ? '' : '-s'}.${IX}`; });
     g.fillStyle = '#222'; g.fillRect(0, 0, W, H);
     if (im) { const k = Math.max(W / im.width, H / im.height), w = im.width * k, h = im.height * k; g.drawImage(im, (W - w) / 2, (H - h) / 2, w, h); } }
   if (s[2] === 'solid') { g.fillStyle = s[3]; g.fillRect(0, 0, W, H); g.fillStyle = 'rgba(255,255,255,.035)'; for (let i = 0; i < W * H / 40; i++) g.fillRect(r() * W, r() * H, 1, 1); }

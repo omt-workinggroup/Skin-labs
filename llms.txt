@@ -15,7 +15,7 @@
 ## Details
 - Material: die-cut vinyl, laminated
 - Typical size: 2.5 to 7.5 cm per sticker, thin 0.8 mm white outline
-- Laptop skins: sticker-bomb, galaxy, carbon, marble, plain or your own picture (price on request: DM on WhatsApp)
+- Laptop skins: Small (up to 13.3") GH₵70, Medium (14-15.6") GH₵80, Large (16-17.3") GH₵90, Custom (full wrap or own picture) GH₵120
 - Online designer: pick your laptop model, then place skins and stickers on the lid, keyboard area and bottom at real size: https://skin-labs.vercel.app/#design
 - Inspiration gallery: https://skin-labs.vercel.app/#inspo
 - Instagram: https://www.instagram.com/baidencreatives/
@@ -33,6 +33,7 @@
   - [Just Do It](https://skin-labs.vercel.app/stickers/xl/xl-just-do-it/): 1 stickers, GH₵25
   - [No Days Off](https://skin-labs.vercel.app/stickers/xl/xl-no-days-off/): 1 stickers, GH₵25
   - [Rick & Morty](https://skin-labs.vercel.app/stickers/xl/xl-rick-and-morty/): 2 stickers, GH₵25
+  - [Barça Crest](https://skin-labs.vercel.app/stickers/xl/xl-barca-crest/): 1 stickers, GH₵25
 - [Pick & Mix stickers](https://skin-labs.vercel.app/stickers/mix/): Pick and mix: big A3 sheets with about 84 stickers from a whole group of categories, plus mixed packs with a bit of everything.
   - [Pick & Mix: Tech + Gaming](https://skin-labs.vercel.app/stickers/mix/pm1-tech-and-gaming/): 84 stickers, GH₵100
   - [Pick & Mix: Ball, Cars + Street](https://skin-labs.vercel.app/stickers/mix/pm2-football-cars-street/): 84 stickers, GH₵100
@@ -45,6 +46,7 @@
 - [Programmers stickers](https://skin-labs.vercel.app/stickers/programmers/): Stickers for developers, computer science students and anyone who lives in a terminal: programming language logos, hacker and cybersecurity designs, AI and vibe-coding tools, and the dev jokes that only make sense at 2am.
   - [Dev Life](https://skin-labs.vercel.app/stickers/programmers/p9-dev-life/): 30 stickers, GH₵60
   - [Stack & Logos](https://skin-labs.vercel.app/stickers/programmers/p10-stack-and-logos/): 27 stickers, GH₵60
+  - [Database & Backend](https://skin-labs.vercel.app/stickers/programmers/p11-database-backend/): 35 stickers, GH₵60
   - [Hacker Mode](https://skin-labs.vercel.app/stickers/programmers/p1-hacker-mode/): 33 stickers, GH₵60
   - [Ai & Vibe Coding](https://skin-labs.vercel.app/stickers/programmers/p2-ai-vibe-coding/): 25 stickers, GH₵60
   - [Code Languages I](https://skin-labs.vercel.app/stickers/programmers/p3-code-languages-1/): 29 stickers, GH₵60
@@ -83,6 +85,7 @@
   - [Monkey D. Luffy](https://skin-labs.vercel.app/stickers/anime/an4-monkey-d-luffy/): 15 stickers, GH₵60
   - [One Piece](https://skin-labs.vercel.app/stickers/anime/an5-one-piece/): 11 stickers, GH₵60
   - [Anime Legends Ii](https://skin-labs.vercel.app/stickers/anime/an6-anime-legends-ii/): 20 stickers, GH₵60
+  - [My Hero Academia](https://skin-labs.vercel.app/stickers/anime/an7-my-hero-academia/): 46 stickers, GH₵60
   - [Anime Legends](https://skin-labs.vercel.app/stickers/anime/an1-anime-legends/): 31 stickers, GH₵60
   - [Anime Vibes](https://skin-labs.vercel.app/stickers/anime/anime-vibes/): 27 stickers, GH₵60
 - [Cartoons stickers](https://skin-labs.vercel.app/stickers/cartoons/): Chibi superheroes and classic cartoons, from Marvel minis to SpongeBob and Looney Tunes style chaos.
@@ -134,5 +137,5 @@
 **Will the stickers peel off?** They are printed on vinyl and laminated, so they handle bags, sweaty palms and rain. Clean and dry the surface before sticking and press down firmly for a few seconds.
 **How big are the stickers?** Most stickers are between 3 and 6 cm, sized for a laptop lid, the area around the keyboard, a mousepad, a phone case or a water bottle.
 **Do you have sticker ideas I can choose from?** Yes. The Inspo page has real sticker setups. Tap any photo you like and send it on WhatsApp, and we design and print stickers in that style. Custom stickers start from GH₵15.
-**Do you make laptop skins?** Yes. Skin Lab prints full laptop skins as well as stickers: sticker-bomb skins made from our packs, galaxy, carbon fibre, marble and plain colours, or your own picture. Skin prices depend on your laptop, so message us on WhatsApp with your laptop model and we will tell you the price.
+**Do you make laptop skins?** Yes. Skin Lab prints full vinyl laptop skins as well as stickers. A skin costs GH₵70 for a small laptop (up to 13.3 inch), GH₵80 for 14 to 15.6 inch, GH₵90 for 16 to 17.3 inch, and GH₵120 for a custom skin (full wrap of the lid, keyboard area and bottom, or your own picture). Pick the size when you add it to your cart.
 **Can I see the stickers on my laptop before I order?** Yes. In Design, pick your laptop brand and model (Apple, HP, Dell, Lenovo, Acer, Asus, Microsoft and more), then place skins and stickers on the lid, keyboard area and bottom at real size, and send the design with your order.

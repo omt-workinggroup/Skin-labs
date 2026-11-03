@@ -149,7 +149,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>Inspo</a><a href="/#cart">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 7h14l-1.5 13h-11Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>Cart</a></nav>
 <div class="toast" id="toast" hidden></div>
-<script src="/data.31aea529.js"></script>
+<script src="/data.ed9faf38.js"></script>
 <script type="module">
 let THREE, OrbitControls, RoomEnvironment, glP = null;
 const loadGL = () => glP || (glP = Promise.all([import('three'), import('/vendor/three/OrbitControls.js'), import('/vendor/three/RoomEnvironment.js')]).then(([a, b, c]) => { THREE = a; OrbitControls = b.OrbitControls; RoomEnvironment = c.RoomEnvironment; }));
@@ -175,7 +175,7 @@ const SOLID = [['s-black', 'Matte black', '#121213'], ['s-white', 'Gloss white',
 
 // ---------- state ----------
 let L = null, col = '', surf = 'lid', sel = -1, lidA = 108, hist = [], skinSize = '';
-const SKINP = { S: { name: 'Small', fit: 'up to 13.3″', price: 100 }, M: { name: 'Medium', fit: '14″ – 15.6″', price: 120 }, L: { name: 'Large', fit: '16″ – 17.3″', price: 150 }, C: { name: 'Custom', fit: 'full wrap or own picture', price: 200 } };
+const SKINP = { S: { name: 'Small', fit: 'up to 13.3″', price: 70 }, M: { name: 'Medium', fit: '14″ – 15.6″', price: 80 }, L: { name: 'Large', fit: '16″ – 17.3″', price: 90 }, C: { name: 'Custom', fit: 'full wrap or own picture', price: 120 } };
 const skinFor = inch => !inch ? 'M' : inch <= 13.5 ? 'S' : inch <= 15.7 ? 'M' : 'L';
 const items = { lid: [], kb: [], bot: [] }, skin = { lid: '', kb: '', bot: '' };
 const SN = { lid: 'Lid', kb: 'Keyboard', bot: 'Bottom' };
@@ -702,7 +702,7 @@ function pane() {
       if (toPhotoOrGL()) return; if (!idle && !tween) {} else go(surf); };
   } else if (tab === 'skins') {
     p.innerHTML = `<div class="skins" id="sk"><button class="sk ${!skin[surf] ? 'on' : ''}" data-x=""><span style="display:grid;place-items:center;color:#777">∅</span><span class="lbl">No skin</span></button>
-      ${PHOTO.map(([id, n]) => `<button class="sk ${skin[surf] === id ? 'on' : ''}" data-x="${id}"><span style="background-image:url(/skins/${id}.${IX})"></span><span class="lbl">${n}</span></button>`).join('')}
+      ${PHOTO.map(([id, n]) => `<button class="sk ${skin[surf] === id ? 'on' : ''}" data-x="${id}"><span style="background-image:url(/skins/${id}-s.${IX})"></span><span class="lbl">${n}</span></button>`).join('')}
       ${SOLID.map(([id, n, c]) => `<button class="sk ${skin[surf] === id ? 'on' : ''}" data-x="${id}"><span style="background:${c}"></span><span class="lbl">${n}</span></button>`).join('')}</div>
       <p class="lbl" style="text-transform:none;letter-spacing:0;font-family:var(--body);font-size:12.5px">Covers the whole ${SN[surf].toLowerCase()}. Stickers sit on top.</p>
       <div class="lbl" style="margin-top:4px">Skin size</div><div class="skz" id="skz">${Object.entries(SKINP).map(([k, t]) => `<button data-z="${k}" class="${k === skinSize ? 'on' : ''}"><b>${t.name}</b><small>${t.fit}</small><i>GH₵${t.price}</i></button>`).join('')}</div>

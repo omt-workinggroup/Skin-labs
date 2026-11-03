@@ -3,7 +3,7 @@
  "trailingSlash": true,
  "headers": [
   {
-   "source": "/print/(singles|packs)/(.*)",
+   "source": "/print/(singles|packs|skins)/(.*)",
    "headers": [
     {
      "key": "Content-Disposition",
