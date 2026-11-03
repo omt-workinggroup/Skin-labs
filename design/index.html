@@ -80,7 +80,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 .s{display:block}
 .tabs{position:fixed;left:0;right:0;bottom:0;z-index:40;height:66px;border-top:1px solid var(--line);background:rgba(0,0,0,.94);display:grid;grid-template-columns:repeat(4,1fr)}
 .tabs a{text-decoration:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;color:#7d7d7d;position:relative}.tabs svg{width:22px;height:22px}.tabs .on{color:#fff}.tabs a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;color:#7d7d7d;position:relative}.tabs .on:after{content:"";position:absolute;bottom:5px;width:14px;height:1px;background:#fff}
-.toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:#fff;color:#000;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;padding:9px 14px;z-index:60}
+.toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:#fff;color:#000;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;padding:9px 14px;z-index:300}
 .load{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#888}
 @media (min-width:1000px){.ed{grid-template-columns:minmax(0,1fr) 400px;gap:28px;align-items:start}.stage{margin:0;height:min(76vh,720px);top:76px}.drawer{position:sticky;top:76px;padding-top:0}
   .tray{grid-auto-flow:row;grid-template-rows:none;grid-template-columns:repeat(5,1fr);max-height:260px;overflow-y:auto}.skins{grid-auto-flow:row;grid-template-rows:none;grid-template-columns:repeat(3,1fr);max-height:300px;overflow-y:auto}
@@ -114,9 +114,14 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 .stage .phz #phl{filter:brightness(.95) contrast(1.03) saturate(.97)}.stage .phz canvas{position:absolute;left:0;top:0;transform-origin:0 0;pointer-events:none;width:auto;height:auto;display:block}
 .phm{position:absolute;left:var(--gut);right:var(--gut);bottom:10px;display:flex;justify-content:space-between;pointer-events:none;z-index:2}.stage .phm .lbl{color:#9a9a9a}
 .name{transition:opacity .2s}.stage.zm .name{opacity:0;pointer-events:none}.stage .phm .lbl{background:rgba(255,255,255,.86);padding:3px 7px}.ovl.t{z-index:3}
-.md{display:grid;grid-template-columns:1fr 1fr;border:1px solid rgba(0,0,0,.18);background:rgba(255,255,255,.85);backdrop-filter:blur(8px)}.md button{height:34px;padding:0 13px;font-size:12.5px;color:#555;font-weight:500}.md button.on{background:#111;color:#fff}
+.md{display:grid;grid-template-columns:1fr 1fr;border:1px solid rgba(0,0,0,.18);background:rgba(255,255,255,.94)}.md button{height:34px;padding:0 13px;font-size:12.5px;color:#555;font-weight:500}.md button.on{background:#111;color:#fff}
 .shots{display:flex;gap:8px;margin:12px 0 4px;align-items:center;overflow-x:auto;scrollbar-width:none}.shots::-webkit-scrollbar{display:none}.shots button{flex:none;width:76px;height:58px;background:#fff;display:grid;place-items:center;opacity:.6}.shots button.on{opacity:1;outline:1px solid #fff;outline-offset:2px}.shots img{max-width:88%;max-height:88%}.shots .lbl{margin-left:6px;white-space:nowrap}
 .row .ic img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#fff}
+.ovr{display:flex;gap:8px;align-items:center}.fsb{width:36px;height:36px;display:grid;place-items:center;border:1px solid rgba(0,0,0,.18);background:rgba(255,255,255,.94);color:#111}
+.stage.fs{position:fixed!important;inset:0!important;top:0!important;height:100dvh!important;margin:0!important;z-index:200;border-radius:0}
+.stage.fs .ovl.t{top:calc(12px + env(safe-area-inset-top,0px))}
+.bomb{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;min-height:50px;padding:0 14px;margin-bottom:8px;background:linear-gradient(90deg,#fff,#e9e9e9);color:#000;text-align:left;font-weight:600;font-size:14px}
+.bomb small{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#555;font-weight:400}
 </style>
 <script type="importmap">{"imports":{"three":"/vendor/three/three.module.min.js"}}</script>
 </head><body>
@@ -196,7 +201,7 @@ const warmAtlas = ids => ids.forEach(id => atlas(id).then(im => { if (im) ready[
 function drawStickers(g, s, W, H) {
   g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
   for (const [i, o] of items[s].entries()) { const { p, it } = CODE[o.c], im = ready[p.id]; if (!im) { atlas(p.id).then(m => { if (m) { ready[p.id] = m; schedule(s); } }); continue; }
-    const Lw = o.s * W, k = Lw / Math.max(it[3], it[4]), w = it[3] * k, h = it[4] * k;
+    const Lw = o.s * W * popK(o), k = Lw / Math.max(it[3], it[4]), w = it[3] * k, h = it[4] * k;
     g.save(); g.translate(o.x * W, o.y * H); g.rotate(o.r * Math.PI / 180); g.drawImage(im, it[1], it[2], it[3], it[4], -w / 2, -h / 2, w, h);
     if (s === surf && i === sel) { g.strokeStyle = '#fff'; g.lineWidth = Math.max(2, W / 600); g.setLineDash([W / 140, W / 200]); g.strokeRect(-w / 2 - W / 160, -h / 2 - W / 160, w + W / 80, h + W / 80); g.setLineDash([]);
       g.fillStyle = '#fff'; [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([a, b]) => { g.beginPath(); g.arc(a * (w / 2 + W / 160), b * (h / 2 + W / 160), W / 180, 0, 7); g.fill(); }); }
@@ -226,7 +231,7 @@ const atlasTex = p => ATX[p.id] || (ATX[p.id] = (() => { const t = new THREE.Tex
   const m = new THREE.MeshBasicMaterial({ map: t, transparent: true, alphaTest: .02, depthWrite: false, toneMapped: false, polygonOffset: true, polygonOffsetFactor: -4, side: THREE.DoubleSide });
   atlas(p.id).then(im => { if (im) { ready[p.id] = im; t.image = im; t.needsUpdate = true; kick(); } }); return m; })());
 function quad(o, s) { const { p, it } = CODE[o.c], C = surfPos(s, o.x, o.y), R = surfPos(s, o.x + 1, o.y).sub(C), Dv = surfPos(s, o.x, o.y + 1).sub(C);
-  const pw = R.length(), Rn = R.normalize(), Dn = Dv.normalize(), k = o.s * pw / Math.max(it[3], it[4]), hw = it[3] * k / 2, hh = it[4] * k / 2, a = o.r * Math.PI / 180;
+  const pw = R.length(), Rn = R.normalize(), Dn = Dv.normalize(), k = o.s * popK(o) * pw / Math.max(it[3], it[4]), hw = it[3] * k / 2, hh = it[4] * k / 2, a = o.r * Math.PI / 180;
   const Rr = Rn.clone().multiplyScalar(Math.cos(a)).addScaledVector(Dn, Math.sin(a)), Dr = Rn.clone().multiplyScalar(-Math.sin(a)).addScaledVector(Dn, Math.cos(a));
   const P = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([x, y]) => C.clone().addScaledVector(Rr, x * hw).addScaledVector(Dr, y * hh));
   return { P, uv: [[it[1] / p.aw, 1 - it[2] / p.ah], [(it[1] + it[3]) / p.aw, 1 - it[2] / p.ah], [(it[1] + it[3]) / p.aw, 1 - (it[2] + it[4]) / p.ah], [it[1] / p.aw, 1 - (it[2] + it[4]) / p.ah]] }; }
@@ -243,7 +248,23 @@ function syncStickers(s) { if (!GEO || !lap) return; dirty = true; const parent 
   if (s === surf && sel >= 0 && list[sel]) { const { P } = quad({ ...list[sel], s: list[sel].s * 1.12 }, s), g = new THREE.BufferGeometry().setFromPoints([...P, P[0]]);
     SELL[s] = new THREE.Line(g, new THREE.LineDashedMaterial({ color: 0xffffff, dashSize: .35, gapSize: .25, depthTest: false })); SELL[s].computeLineDistances(); SELL[s].renderOrder = 99; parent.add(SELL[s]); } }
 let phQ = 0;
-function schedule(s) { syncStickers(s); if (s === 'lid' && mode === 'ph' && !phQ) phQ = requestAnimationFrame(() => { phQ = 0; phLid(); }); }
+// stickers land with a little slap: start bigger, settle to size; staggered for sticker-bombs
+const POP = new Map(), buzz = () => { try { navigator.vibrate && navigator.vibrate(10); } catch (e) {} };
+function popK(o) { const t0 = POP.get(o); if (t0 === undefined) return 1; const t = performance.now() - t0;
+  if (t < 0) return .001; if (t >= 380) { POP.delete(o); return 1; } const e = t / 380; return 1 + .55 * (1 - e) ** 3 - .06 * Math.sin(e * Math.PI) * (1 - e); }
+let popRun = 0;
+function popIn(list, s, gap = 0) { const now = performance.now(); list.forEach((o, i) => POP.set(o, now + i * gap)); buzz(); popEnd[s] = Math.max(popEnd[s] || 0, now + (list.length - 1) * gap + 400);
+  if (popRun) return; popRun = 1;   // one shared loop for every landing sticker: one redraw per surface per frame
+  const tick = () => { const t = performance.now(), live = Object.keys(popEnd).filter(k => popEnd[k] > t);
+    Object.keys(popEnd).forEach(k => { schedule(k); if (popEnd[k] <= t) delete popEnd[k]; });
+    if (live.length) requestAnimationFrame(tick); else { POP.clear(); popRun = 0; } };
+  requestAnimationFrame(tick); }
+const popEnd = {};
+// real size on the laptop, so people feel what they get
+const cmOf = o => { const { it } = CODE[o.c]; return o.s * L.w; };
+let szT = '';
+function sizeLabel() { if (sel < 0 || !items[surf][sel]) return; const t = `≈ ${cmOf(items[surf][sel]).toFixed(1)} cm`; if (t === szT) return; szT = t; const el = $('#szl'); if (el) el.textContent = t; }
+function schedule(s) { sizeLabel(); syncStickers(s); if (s === 'lid' && mode === 'ph' && !phQ) phQ = requestAnimationFrame(() => { phQ = 0; phLid(); }); }
 
 function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 // ---- keyboard deck: real layout, labelled keycaps, trackpad, speakers, power key
@@ -525,7 +546,7 @@ function phShow(i) { const rs = realSet(L); if (!rs) return; shot = (i + rs.shot
 function setMode(m) { const rs = realSet(L); if (m === 'ph' && !rs) m = '3d'; mode = m; const ph = $('#ph'); if (!ph) return;
   ph.hidden = m !== 'ph'; if (R) R.domElement.style.visibility = m === 'ph' ? 'hidden' : ''; $('.ctrl').hidden = m === 'ph' || sel >= 0; $('#shots').hidden = m !== 'ph';
   document.querySelectorAll('#md [data-m]').forEach(b => b.classList.toggle('on', b.dataset.m === m)); $('#hint').hidden = m === 'ph';
-  if (m === 'ph') phShow(shot); else kick(); }
+  if (m === 'ph') phShow(shot); else { kick(); const sv = ['lid', 'kb', 'bot'].find(k => items[k].length || skin[k]); if (sv && L) go(sv, 900); } }
 const lidShot = () => { const rs = realSet(L); return rs ? rs.shots.findIndex(n => REAL.shots[n].lid) : -1; };
 function hitSticker(s, x, y, W, H) { for (let i = items[s].length - 1; i >= 0; i--) { const o = items[s][i], { it } = CODE[o.c], k = o.s * W / Math.max(it[3], it[4]), w = it[3] * k / 2 + W * .01, h = it[4] * k / 2 + W * .01;
   const dx = (x - o.x) * W, dy = (y - o.y) * H, a = -o.r * Math.PI / 180, rx = dx * Math.cos(a) - dy * Math.sin(a), ry = dx * Math.sin(a) + dy * Math.cos(a); if (Math.abs(rx) < w && Math.abs(ry) < h) return i; } return -1; }
@@ -570,13 +591,13 @@ async function vEditor() {
   app.innerHTML = `<div class="ed"><div><div class="stage" id="stage"><div class="load">Building your ${esc(L.brand)}…</div>
       ${RS ? `<div class="ph" id="ph" hidden><div class="phz" id="phz"><img id="phi" src="${shotSrc(RS.shots[0], 'm')}" alt="${esc(RS.t)}, real photo" draggable="false"><canvas id="phl" width="1600" height="1000"></canvas><canvas id="phs" width="1600" height="1000"></canvas></div><div class="phm"><span class="lbl" id="phq"></span><span class="lbl" id="phzoom"></span></div></div>` : ''}
       <div class="ovl t"><div class="name"><b>${esc(L.brand)} ${esc(L.name.replace(/ \(.+\)$/, ''))}</b><span class="lbl">${L.scr}″ · ${L.w} × ${L.d} cm · <a class="chg lbl" href="#pick" id="chg">Change</a></span></div>
-        ${RS ? '<div class="md" id="md"><button data-m="ph">Photo</button><button data-m="3d">3D</button></div>' : ''}</div>
+        <div class="ovr">${RS ? '<div class="md" id="md"><button data-m="ph">Photo</button><button data-m="3d">3D</button></div>' : ''}<button class="fsb" id="fsb" aria-label="Full screen"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button></div></div>
       <span class="hint" id="hint">Drag to turn · pinch to zoom</span>
 </div>
       <div class="ctrl"><div class="views" id="views"><button data-v="hero">360°</button><button data-v="lid">Lid</button><button data-v="kb">Keys</button><button data-v="bot">Base</button></div>
         <label class="lidc" id="lidrow"><span class="lbl">Open</span><input type="range" id="lida" min="0" max="140" value="${lidA}"></label></div>
       <div class="shots" id="shots" hidden>${RS ? RS.shots.map(n => `<button data-n="${n}" aria-label="Photo"><img src="${shotSrc(n, 't')}" alt="" loading="lazy"></button>`).join('') + `<span class="lbl">Real ${esc(RS.t)} · double-tap to zoom</span>` : ''}</div>
-      <div class="selbar" id="selbar" hidden><span class="lbl">Size</span><input type="range" id="ssz" min="4" max="60" step="1"><span class="lbl">Turn</span><input type="range" id="srt" min="-180" max="180" step="1">
+      <div class="selbar" id="selbar" hidden><span class="lbl">Size <b id="szl" style="color:#fff;font-weight:500;letter-spacing:.04em"></b></span><input type="range" id="ssz" min="4" max="60" step="1"><span class="lbl">Turn</span><input type="range" id="srt" min="-180" max="180" step="1">
         <div class="btns"><button id="sdel">Remove</button><button id="sup">To front</button><button class="w" id="sok">Done</button></div></div></div>
     <aside class="drawer">
       <div class="addto"><span class="lbl">Adding to</span><div class="seg" id="surf" style="flex:1;margin-left:12px">${Object.entries(SN).map(([k, n]) => `<button data-s="${k}">${n}<i></i></button>`).join('')}</div></div>
@@ -589,6 +610,8 @@ async function vEditor() {
   if (RS) { phGestures($('#ph')); shot = 0; $('#md').onclick = e => { const b = e.target.closest('[data-m]'); if (b) setMode(b.dataset.m); };
     $('#shots').onclick = e => { const b = e.target.closest('[data-n]'); if (b) phShow(RS.shots.indexOf(b.dataset.n)); }; }
   mode = RS ? 'ph' : '3d';
+  const fs = on => { const st = $('#stage'); st.classList.toggle('fs', on); document.body.style.overflow = on ? 'hidden' : ''; $('#fsb').innerHTML = on ? '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg>' : '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>'; setTimeout(() => { resize(); phLayout(); }, 30); };
+  $('#fsb').onclick = () => fs(!$('#stage').classList.contains('fs')); addEventListener('keydown', e => { if (e.key === 'Escape' && $('#stage')?.classList.contains('fs')) fs(false); });
   $('#views').onclick = e => { const b = e.target.closest('[data-v]'); if (!b) return; const v = b.dataset.v; document.querySelectorAll('#views button').forEach(x => x.classList.toggle('on', x === b)); if (v !== 'hero') { surf = v; refresh(); } if (mode === 'ph') setMode('3d'); go(v); };
   $('#lida').oninput = e => { setLid(+e.target.value); idle = false; };
   $('#surf').onclick = e => { const b = e.target.closest('[data-s]'); if (!b) return; surf = b.dataset.s; sel = -1; refresh(); go(surf); ['lid', 'kb', 'bot'].forEach(schedule); };
@@ -609,6 +632,15 @@ async function vEditor() {
   pane(); refresh(); setMode(mode);
 }
 const toPhotoOrGL = () => { if (mode !== 'ph') return false; if (surf === 'lid' && lidShot() >= 0) { if (!curShot().lid) phShow(lidShot()); return true; } setMode('3d'); toast(`${SN[surf]} is shown on the 3D model`); return false; };
+// fill a surface with a whole pack, packed like a real sticker-bomb (big ones first, a little overlap, random turns)
+const BOMBN = 26;
+function bomb(pk) { snap(); const s = surf, rnd = (a, b) => a + Math.random() * (b - a), list = pk.items.slice(0, BOMBN).map(it => it[0]);
+  const y0 = s === 'kb' ? .6 : .04, y1 = s === 'kb' ? .97 : .96, aw = 1, ah = (y1 - y0) * (s === 'lid' ? L.d / L.w : L.d / L.w);
+  const n = list.length, cols = Math.max(3, Math.round(Math.sqrt(n * aw / ah))), rows = Math.ceil(n / cols), cw = 1 / cols, ch = (y1 - y0) / rows;
+  const cells = []; for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) cells.push([(c + .5) * cw, y0 + (r + .5) * ch]);
+  cells.sort(() => Math.random() - .5);
+  const add = list.map((c, i) => { const [x, y] = cells[i % cells.length]; return { c, x: Math.min(.97, Math.max(.03, x + rnd(-.22, .22) * cw)), y: Math.min(y1, Math.max(y0, y + rnd(-.22, .22) * ch)), s: cw * rnd(1.05, 1.35), r: Math.round(rnd(-14, 14)) }; });
+  items[s].push(...add); sel = -1; refresh(); popIn(add, s, 45); if (!toPhotoOrGL()) go(s); toast(`${add.length} stickers on the ${SN[s].toLowerCase()}`); }
 function saveMine(d) { const mine = store.get('sl-mine', []).filter(m => m.id !== saveMine.id); saveMine.id ||= Date.now().toString(36);
   mine.unshift({ id: saveMine.id, at: Date.now(), name: d.name, d, thumb: d.thumb || thumb() }); store.set('sl-mine', mine.slice(0, 12)); }
 function refresh() { save3();
@@ -623,11 +655,13 @@ function pane() {
   if (tab === 'stickers') { const c = CAT[ccat], pk = PK[cpack]; warmAtlas(c.packs);
     p.innerHTML = `<div class="hs" id="cats">${D.cats.map(x => `<button class="chip ${x.id === ccat ? 'on' : ''}" data-c="${x.id}">${esc(x.name)}</button>`).join('')}</div>
       <div class="hs" id="packs">${c.packs.map(id => `<button class="chip ${id === cpack ? 'on' : ''}" data-p="${id}" style="height:32px;font-size:12.5px">${esc(PK[id].name)}</button>`).join('')}</div>
+      <button class="bomb" id="bomb"><span>Sticker-bomb the ${SN[surf].toLowerCase()}</span><small>${esc(pk.name.charAt(0) + pk.name.slice(1).toLowerCase())} · ${Math.min(pk.items.length, BOMBN)} stickers in one tap</small></button>
       <div class="tray" id="tray">${pk.items.map(it => `<button class="tile" data-k="${it[0]}">${spr(pk, it, 48)}<span class="c">${it[0]}</span></button>`).join('')}</div>`;
     $('#cats').onclick = e => { const b = e.target.closest('[data-c]'); if (b) { ccat = b.dataset.c; cpack = CAT[ccat].packs[0]; pane(); } };
     $('#packs').onclick = e => { const b = e.target.closest('[data-p]'); if (b) { cpack = b.dataset.p; pane(); } };
+    $('#bomb').onclick = () => bomb(pk);
     $('#tray').onclick = e => { const b = e.target.closest('[data-k]'); if (!b) return; snap(); const W = surf === 'kb' ? [.2 + Math.random() * .6, .72 + Math.random() * .18] : [.2 + Math.random() * .6, .2 + Math.random() * .6];
-      items[surf].push({ c: b.dataset.k, x: W[0], y: W[1], s: Math.min(.3, 5.5 / L.w), r: Math.round(Math.random() * 16 - 8) }); sel = items[surf].length - 1; refresh(); schedule(surf);
+      const o = { c: b.dataset.k, x: W[0], y: W[1], s: Math.min(.3, 5.5 / L.w), r: Math.round(Math.random() * 16 - 8) }; items[surf].push(o); sel = items[surf].length - 1; refresh(); popIn([o], surf);
       if (toPhotoOrGL()) return; if (!idle && !tween) {} else go(surf); };
   } else if (tab === 'skins') {
     p.innerHTML = `<div class="skins" id="sk"><button class="sk ${!skin[surf] ? 'on' : ''}" data-x=""><span style="display:grid;place-items:center;color:#777">∅</span><span class="lbl">No skin</span></button>
