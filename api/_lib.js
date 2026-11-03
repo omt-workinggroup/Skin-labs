@@ -1,5 +1,5 @@
 // Shared helpers for the Skin Lab order backend (Vercel Functions + Vercel Blob).
-import { list, put } from '@vercel/blob';
+import { list, put, del } from '@vercel/blob';
 
 export const STATUSES = ['new', 'confirmed', 'printing', 'on-the-way', 'delivered', 'cancelled'];
 export const SITE = 'https://skin-labs.vercel.app';
@@ -16,13 +16,18 @@ export const isAdmin = req => !!process.env.ADMIN_KEY && req.headers['x-admin-ke
 export async function findOrder(id) {
   if (!/^SL-[2-9A-Z]{5}$/.test(id || '')) return null;
   const { blobs } = await list({ prefix: `orders/${id}-` });
-  const j = blobs.find(b => b.pathname.endsWith('/order.json'));
-  if (!j) return null;
-  const r = await fetch(j.url + '?v=' + Date.now(), { cache: 'no-store' });
-  return r.ok ? { order: await r.json(), dir: j.pathname.replace(/\/order\.json$/, '') } : null;
+  const j = latest(blobs); if (!j) return null;
+  const r = await fetch(j.url, { cache: 'no-store' });
+  return r.ok ? { order: await r.json(), dir: j.pathname.slice(0, j.pathname.lastIndexOf('/')) } : null;
 }
-export const saveOrder = (dir, order) => put(`${dir}/order.json`, JSON.stringify(order), { access: 'public', addRandomSuffix: false, allowOverwrite: true, contentType: 'application/json', cacheControlMaxAge: 60 });
-
+// Each save is a new file (order-<time>.json): a fresh URL is never served stale by the CDN. Older versions are removed.
+export const latest = blobs => blobs.filter(b => /\/order(-\d+)?\.json$/.test(b.pathname)).sort((a, b) => b.pathname.localeCompare(a.pathname, 'en', { numeric: true }))[0];
+export async function saveOrder(dir, order) {
+  const { blobs } = await list({ prefix: dir + '/' }), old = blobs.filter(b => /\/order(-\d+)?\.json$/.test(b.pathname));
+  const r = await put(`${dir}/order-${Date.now()}.json`, JSON.stringify(order), { access: 'public', addRandomSuffix: false, contentType: 'application/json' });
+  if (old.length) await del(old.map(b => b.url)).catch(() => {});
+  return r;
+}
 // New-order alert to the shop's own WhatsApp through CallMeBot (free, for messages to your own number).
 // Turned on by setting CALLMEBOT_KEY in Vercel; without it, orders still land in /admin.
 export async function notifyOwner(text) {
