@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#000000">
-<title>Orders · Skin Lab admin</title><link rel="icon" href="/favicon.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<title>Orders · Skin Lab admin</title><link rel="manifest" href="/admin/manifest.webmanifest"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="SL Orders"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="icon" href="/favicon.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap">
 <style>
 :root{--fg:#fff;--mute:#8c8c8c;--line:rgba(255,255,255,.12);--line2:rgba(255,255,255,.28);--g:#1faa53;--gut:max(16px,env(safe-area-inset-left,0px));--serif:'Instrument Serif',Georgia,serif;--mono:'Geist Mono',ui-monospace,monospace}
@@ -21,7 +21,7 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(40px,10vw,64px);line
 .tabs button{flex:none;height:36px;padding:0 14px;border:1px solid var(--line);font-size:13px;color:#ccc}.tabs .on{background:#fff;color:#000;border-color:#fff}
 .tabs i{font-style:normal;font-family:var(--mono);font-size:10px;opacity:.6;margin-left:5px}
 .srch{width:100%;height:46px;background:none;border:1px solid var(--line2);padding:0 14px;margin:10px 0 6px;outline:none;font-size:16px}
-.alert{border:1px solid var(--line2);padding:12px 14px;margin:14px 0 0;font-size:13.5px;color:#ccc}.alert b{color:#fff}
+.alert{border:1px solid var(--line2);padding:12px 14px;margin:14px 0 0;font-size:13.5px;color:#ccc}.alert:empty{display:none}.alert .btn{width:100%;margin-top:10px}.alert b{color:#fff}
 .list{display:grid;gap:10px;margin-top:12px}
 .card{display:grid;grid-template-columns:84px minmax(0,1fr);gap:12px;text-align:left;border:1px solid var(--line);padding:10px;width:100%;position:relative}
 .card.new{border-color:#fff}.card .pic{width:84px;height:110px;background:#151515 center/cover;display:grid;place-items:center;font-family:var(--mono);font-size:10px;color:#666}
@@ -84,16 +84,18 @@ function list() {
     && (!q || `${o.id} ${o.name} ${o.phone} ${o.loc}`.toLowerCase().includes(q.toLowerCase())));
   app.innerHTML = `<header class="top"><b>Skin Lab</b><div class="r"><span class="lbl">Admin</span><button class="ib" id="rf">Refresh</button><button class="ib" id="lo">Log out</button></div></header>
   <div class="w"><span class="lbl">${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}</span><h1>Orders<em>.</em></h1>
+    <div class="alert" id="nt"></div>
     <div class="stats"><div><b>${cnt.new}</b><span class="lbl">New</span></div><div><b>${cnt.active}</b><span class="lbl">In progress</span></div><div><b>${today.length}</b><span class="lbl">Today</span></div><div><b>₵${money}</b><span class="lbl">All time</span></div></div>
     <div class="tabs" id="tabs">${[['new', 'New', cnt.new], ['active', 'In progress', cnt.active], ['done', 'Done', cnt.done], ['all', 'All', cnt.all]].map(([k, n, c]) => `<button class="${k === filter ? 'on' : ''}" data-f="${k}">${n}<i>${c}</i></button>`).join('')}</div>
     <input class="srch" id="q" placeholder="Search name, number, order…" value="${esc(q)}">
     <div class="list">${show.length ? show.map(o => { const pic = o.design && (o.design.sheet || o.design.mock);
-      return `<button class="card ${o.status === 'new' ? 'new' : ''}" data-id="${o.id}"><span class="pic" ${pic ? `style="background-image:url('${esc(pic)}')"` : ''}>${pic ? '' : 'PACKS'}</span>
+      const pp = !pic && (o.packs || [])[0], img = pic || (pp ? `/sheets-xs/${pp.key.replace('~5', '-a5')}.webp` : '');
+      return `<button class="card ${o.status === 'new' ? 'new' : ''}" data-id="${o.id}"><span class="pic" ${img ? `style="background-image:url('${esc(img)}')"` : ''}>${img ? '' : 'SINGLES'}</span>
         <span><span class="meta"><span><b>${esc(o.name)}</b><p>${esc(o.id)} · ${ago(o.at)}</p></span><span class="pill ${o.status}">${ST[o.status]}</span></span>
         <p>${esc(what(o))}</p><p>${esc(o.loc || '')}</p><div class="tot">₵${o.total}${o.skinOnDM ? ' + skin' : ''}</div></span></button>`; }).join('')
       : `<div class="empty">${orders.length ? 'Nothing here.' : 'No orders yet. They land here the moment a customer taps “Place order”.'}</div>`}</div>
-    ${alerts === 'on' ? '' : `<div class="alert"><b>WhatsApp alerts are off.</b> New orders still appear here (keep this page open and it rings). To get a WhatsApp message for every order, finish the one-time CallMeBot step from the setup note.</div>`}
   </div>`;
+  notifCard();
   $('#tabs').onclick = e => { const b = e.target.closest('[data-f]'); if (b) { filter = b.dataset.f; list(); } };
   $('#q').oninput = e => { q = e.target.value; const p = e.target.selectionStart; list(); const i = $('#q'); i.focus(); i.setSelectionRange(p, p); };
   $('#rf').onclick = () => load(); $('#lo').onclick = () => { try { localStorage.removeItem('sl-admin'); } catch (e) {} login(); };
@@ -138,6 +140,27 @@ function open(id) {
   $('#st').onclick = async e => { const b = e.target.closest('[data-s]'); if (!b || b.dataset.s === o.status) return; b.textContent = '…';
     try { const j = await api('/api/status/', { method: 'POST', body: JSON.stringify({ id: o.id, status: b.dataset.s }) }); Object.assign(o, j.order); v.remove(); document.body.style.overflow = ''; open(o.id);
       $('#msg').value = (MSG[o.status] || MSG.new)(o); wa(); toast(ST[o.status]); } catch (x) { toast(x.message); b.textContent = ST[b.dataset.s]; } };
+}
+// ---------- phone notifications for new orders ----------
+const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent), standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+let swReg = null; if ('serviceWorker' in navigator) navigator.serviceWorker.register('/admin/sw.js', { scope: '/admin/' }).then(r => swReg = r).catch(() => {});
+const b64 = s => { const p = '='.repeat((4 - s.length % 4) % 4), b = atob((s + p).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(b, c => c.charCodeAt(0)); };
+async function notifState() { if (!('serviceWorker' in navigator) || !('PushManager' in window)) return isIOS && !standalone ? 'ios-install' : 'unsupported';
+  if (Notification.permission === 'denied') return 'denied'; const r = swReg || await navigator.serviceWorker.ready; const sub = await r.pushManager.getSubscription(); return sub ? 'on' : 'off'; }
+async function notifCard() { const el = $('#nt'); if (!el) return; const st = await notifState().catch(() => 'unsupported');
+  const T = { on: ['<b>Order notifications are on</b> for this phone. You get a ping for every new order, even with the app closed.', '<button class="btn" id="ntt">Send a test notification</button>'],
+    off: ['<b>Turn on order notifications.</b> Your phone pings you the moment a customer orders, like a WhatsApp message.', '<button class="btn" id="nton" style="background:#fff;color:#000;border-color:#fff">Turn on order notifications</button>'],
+    'ios-install': ['<b>On iPhone, add this page to your Home Screen first:</b> tap Share ⬆︎ then “Add to Home Screen”, open “SL Orders” from your Home Screen, then turn notifications on.', ''],
+    denied: ['<b>Notifications are blocked</b> for this site. Allow them in your browser or phone settings for skin-labs.vercel.app, then come back.', ''],
+    unsupported: ['<b>This browser can’t show notifications.</b> Use Chrome on Android, or Safari on iPhone with the page added to the Home Screen.', ''] }[st];
+  el.innerHTML = T[0] + T[1];
+  if ($('#nton')) $('#nton').onclick = async () => { $('#nton').textContent = 'Turning on…';
+    try { const p = await Notification.requestPermission(); if (p !== 'granted') return notifCard();
+      const { publicKey } = await api('/api/subscribe/'), r = swReg || await navigator.serviceWorker.ready;
+      const sub = await r.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64(publicKey) });
+      await api('/api/subscribe/', { method: 'POST', body: JSON.stringify({ sub }) }); toast('Notifications on'); notifCard();
+      api('/api/push-test/', { method: 'POST', body: '{}' }).catch(() => {}); } catch (e) { toast(e.message || 'Could not turn on'); notifCard(); } };
+  if ($('#ntt')) $('#ntt').onclick = async () => { const r = await api('/api/push-test/', { method: 'POST', body: '{}' }).catch(e => ({ result: e.message })); toast('Sent · ' + r.result); };
 }
 if (KEY()) { app.innerHTML = '<div class="login"><span class="lbl">Opening your orders…</span></div>'; load(true); } else login();
 </script></body></html>

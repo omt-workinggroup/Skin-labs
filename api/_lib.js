@@ -39,3 +39,17 @@ export async function notifyOwner(text) {
   } catch (e) { return 'failed'; }
 }
 export const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+
+// ---------- phone notifications (Web Push) to every device that turned them on in /admin ----------
+import webpush from 'web-push';
+export async function pushAll(payload) {
+  const pub = process.env.VAPID_PUBLIC, priv = process.env.VAPID_PRIVATE; if (!pub || !priv) return 'off';
+  webpush.setVapidDetails(SITE, pub, priv);
+  const { blobs } = await list({ prefix: 'push/' }); if (!blobs.length) return 'no devices';
+  let sent = 0;
+  await Promise.all(blobs.map(async b => {
+    try { const sub = await (await fetch(b.url, { cache: 'no-store' })).json(); await webpush.sendNotification(sub, JSON.stringify(payload), { TTL: 86400, urgency: 'high' }); sent++; }
+    catch (e) { if (e && (e.statusCode === 404 || e.statusCode === 410)) await del(b.url).catch(() => {}); }   // phone unsubscribed: forget it
+  }));
+  return `${sent}/${blobs.length} devices`;
+}

@@ -10,5 +10,5 @@ export default async function handler(req, res) {
   const js = Object.values(byDir).map(latest).filter(Boolean).sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt)).slice(0, 300);
   const orders = (await Promise.all(js.map(b => fetch(b.url, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)))).filter(Boolean);
   orders.sort((a, b) => b.at - a.at);
-  return json(res, 200, { orders, alerts: process.env.CALLMEBOT_KEY ? 'on' : 'off' });
+  return json(res, 200, { orders, alerts: process.env.CALLMEBOT_KEY ? 'on' : 'off', push: !!process.env.VAPID_PUBLIC });
 }
