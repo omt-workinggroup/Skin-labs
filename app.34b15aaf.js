@@ -60,11 +60,21 @@ async function openSealed(s) {
   const key = await aesFrom(priv, await crypto.subtle.importKey('raw', all.slice(0, 65), ECDH, false, []));
   return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: all.slice(65, 77) }, key, all.slice(77))));
 }
+// ---------- order links you and the customer can both open ----------
+// The order travels inside the link itself (after the #, which browsers never send to any server).
+const zip = async (txt, how) => { const st = new Blob([txt]).stream().pipeThrough(new (how ? CompressionStream : DecompressionStream)('deflate-raw')); return new Uint8Array(await new Response(st).arrayBuffer()); };
+async function packOrder(o) { const j = JSON.stringify(o);
+  try { if (window.CompressionStream) return 'z' + b64u.enc(await zip(j, 1)); } catch (e) {}
+  return 'j' + b64u.enc(new TextEncoder().encode(j)); }
+async function unpackOrder(s) { const b = b64u.dec(s.slice(1));
+  if (s[0] === 'z') return JSON.parse(new TextDecoder().decode(await zip(b, 0)));
+  return JSON.parse(new TextDecoder().decode(b)); }
 async function orderRef(s) { const h = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s))), A = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
   return 'SL-' + [...h.slice(0, 5)].map(b => A[b & 31]).join(''); }
 async function sealedText(pk, items) {
-  try { const s = await sealOrder({ n: who.name, l: who.loc, m: who.note, p: pk.map(([k, q]) => [PIDX(k), q]), s: items, d: dsgPack(curDsg()), t: Date.now() });
-    return orderText(pk, items, { link: base + '#o-' + s + '.k', ref: await orderRef(s) }); }
+  try { const s = await packOrder({ n: who.name, l: who.loc, m: who.note, p: pk.map(([k, q]) => [PIDX(k), q]), s: items, d: dsgPack(curDsg()), t: Date.now() });
+    const ref = await orderRef(s); store.set('sl-orders', [{ ref, s, at: Date.now() }, ...store.get('sl-orders', []).filter(x => x.ref !== ref)].slice(0, 20));
+    return orderText(pk, items, { link: base + '#v-' + s, ref }); }
   catch (e) { return orderText(pk, items); }
 }
 function orderText(pk, items, lk = null, dg = curDsg()) {
@@ -77,8 +87,8 @@ function orderText(pk, items, lk = null, dg = curDsg()) {
   if (who.name) t += `\nName: ${who.name}`;
   if (who.loc) t += `\nLocation: ${who.loc}`;
   if (who.note) t += `\nNote: ${who.note}`;
-  if (!lk) return lk === false ? t + `\n\nOrder link: ${SITE}#o-•••••• (private, only Skin Lab can open it)` : t;
-  return t + `\n\nOrder ${lk.ref}\nOrder link (only Skin Lab can open it): ${lk.link}`;
+  if (!lk) return lk === false ? t + `\n\nOrder SL-•••••\nSee the order with pictures and prices: ${SITE}#v-••••••` : t;
+  return t + `\n\nOrder ${lk.ref}\nSee the order with pictures and prices: ${lk.link}`;
 }
 const waLink = t => `https://wa.me/${WA}?text=${encodeURIComponent(t)}`;
 function updBar() {
@@ -253,7 +263,7 @@ function vPack(p) {
   $('#zoom').onclick = () => { $('#lb-img').src = `sheets/${p.id}.${IX}`; $('#lb').hidden = false; };
 }
 // order pages. Owner phone: full order. Anyone else (the customer included): a notice.
-function orderBody(pk, items, o, ref) {
+function orderBody(pk, items, o, ref, open = false) {
   const tot = pk.reduce((a, [k, q]) => a + q * PK[k].price, 0) + items.reduce((a, [, q]) => a + q * PRICE, 0), n = items.reduce((a, [, q]) => a + q, 0);
   const when = o && o.t ? new Date(o.t).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
   app.innerHTML = `<section class="sec ord">
@@ -261,11 +271,15 @@ function orderBody(pk, items, o, ref) {
     <h1 class="h1">${o && o.n ? esc(o.n) : 'Sticker order'}</h1>
     ${o && (o.l || o.m) ? `<dl class="who">${o.l ? `<div><dt>Location</dt><dd>${esc(o.l)}</dd></div>` : ''}${o.m ? `<div><dt>Note</dt><dd>${esc(o.m)}</dd></div>` : ''}</dl>` : ''}
     ${pk.length ? `<div class="lbl" style="margin-top:22px">Packs</div><div class="orows">${pk.map(([k, q]) => `<a class="orow" href="#${k}"><span class="th" style="background:${PK[k].bg}"><img src="sheets-sm/${k}.${IX}" alt="" loading="lazy"></span><span class="nm"><b>${esc(PK[k].nice)}</b><small>${PK[k].items.length} stickers · ${CUR}${PK[k].price}</small></span><span class="q">×${q}</span><span class="pr">${CUR}${q * PK[k].price}</span></a>`).join('')}</div>` : ''}
-    ${items.length ? `<div class="lbl" style="margin-top:22px">Single stickers · ${n} × ${CUR}${PRICE}</div><div class="oview" id="ov"></div>` : ''}
+    ${items.length ? `<div class="lbl" style="margin-top:22px">Single stickers · ${n} × ${CUR}${PRICE} = ${CUR}${n * PRICE}</div><div class="oview" id="ov"></div>` : ''}
     ${o && o.d ? `<div class="lbl" style="margin-top:22px">Laptop design</div><p style="margin:8px 0">${esc(dsgLine(dsgUnpack(o.d)))}</p><div class="odsg" id="o-dsg"></div>` : ''}
     <div class="otot"><span>Total</span><b>${CUR}${tot}</b></div>
-    <div class="ctas" style="margin-top:16px"><button class="btn y" type="button" id="o-copy">Copy order</button><a class="btn o" href="#">Back to the shop</a></div>
-    <p class="small" style="margin-top:14px">Only this phone can open Skin Lab order links.</p></section>${footer}`;
+    ${o && o.d && dsgUnpack(o.d).v === 3 ? `<div class="small" style="margin-top:6px">${dsgSkinN(o.d) ? 'Skin price is sent on WhatsApp. ' : ''}</div>` : ''}
+    ${open ? (isOwner() ? `<div class="ostat"><b>Customer order</b><span>You are viewing this as Skin Lab.</span></div><div class="ctas" style="margin-top:16px"><button class="btn y" type="button" id="o-copy">Copy order</button><a class="btn o" href="#">Back to the shop</a></div>`
+      : `<div class="ostat"><b>Sent to Skin Lab</b><span>We'll confirm the total and delivery with you on WhatsApp.</span></div>
+      <div class="ctas" style="margin-top:16px"><a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent(`Hello Skin Lab, about my order ${ref}`)}">${waIcon}Chat about this order</a><button class="btn o" type="button" id="o-again">Order the same again</button></div>`)
+      : `<div class="ctas" style="margin-top:16px"><button class="btn y" type="button" id="o-copy">Copy order</button><a class="btn o" href="#">Back to the shop</a></div>`}
+    <p class="small" style="margin-top:14px">${open ? 'Only people you share this link with can see this order.' : 'Only this phone can open Skin Lab order links.'}</p></section>${footer}`;
   const g = $('#ov');
   if (g) { const cols = getComputedStyle(g).gridTemplateColumns.split(' ').length, cell = (g.clientWidth - 20 - (cols - 1) * 8) / cols;
     g.innerHTML = items.map(([c, q]) => `<div class="tile" style="background:${CODE[c].p.bg}">${spr(CODE[c].p, CODE[c].it, cell * .8)}<span class="code">${c}</span><span class="chk">${q > 1 ? q : '✓'}</span></div>`).join(''); }
@@ -273,7 +287,17 @@ function orderBody(pk, items, o, ref) {
   const od = o && o.d ? dsgUnpack(o.d) : null;
   const t = orderText(pk, items, null, od) + (ref ? `\n\nOrder ${ref}` : ''); who = sv;
   if (od && od.v !== 3) designPicture(od, 300).then(c => { const el = $('#o-dsg'); if (el) { el.innerHTML = ''; el.appendChild(c); } });
-  $('#o-copy').onclick = () => copy(t);
+  if ($('#o-copy')) $('#o-copy').onclick = () => copy(t);
+  if ($('#o-again')) $('#o-again').onclick = () => { pk.forEach(([k, q]) => packs[k] = q); items.forEach(([c, q]) => cart[c] = q); if (od && od.v === 3) store.set('sl-dsg', od); saveCart(); updBar(); location.hash = 'cart'; };
+  const dl = $('#o-dsg'); if (dl && od && od.v === 3) dl.innerHTML = `<a class="btn o" href="/design/#d-${b64u.enc(new TextEncoder().encode(JSON.stringify(o.d)))}">See the laptop design</a>`;
+}
+const dsgSkinN = d => Object.values((d && d.k) || {}).filter(Boolean).length;
+async function vView(s) {
+  app.innerHTML = `<section class="sec notice"><div class="kick-row"><span>Order</span><span>Opening…</span></div></section>`;
+  const ref = await orderRef(s).catch(() => '');
+  try { const o = await unpackOrder(s);
+    orderBody((o.p || []).filter(([i]) => D.packs[i]).map(([i, q]) => [D.packs[i].id, q]), (o.s || []).filter(([c]) => CODE[c]), o, ref, true); }
+  catch (e) { app.innerHTML = `<section class="sec notice"><div class="kick-row"><span>Order ${ref}</span><span>Error</span></div><h1 class="h1">This link is <em>incomplete.</em></h1><p class="sub">Part of it was probably cut off when it was copied. Tap the full link in the WhatsApp chat, or read the order in the message.</p><div class="ctas" style="margin-top:20px"><a class="btn o" href="#">Back to the shop</a></div></section>${footer}`; }
 }
 function vNotice(ref) {
   app.innerHTML = `<section class="sec notice">
@@ -705,7 +729,7 @@ function wireSkins(root) {
 function render() {
   const r = route(); closeSheets();
   if (r === 'design' || r === 'studio' || r === 'design-pick') { location.replace('/design/'); return; }
-  if (r === 'cart') { history.replaceState(null, '', location.pathname); vHome(); setTimeout(openCart, 50); } else if (r === 'inspo') vInspo(); else if (r === 'mine') vMine(); else if (r === 'categories') vCats(); else if (r.startsWith('order-')) vOrder(r); else if (r.startsWith('o-')) vSealed(r.slice(2).split('.')[0]); else if (r.startsWith('unlock-')) vUnlock(r.slice(7)); else if (r === 'unlocked') vUnlock(store.get('sl-owner', '')); else if (CAT[r]) vCat(CAT[r]); else if (PK[r]) vPack(PK[r]); else vHome();
+  if (r === 'cart') { history.replaceState(null, '', location.pathname); vHome(); setTimeout(openCart, 50); } else if (r === 'inspo') vInspo(); else if (r === 'mine') vMine(); else if (r === 'categories') vCats(); else if (r.startsWith('order-')) vOrder(r); else if (r.startsWith('v-')) vView(r.slice(2)); else if (r.startsWith('o-')) vSealed(r.slice(2).split('.')[0]); else if (r.startsWith('unlock-')) vUnlock(r.slice(7)); else if (r === 'unlocked') vUnlock(store.get('sl-owner', '')); else if (CAT[r]) vCat(CAT[r]); else if (PK[r]) vPack(PK[r]); else vHome();
   scrollTo(0, 0);
   const tab = r === 'inspo' || r === 'mine' ? 'inspo' : r.startsWith('design') || r === 'studio' ? 'design' : 'home'; document.body.classList.toggle('is-design', tab === 'design' && r !== 'design-pick' && !!G.lap);
   ['home', 'design', 'inspo'].forEach(k => { $('#t-' + k).classList.toggle('on', tab === k); $('#nv-' + k).classList.toggle('on', tab === k); });

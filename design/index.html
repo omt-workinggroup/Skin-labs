@@ -468,7 +468,7 @@ function initGL(host) {
   addEventListener('pointerup', e => { lift(e); if (pinch) return;  if (drag) { drag = null; ctl.enabled = true; return; }
     if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && e.target === R.domElement) { const h = hitAt(e); if (h) { surf = h.s; } if (sel >= 0) { sel = -1; } refresh(); ['lid', 'kb', 'bot'].forEach(schedule); } down = null; });
 }
-const save3 = () => { try { localStorage.setItem('sl-design3', JSON.stringify({ i: L && L.i, n: L && `${L.brand} ${L.name}`, col, items, skin })); } catch (e) {} };
+const save3 = () => { if (LL) return; try { localStorage.setItem('sl-design3', JSON.stringify({ i: L && L.i, n: L && `${L.brand} ${L.name}`, col, items, skin })); } catch (e) {} };
 const store = { get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
 function thumb(w = 420) { R.render(scene, cam); const c = document.createElement('canvas'), src = R.domElement; c.width = w; c.height = Math.round(w * src.height / src.width);
   const g = c.getContext('2d'); g.fillStyle = '#0a0a0a'; g.fillRect(0, 0, c.width, c.height); g.drawImage(src, 0, 0, c.width, c.height); return c.toDataURL('image/jpeg', .72); }
@@ -635,9 +635,13 @@ function pane() {
   }
 }
 window.__lab = { setMode, phShow, get mode() { return mode; }, PV, sched: s => schedule(s), sync: s => syncStickers(s), R: () => R, pick: i => { L = LAPS[i]; col = L.cols[0]; vEditor(); }, items, skin, go, setLid, set s(v) { surf = v; }, paint, LAPS, refresh, get idle() { return idle; }, set idle(v) { idle = v; }, cam: () => cam };
-const st = store.get('sl-design3', null);
+// a design opened from an order link: show it, never overwrite this phone's own saved design
+let fromLink = null; if (location.hash.startsWith('#d-')) try { fromLink = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(location.hash.slice(3).replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0)))); } catch (e) {}
+const LL = fromLink && LAPS.find(l => `${l.brand} ${l.name}` === fromLink.n);
+const st = LL ? null : store.get('sl-design3', null);
 if (st && st.skin) Object.assign(skin, st.skin);
-if (st && LAPS[st.i] && location.hash !== '#pick') { L = LAPS[st.i]; col = L.cols.includes(st.col) ? st.col : L.cols[0];
+if (LL) { L = LL; col = L.cols.includes(fromLink.c) ? fromLink.c : L.cols[0]; for (const k in items) items[k] = ((fromLink.i || {})[k] || []).filter(o => CODE[o[0]]).map(([c, x, y, sz, r]) => ({ c, x, y, s: sz, r }));
+  Object.assign(skin, { lid: '', kb: '', bot: '', ...(fromLink.k || {}) }); vEditor(); toast('Design from an order'); } else if (st && LAPS[st.i] && location.hash !== '#pick') { L = LAPS[st.i]; col = L.cols.includes(st.col) ? st.col : L.cols[0];
   for (const k in items) items[k] = (st.items && st.items[k] || []).filter(o => CODE[o.c]); Object.assign(skin, st.skin || {}); vEditor(); } else { vPick(); warmGL(); } warmGL();
 addEventListener('hashchange', () => { if (location.hash === '#pick') vPick(); });
 </script></body></html>
