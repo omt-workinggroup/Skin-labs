@@ -16,7 +16,7 @@ function addDrops(cat) { if (!cat || !Array.isArray(cat.packs)) return 0; let n 
       size: 'A4', price: 60, p5: 30, a5: items.slice(0, 14).map(i => i[0]), sheet: d.sheet || items[0][6], sw: d.sw || 1000, sh: d.sh || 1414, sw5: d.sw || 1000, sh5: d.sh || 1414 };
     p.nice = typeof nice === 'function' ? nice(p.name) : d.name; PK[p.id] = p; D.packs.push(p); items.forEach(it => { if (!CODE[it[0]]) CODE[it[0]] = { p, it }; }); CAT[d.cat].packs.unshift(p.id); n++; }
   return n; }
-const sh = (id, dir) => { const p = PK[String(id).replace(/-a5$/, '')]; return p && p.drop ? p.sheet : `${dir}/${id}.${IX}`; };
+const sh = (id, dir) => { if (String(id).startsWith('skin:')) return `skins/${String(id).slice(5)}.${IX}`; const p = PK[String(id).replace(/-a5$/, '')]; return p && p.drop ? p.sheet : `${dir}/${id}.${IX}`; };
 try { addDrops(JSON.parse(localStorage.getItem('sl-drops') || 'null')); } catch (e) {}
 const total = Object.keys(CODE).length;
 const light = hex => { const n = parseInt(hex.slice(1), 16); return ((n >> 16) * 299 + ((n >> 8) & 255) * 587 + (n & 255) * 114) / 1000 > 150; };
@@ -35,11 +35,16 @@ const old = store.get('sl-sel', null); if (Array.isArray(old)) old.forEach(c => 
 Object.assign(cart, store.get('sl-cart', {})); Object.assign(packs, store.get('sl-packs', {}));
 Object.keys(cart).forEach(c => { if (!CODE[c] || !(cart[c] > 0)) delete cart[c]; });
 // a pack in the cart: "<id>" is the big sheet (A4, or the A3 pick & mix), "<id>~5" the small A5 sheet
-const SZ = { A3: 'A3 pick & mix', A4: 'A4 big sheet', A5: 'A5 small sheet', XL: 'XL lid centrepiece' };
-function pkOf(k) { const [id, s5] = String(k).split('~'), p = PK[id]; if (!p) return null; const a5 = s5 === '5' && !!p.a5;
+const SZ = { A3: 'A3 pick & mix', A4: 'A4 big sheet', A5: 'A5 small sheet', XL: 'XL lid centrepiece', S: 'Small skin', M: 'Medium skin', L: 'Large skin', C: 'Custom skin' };
+// laptop skins: priced by size (change the numbers here)
+const SKINP = { S: { name: 'Small', fit: 'up to 13.3″', price: 100 }, M: { name: 'Medium', fit: '14″ – 15.6″', price: 120 }, L: { name: 'Large', fit: '16″ – 17.3″', price: 150 }, C: { name: 'Custom', fit: 'full wrap or your own picture', price: 200 } };
+const skinFor = inch => !inch ? 'M' : inch <= 13.5 ? 'S' : inch <= 15.7 ? 'M' : 'L';
+function pkOf(k) { if (String(k).startsWith('skin~')) { const [, id, z] = String(k).split('~'), sk = SKIN[id], t = SKINP[z]; if (!sk || !t) return null;
+    return { k, id, skin: 1, p: { nice: `${sk[1]} skin`, bg: '#111' }, a5: false, size: z, price: t.price, n: 0, img: 'skin:' + id, label: `${sk[1]} skin · ${t.name}`, fit: t.fit }; }
+  const [id, s5] = String(k).split('~'), p = PK[id]; if (!p) return null; const a5 = s5 === '5' && !!p.a5;
   const size = a5 ? 'A5' : p.size || 'A4';
   return { k, id, p, a5, size, price: a5 ? p.p5 : p.price, n: a5 ? p.a5.length : p.items.length, img: a5 ? id + '-a5' : id, label: `${p.nice} · ${SZ[size]}` }; }
-Object.keys(packs).forEach(k => { if (!pkOf(k) || !(packs[k] > 0)) delete packs[k]; });
+Object.keys(packs).forEach(k => { if (!(packs[k] > 0) || (!String(k).startsWith('skin~') && !pkOf(k))) delete packs[k]; });   // skins are checked once the skin list is loaded
 let who = store.get('sl-who', { name: '', loc: '', note: '' });
 const saveCart = () => { store.set('sl-cart', cart); store.set('sl-packs', packs); };
 const nSingles = () => Object.values(cart).reduce((a, b) => a + b, 0);
@@ -112,7 +117,7 @@ const waLink = t => `https://wa.me/${WA}?text=${encodeURIComponent(t)}`;
 function updBar() {
   const n = count(), np = nPacks(), ns = nSingles();
   $('#bar-n').textContent = n;
-  const nk = dsgSkins(); $('#bar-t').textContent = [np ? `${np} pack${np > 1 ? 's' : ''}` : '', ns ? `${ns} sticker${ns > 1 ? 's' : ''}` : '', curDsg() ? 'your pack' : '', nk ? `${nk} skin${nk > 1 ? 's' : ''}` : ''].filter(Boolean).join(' + ') + ' in your cart';
+  const sk = Object.entries(packs).reduce((t, [k, q]) => t + (String(k).startsWith('skin~') ? q : 0), 0), nk = dsgSkins() + sk; $('#bar-t').textContent = [np - sk ? `${np - sk} pack${np - sk > 1 ? 's' : ''}` : '', ns ? `${ns} sticker${ns > 1 ? 's' : ''}` : '', curDsg() ? 'your pack' : '', nk ? `${nk} skin${nk > 1 ? 's' : ''}` : ''].filter(Boolean).join(' + ') + ' in your cart';
   $('#bar-p').textContent = priceTxt(money(), !!nk);
   $('#bar').classList.toggle('show', n > 0);
   for (const id of ['#t-bd', '#nv-bd']) { $(id).hidden = !n; $(id).textContent = n; }
@@ -129,8 +134,8 @@ document.querySelectorAll('.sheet').forEach(s => s.addEventListener('click', e =
 const waFmt = t => esc(t).replace(/\*([^*\n]+)\*/g, '<b>$1</b>').replace(/(https?:\/\/\S+)/g, '<u>$1</u>').replace(/\n/g, '<br>');
 // ---------- cart + checkout: the order goes straight to the Skin Lab admin (no long WhatsApp text) ----------
 // skins have no price on the site: they are always "price on DM"
-const priceTxt = (t, skin) => skin ? (t > 0 ? `${CUR}${t} + skin (price on DM)` : 'Skin · price on DM') : `${CUR}${t}`;
-const dsgPrice = d => d ? (d.price ?? Object.values(d.items || {}).flat().length * PRICE) : 0;
+const priceTxt = t => `${CUR}${t}`;
+const dsgPrice = d => d ? Object.values(d.items || {}).flat().length * PRICE + (Object.values(d.skin || {}).some(Boolean) ? SKINP[d.skinSize || 'M'].price : 0) : 0;
 function openCart(focus) {
   const items = Object.entries(cart), pk = Object.entries(packs), b = $('#c-body'), dg = curDsg();
   if (!items.length && !pk.length && !dg) {
@@ -140,13 +145,13 @@ function openCart(focus) {
   const dn = dg ? Object.values(dg.items || {}).flat().length : 0;
   b.innerHTML = `${dg ? `<div class="mypk">${dg.sheet ? `<button type="button" class="mys" id="c-sheet" aria-label="See your sheet bigger"><img src="${dg.sheet}" alt="Your sticker sheet"></button>` : ''}
       <div class="myt">${dg.thumb ? `<img src="${dg.thumb}" alt="Your laptop design">` : ''}<span class="lbl">Your own pack</span><b>${esc(dg.packName || 'Your laptop design')}</b>
-        <span>${dg.sheetSize ? `${dg.sheetSize} sheet · ` : ''}${dn} sticker${dn === 1 ? '' : 's'}${dsgSkins() ? ' · + skin' : ''}</span><span class="pr">${dn ? priceTxt(dsgPrice(dg), dsgSkins()) : 'Skin · price on DM'}</span>
+        <span>${dg.sheetSize ? `${dg.sheetSize} sheet · ` : ''}${dn} sticker${dn === 1 ? '' : 's'}${dsgSkins() ? ` · ${SKINP[dg.skinSize || 'M'].name} skin` : ''}</span><span class="pr">${CUR}${dsgPrice(dg)}</span>
         <span class="dl"><a href="/design/" id="c-edit">Edit</a><button type="button" class="lnk" id="c-rmd">Remove</button></span></div></div>` : ''}
-    ${pk.length ? `<div class="rows">${pk.map(([k, q]) => `<div class="row"><div class="th"><img src="${sh(pkOf(k).img, 'sheets-sm')}" alt="" loading="lazy" style="height:54px;width:auto;border-radius:3px"></div><div class="nm"><b style="font-family:var(--body)">${esc(pkOf(k).p.nice)}</b><span>${SZ[pkOf(k).size]} · ${pkOf(k).n} stickers · ${CUR}${pkOf(k).price}</span></div>
+    ${pk.length ? `<div class="rows">${pk.map(([k, q]) => `<div class="row"><div class="th"><img src="${sh(pkOf(k).img, 'sheets-sm')}" alt="" loading="lazy" style="height:54px;width:auto;border-radius:3px"></div><div class="nm"><b style="font-family:var(--body)">${esc(pkOf(k).p.nice)}</b><span>${pkOf(k).skin ? `${SZ[pkOf(k).size]} · ${pkOf(k).fit}` : `${SZ[pkOf(k).size]} · ${pkOf(k).n} stickers`} · ${CUR}${pkOf(k).price}</span></div>
       <div class="qty"><button type="button" data-p="${k}" data-d="-1" aria-label="One less ${esc(pkOf(k).label)}">−</button><span>${q}</span><button type="button" data-p="${k}" data-d="1" aria-label="One more ${esc(pkOf(k).label)}">+</button></div></div>`).join('')}</div>` : ''}
     ${items.length ? `<div class="grp">Single stickers · ${CUR}${PRICE} each</div><div class="rows">${items.map(([c, q]) => `<div class="row"><div class="th">${spr(CODE[c].p, CODE[c].it, 50)}</div><div class="nm"><b>${c}</b><span>${esc(CODE[c].p.nice)}</span></div>
       <div class="qty"><button type="button" data-q="${c}" data-d="-1" aria-label="One less ${c}">−</button><span>${q}</span><button type="button" data-q="${c}" data-d="1" aria-label="One more ${c}">+</button></div></div>`).join('')}</div>` : ''}
-    <div class="sum"><div class="big" style="border:0;padding:0;margin:0"><span>Total</span><span>${priceTxt(money(), dsgSkins())}</span></div><div class="small"><span>${dsgSkins() ? 'We send you the skin price on WhatsApp · ' : ''}Pay with MoMo when we confirm · delivery agreed with you</span></div></div>
+    <div class="sum"><div class="big" style="border:0;padding:0;margin:0"><span>Total</span><span>${priceTxt(money(), dsgSkins())}</span></div><div class="small"><span>Pay with MoMo when we confirm · delivery agreed with you</span></div></div>
     <form class="ck" id="ck" novalidate>
       <div class="grp">Your details</div>
       <div class="fld" id="f-name"><label for="c-name">Name</label><input id="c-name" autocomplete="name" placeholder="e.g. Ama Mensah" value="${esc(who.name)}" required></div>
@@ -175,9 +180,9 @@ async function placeOrder() {
   if (!phoneOk(who.phone || '')) { $('#f-phone').classList.add('err'); $('#c-phone').focus(); return toast('Add your WhatsApp number'); }
   const btn = $('#c-send'); btn.disabled = true; btn.textContent = 'Sending your order…';
   const body = { name: who.name, phone: phoneIntl(who.phone), loc: who.loc, total: money(),
-    packs: pk.map(([k, q]) => { const o = pkOf(k); return { key: k, label: `${o.p.nice} · ${SZ[o.size]}`, size: o.size, n: o.n, q, price: o.price }; }),
+    packs: pk.map(([k, q]) => { const o = pkOf(k); return { key: k, label: o.skin ? `${o.label} (${o.fit})` : `${o.p.nice} · ${SZ[o.size]}`, size: o.size, n: o.n, q, price: o.price }; }),
     singles: items.map(([c, q]) => ({ code: c, q, pack: CODE[c].p.nice })),
-    design: dg ? { line: dsgLine(dg), laptop: dg.laptop || dg.name, packName: dg.packName, size: dg.sheetSize || '', n: Object.values(dg.items).flat().length, skins: Object.values(dg.skin || {}).filter(Boolean).map(id => ((SKIN[id] || [])[1] || id)),
+    design: dg ? { line: dsgLine(dg), laptop: dg.laptop || dg.name, packName: dg.packName, size: dg.sheetSize || '', n: Object.values(dg.items).flat().length, skins: Object.values(dg.skin || {}).filter(Boolean).map(id => ((SKIN[id] || [])[1] || id)), skinSize: dsgSkins() ? (dg.skinSize || 'M') : '', skinPrice: dsgSkins() ? SKINP[dg.skinSize || 'M'].price : 0,
       layout: dg.layout || [], scaled: !!dg.scaled, sheet: dg.sheet || null, mock: dg.thumb || null, raw: dsgPack(dg) } : null };
   try {
     const r = await fetch('/api/order/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }), j = await r.json().catch(() => ({}));
@@ -800,15 +805,29 @@ function vMine() {
 }
 
 // ---- home: Skins ----
+function skinSheet(id) {   // pick a size, like a product page
+  const sk = SKIN[id]; if (!sk) return; let z = store.get('sl-skinsize', 'M');
+  let box = $('#sks'); if (!box) { box = document.createElement('div'); box.id = 'sks'; box.className = 'sheet'; document.body.appendChild(box); box.addEventListener('click', e => { if (e.target === box) box.hidden = true; }); }
+  const draw = () => { box.innerHTML = `<div class="in" role="dialog" aria-label="${esc(sk[1])} skin"><div class="grab"></div><h3>Laptop skin <button type="button" class="chip" id="skx">Close</button></h3>
+    <img class="skimg" src="skins/${id}.${IX}" alt="${esc(sk[1])} laptop skin"><h3 class="skn">${esc(sk[1])}</h3><p class="small">Full vinyl skin for the lid, matte laminate, bubble-free. Pick your size:</p>
+    <div class="skz">${Object.entries(SKINP).map(([k, t]) => `<button type="button" data-z="${k}" class="${k === z ? 'on' : ''}"><b>${t.name}</b><small>${t.fit}</small><i>${CUR}${t.price}</i></button>`).join('')}</div>
+    <button class="btn y" type="button" id="skadd">Add to cart · ${CUR}${SKINP[z].price}</button>
+    <div class="two"><a class="btn o" href="/design/" id="sktry">Try it on my laptop</a><button class="btn o" type="button" id="skbuy">Buy now</button></div></div>`;
+    $('#skx').onclick = () => box.hidden = true;
+    box.querySelector('.skz').onclick = e => { const b = e.target.closest('[data-z]'); if (b) { z = b.dataset.z; store.set('sl-skinsize', z); buzz(); draw(); } };
+    $('#skadd').onclick = () => { const k = `skin~${id}~${z}`; setPack(k, (packs[k] || 0) + 1); buzz(); box.hidden = true; toast(`${sk[1]} skin (${SKINP[z].name}) added`); };
+    $('#skbuy').onclick = () => { box.hidden = true; orderNow([[`skin~${id}~${z}`, 1]], []); };
+    $('#sktry').onclick = () => { const st = store.get('sl-design3', {}) || {}; st.skin = { ...(st.skin || {}), lid: id }; st.skinSize = z; store.set('sl-design3', st); }; };
+  draw(); box.hidden = false; }
 function skinsGrid() {
-  return `<a class="xcard" href="https://wa.me/${WA}?text=${encodeURIComponent('Hello Skin Lab, how much is a laptop skin for my laptop? My laptop is: ')}" target="_blank" rel="noopener" style="margin-bottom:18px"><span class="xicon" aria-hidden="true">${waIcon}</span><span><b>Skin prices: DM us</b><small>Prices depend on your laptop. Send us your model on WhatsApp and we'll tell you.</small></span></a><div class="cats skins">${SKINS.filter(s => s[2] === 'photo').map((s, i) => `<a class="catc" href="#design" data-useskin="${s[0]}"><div class="table sk" data-art="${s[0]}" style="aspect-ratio:3/2;background:#111"></div>
-    <div class="cmeta"><span class="no">${String(i + 1).padStart(2, '0')}</span><b>${esc(s[1])}</b><span>Price on DM · fits any laptop</span></div></a>`).join('')}
+  return `<div class="skp">${Object.values(SKINP).map(t => `<span><b>${t.name}</b><small>${t.fit}</small><i>${CUR}${t.price}</i></span>`).join('')}</div><div class="cats skins">${SKINS.filter(s => s[2] === 'photo').map((s, i) => `<a class="catc" href="#" data-skin="${s[0]}"><div class="table sk" data-art="${s[0]}" style="aspect-ratio:3/2;background:#111"></div>
+    <div class="cmeta"><span class="no">${String(i + 1).padStart(2, '0')}</span><b>${esc(s[1])}</b><span>from ${CUR}${SKINP.S.price} · S · M · L · Custom</span></div></a>`).join('')}
     <a class="catc" href="#" data-ownskin="1"><div class="table" style="aspect-ratio:3/2;background:#0a0a0a;display:grid;place-items:center;border:1px dashed var(--line2)"><span style="font-size:30px">＋</span></div>
     <div class="cmeta"><span class="no">${String(SKINS.filter(s => s[2] === 'photo').length + 1).padStart(2, '0')}</span><b>Your own picture</b><span>Send it on WhatsApp</span></div></a></div>`;
 }
 function wireSkins(root) {
   root.querySelectorAll('[data-art]').forEach(el => skinThumb(el.dataset.art, el, 330, 220));
-  root.querySelectorAll('[data-useskin]').forEach(a => { a.href = '/design/'; a.onclick = () => { const st = store.get('sl-design3', {}) || {}; st.skin = { ...(st.skin || {}), lid: a.dataset.useskin }; store.set('sl-design3', st); }; });
+  root.querySelectorAll('[data-skin]').forEach(a => a.onclick = e => { e.preventDefault(); skinSheet(a.dataset.skin); });
   const own = root.querySelector('[data-ownskin]'); if (own) own.onclick = e => { e.preventDefault(); openInspo(); $('#i-idea').value = 'A full laptop skin with my own picture'; };
 }
 

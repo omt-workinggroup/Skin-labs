@@ -15,7 +15,7 @@ export default async function handler(req, res) {
   const d = b.design && typeof b.design === 'object' ? b.design : null;
   if (!packs.length && !singles.length && !d) return json(res, 400, { error: 'The cart is empty' });
   const id = newId(), dir = `orders/${id}-${secret()}`;
-  const design = d ? { line: str(d.line, 300), laptop: str(d.laptop, 80), packName: str(d.packName, 60), size: str(d.size, 4), n: +d.n || 0, skins: Array.isArray(d.skins) ? d.skins.slice(0, 3).map(x => str(x, 40)) : [],
+  const design = d ? { line: str(d.line, 300), laptop: str(d.laptop, 80), packName: str(d.packName, 60), size: str(d.size, 4), n: +d.n || 0, skins: Array.isArray(d.skins) ? d.skins.slice(0, 3).map(x => str(x, 40)) : [], skinSize: str(d.skinSize, 2), skinPrice: Math.max(0, +d.skinPrice || 0),
     layout: Array.isArray(d.layout) ? d.layout.slice(0, 300) : [], scaled: !!d.scaled, raw: d.raw && typeof d.raw === 'object' ? d.raw : null } : null;
   if (design) {
     const sh = img(d.sheet, 3e6), mk = img(d.mock, 1e6);
@@ -23,7 +23,7 @@ export default async function handler(req, res) {
     if (mk) design.mock = (await put(`${dir}/mock.jpg`, mk, { access: 'public', addRandomSuffix: false, contentType: 'image/jpeg' })).url;
   }
   const total = Math.max(0, Math.round(+b.total || 0));
-  const order = { id, at: Date.now(), status: 'new', history: [{ s: 'new', at: Date.now() }], name, phone, loc, note, packs, singles, design, total, skinOnDM: !!(design && design.skins.length) };
+  const order = { id, at: Date.now(), status: 'new', history: [{ s: 'new', at: Date.now() }], name, phone, loc, note, packs, singles, design, total, skinOnDM: false };
   await saveOrder(dir, order);
   const what = [packs.length ? `${packs.reduce((a, p) => a + p.q, 0)} sheet(s)` : '', singles.length ? `${singles.reduce((a, s) => a + s.q, 0)} single sticker(s)` : '', design ? `custom ${design.size} pack (${design.n} stickers)` : ''].filter(Boolean).join(' + ');
   const ping = pushAll({ title: `New order ${id} · ${order.skinOnDM ? (total ? `GH₵${total} + skin` : 'skin · price on DM') : `GH₵${total}`}`, body: `${name}${loc ? ' · ' + loc : ''}\n${what}`, url: `/admin/#${id}`, tag: id, image: design && (design.sheet || design.mock) || undefined }).catch(() => 'failed');

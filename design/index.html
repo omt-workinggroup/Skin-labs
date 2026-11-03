@@ -137,6 +137,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 .pkh{display:flex;justify-content:space-between;align-items:center}.pkh button{width:40px;height:40px;font-size:18px}
 .pkn{display:grid;gap:6px}.pkn input{height:50px;background:none;border:1px solid var(--line2);color:#fff;font:16px var(--body);padding:0 14px;outline:none}
 .pki{min-height:200px;display:grid;place-items:center;background:#151515}.pki img{width:100%;display:block}
+.skz{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.skz button{display:grid;gap:1px;text-align:left;padding:10px 12px;border:1px solid var(--line2)}.skz button.on{background:#fff;color:#000;border-color:#fff}.skz b{font-size:14.5px;font-weight:600}.skz small{font-size:11px;opacity:.7}.skz i{font-style:normal;font-weight:700;font-size:15px;margin-top:3px}
 </style>
 <script type="importmap">{"imports":{"three":"/vendor/three/three.module.min.js"}}</script>
 </head><body>
@@ -173,7 +174,9 @@ const PHOTO = [['ph-jinx', 'Jinx'], ['ph-tanjiro', 'Demon Slayer'], ['ph-graffit
 const SOLID = [['s-black', 'Matte black', '#121213'], ['s-white', 'Gloss white', '#f2f2f0'], ['s-sand', 'Sand', '#d8cbb6'], ['s-red', 'Deep red', '#6e1a1f'], ['s-navy', 'Navy', '#1d2a44']];
 
 // ---------- state ----------
-let L = null, col = '', surf = 'lid', sel = -1, lidA = 108, hist = [];
+let L = null, col = '', surf = 'lid', sel = -1, lidA = 108, hist = [], skinSize = '';
+const SKINP = { S: { name: 'Small', fit: 'up to 13.3″', price: 100 }, M: { name: 'Medium', fit: '14″ – 15.6″', price: 120 }, L: { name: 'Large', fit: '16″ – 17.3″', price: 150 }, C: { name: 'Custom', fit: 'full wrap or own picture', price: 200 } };
+const skinFor = inch => !inch ? 'M' : inch <= 13.5 ? 'S' : inch <= 15.7 ? 'M' : 'L';
 const items = { lid: [], kb: [], bot: [] }, skin = { lid: '', kb: '', bot: '' };
 const SN = { lid: 'Lid', kb: 'Keyboard', bot: 'Bottom' };
 
@@ -548,7 +551,7 @@ function tfAct(a) { const L_ = items[surf]; if (sel < 0) return; snap(); const o
   else if (a === 'del') { L_.splice(sel, 1); sel = -1; }
   else sel = -1;
   refresh(); schedule(surf); }
-const save3 = () => { if (LL) return; try { localStorage.setItem('sl-design3', JSON.stringify({ i: L && L.i, n: L && `${L.brand} ${L.name}`, col, items, skin })); } catch (e) {} };
+const save3 = () => { if (LL) return; try { localStorage.setItem('sl-design3', JSON.stringify({ i: L && L.i, n: L && `${L.brand} ${L.name}`, col, items, skin, skinSize })); } catch (e) {} };
 const store = { get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
 function thumb(w = 420) {   // picture of the side with the design, then the camera goes back where the customer left it
   const sv = ['lid', 'kb', 'bot'].reduce((m, k) => items[k].length + (skin[k] ? 3 : 0) > items[m].length + (skin[m] ? 3 : 0) ? k : m, 'lid');
@@ -556,7 +559,7 @@ function thumb(w = 420) {   // picture of the side with the design, then the cam
   const tf = $('#tf'); if (tf) tf.hidden = true; R.render(scene, cam); const t = thumbOf(w); cam.position.copy(p0); ctl.target.copy(t0); cam.lookAt(t0); setLid(a0); kick(); return t; }
 function thumbOf(w) { const c = document.createElement('canvas'), src = R.domElement; c.width = w; c.height = Math.round(w * src.height / src.width);
   const g = c.getContext('2d'); g.fillStyle = '#f4f4f4'; g.fillRect(0, 0, c.width, c.height); g.drawImage(src, 0, 0, c.width, c.height); return c.toDataURL('image/jpeg', .72); }
-const v3 = () => ({ v: 3, name: `${L.brand} ${L.name}`, li: L.i, col, skin: { ...skin }, items: JSON.parse(JSON.stringify(items)) });
+const v3 = () => ({ v: 3, name: `${L.brand} ${L.name}`, li: L.i, col, skin: { ...skin }, skinSize: skinSize || skinFor(L.scr), items: JSON.parse(JSON.stringify(items)) });
 const snap = () => { hist.push(JSON.stringify({ items, skin })); if (hist.length > 60) hist.shift(); };
 
 // one laptop look everywhere: our own 3D model (the photo view was removed to keep the designer fast)
@@ -566,6 +569,7 @@ const mode = '3d', realSet = () => null, phLayout = () => {}, phLid = () => {};
 const C0 = D.cats.find(c => !['xl', 'mix'].includes(c.id)) || D.cats[0];   // open on a full category, not the one-sticker lid centrepieces
 let tab = 'stickers', ccat = C0.id, cpack = C0.packs[0];
 async function vEditor() {
+  if (!skinSize) skinSize = skinFor(L.scr);
   if (!THREE) { app.innerHTML = `<div class="stage" id="stage"><div class="load">Building your ${esc(L.brand)}…</div></div>`; await loadGL(); }
   app.innerHTML = `<div class="ed"><div><div class="stage" id="stage"><div class="load">Building your ${esc(L.brand)}…</div>
       <div class="ovl t"><div class="name"><b>${esc(L.brand)} ${esc(L.name.replace(/ \(.+\)$/, ''))}</b><span class="lbl">${L.scr}″ · ${L.w} × ${L.d} cm · <a class="chg lbl" href="#pick" id="chg">Change</a></span></div>
@@ -701,7 +705,9 @@ function pane() {
       ${PHOTO.map(([id, n]) => `<button class="sk ${skin[surf] === id ? 'on' : ''}" data-x="${id}"><span style="background-image:url(/skins/${id}.${IX})"></span><span class="lbl">${n}</span></button>`).join('')}
       ${SOLID.map(([id, n, c]) => `<button class="sk ${skin[surf] === id ? 'on' : ''}" data-x="${id}"><span style="background:${c}"></span><span class="lbl">${n}</span></button>`).join('')}</div>
       <p class="lbl" style="text-transform:none;letter-spacing:0;font-family:var(--body);font-size:12.5px">Covers the whole ${SN[surf].toLowerCase()}. Stickers sit on top.</p>
-      <a class="dm" target="_blank" rel="noopener" href="https://wa.me/233558362423?text=${encodeURIComponent(`Hello Skin Lab, how much is a ${skin[surf] ? (PHOTO.concat(SOLID).find(x => x[0] === skin[surf]) || ['', ''])[1] + ' ' : ''}skin for my ${L.brand} ${L.name}?`)}"><span>Skin price? DM us on WhatsApp</span><span>→</span></a>`;
+      <div class="lbl" style="margin-top:4px">Skin size</div><div class="skz" id="skz">${Object.entries(SKINP).map(([k, t]) => `<button data-z="${k}" class="${k === skinSize ? 'on' : ''}"><b>${t.name}</b><small>${t.fit}</small><i>GH₵${t.price}</i></button>`).join('')}</div>
+      <p class="lbl" style="text-transform:none;letter-spacing:0;font-family:var(--body);font-size:12.5px">${L.scr}″ laptop · we picked ${SKINP[skinFor(L.scr)].name} for you. Custom is a full wrap (lid, keyboard area and bottom) or your own picture.</p>`;
+    $('#skz').onclick = e => { const b = e.target.closest('[data-z]'); if (b) { skinSize = b.dataset.z; save3(); pane(); } };
     $('#sk').onclick = e => { const b = e.target.closest('[data-x]'); if (!b) return; snap(); skin[surf] = b.dataset.x; pane(); paint(surf); if (!toPhotoOrGL()) go(surf); };
   } else {
     p.innerHTML = `<div class="lbl" style="margin-bottom:10px">Colours this model comes in</div><div class="cols" id="cl">${L.cols.map(c => `<button class="${c === col ? 'on' : ''}" data-c="${c}"><i style="background:${LCOL[c]}"></i>${c[0].toUpperCase() + c.slice(1)}</button>`).join('')}</div>`;
@@ -714,6 +720,7 @@ let fromLink = null; if (location.hash.startsWith('#d-')) try { fromLink = JSON.
 const LL = fromLink && LAPS.find(l => `${l.brand} ${l.name}` === fromLink.n);
 const st = LL ? null : store.get('sl-design3', null);
 if (st && st.skin) Object.assign(skin, st.skin);
+if (st && st.skinSize && SKINP[st.skinSize]) skinSize = st.skinSize;
 if (LL) { L = LL; col = L.cols.includes(fromLink.c) ? fromLink.c : L.cols[0]; for (const k in items) items[k] = ((fromLink.i || {})[k] || []).filter(o => CODE[o[0]]).map(([c, x, y, sz, r]) => ({ c, x, y, s: sz, r }));
   Object.assign(skin, { lid: '', kb: '', bot: '', ...(fromLink.k || {}) }); vEditor(); toast('Design from an order'); } else if (st && LAPS[st.i] && location.hash !== '#pick') { L = LAPS[st.i]; col = L.cols.includes(st.col) ? st.col : L.cols[0];
   for (const k in items) items[k] = (st.items && st.items[k] || []).filter(o => CODE[o.c]); Object.assign(skin, st.skin || {}); vEditor(); } else { vPick(); warmGL(); } warmGL();

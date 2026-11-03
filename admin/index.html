@@ -46,6 +46,9 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(40px,10vw,64px);line
 .login button{height:54px;background:#fff;color:#000;font-weight:600}.err{color:#ff6b6b;font-size:14px}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#fff;color:#000;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:9px 14px;z-index:90}
 @media (min-width:760px){.list{grid-template-columns:1fr 1fr}}
+.sw{display:flex;align-items:center;justify-content:space-between;gap:14px}.sw b{display:block;color:#fff;font-size:15px}.sw small{display:block;color:#999;font-size:12.5px;margin-top:2px}
+.tg{flex:none;width:58px;height:34px;border-radius:17px;background:#333;position:relative;transition:background .2s}.tg i{position:absolute;top:3px;left:3px;width:28px;height:28px;border-radius:50%;background:#fff;transition:transform .2s}
+.tg.on{background:#1faa53}.tg.on i{transform:translateX(24px)}.lnk2{margin-top:10px;font-size:13px;color:#bbb;text-decoration:underline}
 .nav{display:flex;border:1px solid var(--line2)}.nav button{height:36px;padding:0 12px;font-size:13px;color:#bbb;position:relative}.nav button.on{background:#fff;color:#000}.nav i{font-style:normal;font-size:10px;background:#1faa53;color:#fff;border-radius:9px;padding:1px 6px;margin-left:6px}
 .add{border:1px solid var(--line2);padding:16px;display:grid;gap:12px;margin-top:16px}.ah{font-weight:600;display:flex;gap:10px;align-items:center}.ah b{width:24px;height:24px;border-radius:50%;background:#fff;color:#000;display:grid;place-items:center;font-size:13px}
 .pick{display:grid;gap:4px;place-items:center;text-align:center;border:1px dashed var(--line2);padding:22px 12px;cursor:pointer}.pick input{display:none}.pick span{font-weight:600}
@@ -113,7 +116,7 @@ function list() {
   app.querySelectorAll('.card').forEach(c => c.onclick = () => open(c.dataset.id));
 }
 const MSG = {
-  confirmed: o => `Hi ${first(o.name)}, it's Skin Lab 👋\nYour order ${o.id} is confirmed: ${what(o)}.\n${o.skinOnDM ? `Stickers: GH₵${o.total}. Skin price: ` : `Total: GH₵${o.total}.`}\nPlease pay with MoMo and send the screenshot here, then we start printing.`,
+  confirmed: o => `Hi ${first(o.name)}, it's Skin Lab 👋\nYour order ${o.id} is confirmed: ${what(o)}.\nTotal: GH₵${o.total}.\nPlease pay with MoMo and send the screenshot here, then we start printing.`,
   printing: o => `Hi ${first(o.name)}, your Skin Lab order ${o.id} is printing now 🖨️ We'll tell you when it's on the way.`,
   'on-the-way': o => `Hi ${first(o.name)}, your Skin Lab order ${o.id} is on the way 🚚 We'll call you when we're close${o.loc ? ' to ' + o.loc : ''}.`,
   delivered: o => `Hi ${first(o.name)}, enjoy your stickers! 🙌 Show us your laptop: tag @baidencreatives on Instagram. Thanks for ordering from Skin Lab.`,
@@ -132,8 +135,8 @@ function open(id) {
     <div class="cust"><b>${esc(o.name)}</b><a href="tel:+${esc(o.phone)}">+${esc(o.phone)}</a><span class="lbl">${esc(o.loc || 'No location given')}</span></div>
     ${d ? `<div class="pics">${d.sheet ? `<a href="${esc(d.sheet)}" target="_blank" rel="noopener"><img src="${esc(d.sheet)}" alt=""><small>${esc(d.packName || 'Custom pack')} · ${esc(d.size)} sheet${d.scaled ? ' · scaled to fit' : ''} · tap for full size</small></a>` : ''}${d.mock ? `<a href="${esc(d.mock)}" target="_blank" rel="noopener"><img src="${esc(d.mock)}" alt=""><small>${esc(d.laptop)}</small></a>` : ''}</div>` : ''}
     <div class="sec"><h3>What they ordered</h3><div class="rows">
-      ${d ? `<div><span>${esc(d.packName || 'Custom pack')}<br><small>${esc(d.size)} sheet · ${d.n} stickers${d.skins && d.skins.length ? ' · skin: ' + esc(d.skins.join(', ')) : ''}</small></span><b>${d.n ? '₵' + d.n * 3 : 'Price on DM'}</b></div>` : ''}
-      ${(o.packs || []).map(p => `<div><span>${esc(p.label)}<br><small>${p.n} stickers</small></span><b>${p.q} × ₵${p.price}</b></div>`).join('')}
+      ${d ? `<div><span>${esc(d.packName || 'Custom pack')}<br><small>${d.n ? `${esc(d.size)} sheet · ${d.n} stickers` : 'no stickers'}</small></span><b>₵${d.n * 3}</b></div>${d.skins && d.skins.length ? `<div><span>${esc(d.skins.join(', '))} skin<br><small>${({ S: 'Small', M: 'Medium', L: 'Large', C: 'Custom' }[d.skinSize] || '')} · ${esc(d.laptop)}</small></span><b>${d.skinPrice ? '₵' + d.skinPrice : 'price on DM'}</b></div>` : ''}` : ''}
+      ${(o.packs || []).map(p => `<div><span>${esc(p.label)}<br><small>${String(p.key).startsWith('skin~') ? 'laptop skin' : p.n + ' stickers'}</small></span><b>${p.q} × ₵${p.price}</b></div>`).join('')}
       ${(o.singles || []).map(s => `<div><span>${esc(s.code)}<br><small>${esc(s.pack)}</small></span><b>× ${s.q}</b></div>`).join('')}
       <div><b>Total</b><b>${moneyTxt(o)}</b></div></div></div>
     ${printList ? `<div class="sec"><h3>Print list for the custom sheet</h3><textarea class="msg" readonly style="min-height:120px;font-family:var(--mono);font-size:12px">${esc(printList)}</textarea><button class="btn" id="cpl">Copy print list</button></div>` : ''}
@@ -255,19 +258,21 @@ const b64 = s => { const p = '='.repeat((4 - s.length % 4) % 4), b = atob((s + p
 async function notifState() { if (!('serviceWorker' in navigator) || !('PushManager' in window)) return isIOS && !standalone ? 'ios-install' : 'unsupported';
   if (Notification.permission === 'denied') return 'denied'; const r = swReg || await navigator.serviceWorker.ready; const sub = await r.pushManager.getSubscription(); return sub ? 'on' : 'off'; }
 async function notifCard() { const el = $('#nt'); if (!el) return; const st = await notifState().catch(() => 'unsupported');
-  const T = { on: ['<b>Order notifications are on</b> for this phone. You get a ping for every new order, even with the app closed.', '<button class="btn" id="ntt">Send a test notification</button>'],
-    off: ['<b>Turn on order notifications.</b> Your phone pings you the moment a customer orders, like a WhatsApp message.', '<button class="btn" id="nton" style="background:#fff;color:#000;border-color:#fff">Turn on order notifications</button>'],
-    'ios-install': ['<b>On iPhone, add this page to your Home Screen first:</b> tap Share ⬆︎ then “Add to Home Screen”, open “SL Orders” from your Home Screen, then turn notifications on.', ''],
-    denied: ['<b>Notifications are blocked</b> for this site. Allow them in your browser or phone settings for skin-labs.vercel.app, then come back.', ''],
-    unsupported: ['<b>This browser can’t show notifications.</b> Use Chrome on Android, or Safari on iPhone with the page added to the Home Screen.', ''] }[st];
-  el.innerHTML = T[0] + T[1];
-  if ($('#nton')) $('#nton').onclick = async () => { $('#nton').textContent = 'Turning on…';
-    try { const p = await Notification.requestPermission(); if (p !== 'granted') return notifCard();
-      const { publicKey } = await api('/api/subscribe/'), r = swReg || await navigator.serviceWorker.ready;
-      const sub = await r.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64(publicKey) });
-      await api('/api/subscribe/', { method: 'POST', body: JSON.stringify({ sub }) }); toast('Notifications on'); notifCard();
-      api('/api/push-test/', { method: 'POST', body: '{}' }).catch(() => {}); } catch (e) { toast(e.message || 'Could not turn on'); notifCard(); } };
-  if ($('#ntt')) $('#ntt').onclick = async () => { const r = await api('/api/push-test/', { method: 'POST', body: '{}' }).catch(e => ({ result: e.message })); toast('Sent · ' + r.result); };
+  if (st === 'on' || st === 'off') {
+    el.innerHTML = `<div class="sw"><span><b>Order notifications</b><small>${st === 'on' ? 'On for this phone · you get a ping for every new order, even with the app closed' : 'Off · turn on to get a ping for every new order'}</small></span>
+      <button class="tg ${st === 'on' ? 'on' : ''}" id="tg" role="switch" aria-checked="${st === 'on'}" aria-label="Order notifications"><i></i></button></div>${st === 'on' ? '<button class="lnk2" id="ntt">Send a test notification</button>' : ''}`;
+    $('#tg').onclick = async () => { const t = $('#tg'); t.disabled = true; t.classList.toggle('on');
+      try { const r = swReg || await navigator.serviceWorker.ready;
+        if (st === 'on') { const sub = await r.pushManager.getSubscription(); if (sub) { await api('/api/subscribe/', { method: 'DELETE', body: JSON.stringify({ endpoint: sub.endpoint }) }).catch(() => {}); await sub.unsubscribe(); } toast('Notifications off'); }
+        else { const p = await Notification.requestPermission(); if (p !== 'granted') return notifCard();
+          const { publicKey } = await api('/api/subscribe/'), sub = await r.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64(publicKey) });
+          await api('/api/subscribe/', { method: 'POST', body: JSON.stringify({ sub }) }); toast('Notifications on'); api('/api/push-test/', { method: 'POST', body: '{}' }).catch(() => {}); }
+      } catch (e) { toast(e.message || 'Could not change it'); } notifCard(); };
+    if ($('#ntt')) $('#ntt').onclick = async () => { const r = await api('/api/push-test/', { method: 'POST', body: '{}' }).catch(e => ({ result: e.message })); toast('Sent · ' + r.result); };
+    return; }
+  el.innerHTML = { 'ios-install': '<b>On iPhone, add this page to your Home Screen first:</b> tap Share ⬆︎ then “Add to Home Screen”, open “SL Orders” from your Home Screen, then switch notifications on here.',
+    denied: '<b>Notifications are blocked</b> for this site. Allow them in your browser or phone settings for skin-labs.vercel.app, then come back.',
+    unsupported: '<b>This browser can’t show notifications.</b> Use Chrome on Android, or Safari on iPhone with the page added to the Home Screen.' }[st];
 }
 if (KEY()) { app.innerHTML = '<div class="login"><span class="lbl">Opening your orders…</span></div>'; load(true); } else login();
 </script></body></html>
