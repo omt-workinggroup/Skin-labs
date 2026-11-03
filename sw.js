@@ -2,7 +2,7 @@
 const V = 'sl-206d7b7d', SHELL = ["/", "/data.4e56c2ad.js", "/inspo.7391542c.js", "/app.78be2e94.js", "/favicon.png"];
 self.addEventListener('install', e => { e.waitUntil(caches.open(V).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== V && k.startsWith('sl-')).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
-const KEEP = /^\/(atlas|sheets|sheets-sm|sheets-xs|inspo|skins|laptops|fonts)\/|\.[0-9a-f]{8}\.js$|\.(png|jpg)$/;
+const KEEP = /^\/(atlas|sheets|sheets-sm|sheets-xs|inspo|skins|laptops|laptops-real|fonts)\/|\.[0-9a-f]{8}\.js$|\.(png|jpg)$/;
 self.addEventListener('fetch', e => {
   const r = e.request, u = new URL(r.url);
   if (r.method !== 'GET' || u.origin !== location.origin) return;
