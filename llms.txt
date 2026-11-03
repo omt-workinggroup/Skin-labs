@@ -33,7 +33,6 @@
   - [Just Do It](https://skin-labs.vercel.app/stickers/xl/xl-just-do-it/): 1 stickers, GH₵25
   - [No Days Off](https://skin-labs.vercel.app/stickers/xl/xl-no-days-off/): 1 stickers, GH₵25
   - [Rick & Morty](https://skin-labs.vercel.app/stickers/xl/xl-rick-and-morty/): 2 stickers, GH₵25
-  - [Barça Crest](https://skin-labs.vercel.app/stickers/xl/xl-barca-crest/): 1 stickers, GH₵25
 - [Pick & Mix stickers](https://skin-labs.vercel.app/stickers/mix/): Pick and mix: big A3 sheets with about 84 stickers from a whole group of categories, plus mixed packs with a bit of everything.
   - [Pick & Mix: Tech + Gaming](https://skin-labs.vercel.app/stickers/mix/pm1-tech-and-gaming/): 84 stickers, GH₵100
   - [Pick & Mix: Ball, Cars + Street](https://skin-labs.vercel.app/stickers/mix/pm2-football-cars-street/): 84 stickers, GH₵100

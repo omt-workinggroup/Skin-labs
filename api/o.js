@@ -7,9 +7,9 @@ export default async function handler(req, res) {
   const id = String(req.query.id || '').toUpperCase(), f = await findOrder(id);
   res.setHeader('Content-Type', 'text/html; charset=utf-8'); res.setHeader('Cache-Control', 'no-store');
   if (!f) { res.statusCode = 404; return res.end(`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><title>Order not found · Skin Lab</title><body style="background:#000;color:#fff;font:16px system-ui;padding:40px 20px"><h1>Order not found</h1><p>Check the link, or <a style="color:#fff" href="https://wa.me/233558362423">chat with Skin Lab</a>.</p></body>`); }
-  const o = f.order, d = o.design, pic = (d && (d.sheet || d.mock)) || `${SITE}/og.jpg`, at = ORDER.indexOf(o.status);
+  const o = f.order, d = o.design, pk = o.picks, pic = (d && (d.sheet || d.mock)) || (pk && pk.sheet) || `${SITE}/og.jpg`, at = ORDER.indexOf(o.status);
   const lines = [...(o.packs || []).map(p => `<li><span>${esc(p.label)}<small>${String(p.key).startsWith('skin~') ? 'laptop skin' : p.n + ' stickers'}</small></span><b>×${p.q} · GH₵${p.q * p.price}</b></li>`),
-    ...(o.singles || []).map(s => `<li><span>${esc(s.code)}<small>single sticker</small></span><b>×${s.q}</b></li>`)].join('');
+    ...(o.singles || []).map(s => ({ ...s, img: s.img || (/^[A-Z]{3}-\d{3}$/.test(s.code) ? `/hd/${s.code}.avif` : '') })).map(s => `<li><span style="display:flex;gap:10px;align-items:center">${s.img ? `<img src="${esc(s.img)}" alt="" style="width:44px;height:44px;object-fit:contain">` : ''}<span>${esc(s.code)}<small>single sticker</small></span></span><b>×${s.q}</b></li>`)].join('');
   res.end(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Skin Lab order ${esc(o.id)}</title><meta name="robots" content="noindex">
 <meta property="og:title" content="Skin Lab order ${esc(o.id)} · ${esc(o.name)}"><meta property="og:description" content="${esc(d ? `${d.packName || 'Custom pack'} · ${d.size} · ${d.n} stickers` : 'Sticker order')} · GH₵${o.total}"><meta property="og:image" content="${esc(pic)}">
@@ -27,6 +27,7 @@ ul{list-style:none;padding:0;margin:10px 0;border-top:1px solid #222}li{display:
 ${o.status !== 'cancelled' ? `<div class="steps">${ORDER.map((s, i) => `<i class="${i <= at ? 'on' : ''}"></i>`).join('')}</div><p class="lbl">${ORDER.map(s => STEP[s]).join(' → ')}</p>` : ''}
 ${d ? `<div class="pics">${d.sheet ? `<a href="${esc(d.sheet)}"><img src="${esc(d.sheet)}" alt="Your sticker sheet"></a>` : ''}${d.mock ? `<a href="${esc(d.mock)}"><img src="${esc(d.mock)}" alt="Your laptop design"></a>` : ''}</div>
 <p><b>${esc(d.packName || 'Your custom pack')}</b> · ${esc(d.size)} sheet · ${d.n} stickers<br><small>${esc(d.laptop)}${d.skins.length ? ` · ${esc(d.skins.join(', '))} skin${d.skinSize ? ' (' + ({ S: 'Small', M: 'Medium', L: 'Large', C: 'Custom' }[d.skinSize] || '') + ')' : ''}` : ''}</small></p>` : ''}
+${pk && pk.sheet ? `<div class="pics"><a href="${esc(pk.sheet)}"><img src="${esc(pk.sheet)}" alt="Your singles sheet"></a></div><p><b>Your singles sheet</b> · ${esc(pk.size)} · ${pk.n} stickers</p>` : ''}
 ${lines ? `<ul>${lines}</ul>` : ''}
 <div class="tot"><span>Total</span><b>${o.skinOnDM ? (o.total > 0 ? `GH₵${o.total} + skin (price on DM)` : 'Skin · price on DM') : `GH₵${o.total}`}</b></div>
 <p class="lbl" style="margin-top:8px">We'll message you on WhatsApp to confirm delivery and payment (MoMo).</p>

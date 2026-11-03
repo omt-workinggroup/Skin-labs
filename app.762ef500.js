@@ -136,6 +136,45 @@ const waFmt = t => esc(t).replace(/\*([^*\n]+)\*/g, '<b>$1</b>').replace(/(https
 // skins have no price on the site: they are always "price on DM"
 const priceTxt = t => `${CUR}${t}`;
 const dsgPrice = d => d ? Object.values(d.items || {}).flat().length * PRICE + (Object.values(d.skin || {}).some(Boolean) ? SKINP[d.skinSize || 'M'].price : 0) : 0;
+// ---------- singles sheet: the single stickers a customer picks, laid out on the Skin Lab template ----------
+const PICK_CM = 5.5;   // long side of each single sticker on the sheet
+const stickerSrc = c => (CODE[c] && CODE[c].it[6]) || `hd/${c}.avif`;
+const pickImg = c => new Promise(ok => { const i = new Image(); if (/^https?:/.test(stickerSrc(c))) i.crossOrigin = 'anonymous'; i.onload = () => ok({ im: i, sx: 0, sy: 0, sw: i.width, sh: i.height });
+  i.onerror = () => { const { p, it } = CODE[c], a = new Image(); a.onload = () => ok({ im: a, sx: it[1], sy: it[2], sw: it[3], sh: it[4] }); a.onerror = () => ok(null); a.src = `atlas/${p.id}.${IX}`; }; i.src = stickerSrc(c); });
+function packSingles(list) {   // list [{c,w,h}] mm -> smallest sheet (A5, A4, A3) that holds them at real size
+  const fit = (W, H, k) => { const x0 = 7, y0 = W * .15 + 7, x1 = W - 7, y1 = H - 11, g = 2.4; let x = x0, y = y0, row = 0; const out = [];
+    for (const t of [...list].sort((a, b) => b.h - a.h)) { const w = t.w * k, h = t.h * k; if (x + w > x1) { x = x0; y += row + g; row = 0; } if (y + h > y1) return null; out.push({ c: t.c, x, y, w, h }); x += w + g; row = Math.max(row, h); }
+    const rows = {}; out.forEach(o => (rows[o.y] ||= []).push(o)); Object.values(rows).forEach(r => { const dx = (x1 - Math.max(...r.map(o => o.x + o.w))) / 2; r.forEach(o => o.x += dx); });
+    const dy = (y1 - Math.max(...out.map(o => o.y + o.h))) / 2; out.forEach(o => { o.y += Math.min(dy, 30); }); return out; };
+  for (const [n, W, H] of [['A5', 148, 210], ['A4', 210, 297], ['A3', 297, 420]]) { const r = fit(W, H, 1); if (r) return { size: n, W, H, items: r, scaled: false }; }
+  for (let k = .95; k > .2; k -= .05) { const r = fit(297, 420, k); if (r) return { size: 'A3', W: 297, H: 420, items: r, scaled: true }; } return null; }
+let picksCache = { key: '', res: null };
+async function singlesSheet(name) {
+  const entries = Object.entries(cart).filter(([c]) => CODE[c]), key = JSON.stringify(entries) + '|' + name + '|' + IX; if (!entries.length) return null;
+  if (picksCache.key === key) return picksCache.res;
+  const codes = entries.flatMap(([c, q]) => Array(Math.min(q, 30)).fill(c)), ims = {};
+  await Promise.all([...new Set(codes)].map(c => pickImg(c).then(r => ims[c] = r)));
+  const list = codes.map(c => { const r = ims[c], a = r ? r.sw / r.sh : CODE[c].it[3] / CODE[c].it[4], L = PICK_CM * 10; return { c, w: a >= 1 ? L : L * a, h: a >= 1 ? L / a : L }; });
+  const lay = packSingles(list); if (!lay) return null;
+  const PX = 1240, k = PX / lay.W, cv = document.createElement('canvas'); cv.width = PX; cv.height = Math.round(lay.H * k);
+  const g = cv.getContext('2d'), W = cv.width, H = cv.height, hd = lay.W * .15 * k, m = W * .04;
+  g.fillStyle = '#efefef'; g.fillRect(0, 0, W, H); g.fillStyle = '#0a0a0a'; g.fillRect(0, 0, W, hd);
+  g.strokeStyle = '#fff'; g.lineWidth = W * .004; g.beginPath(); g.roundRect(m, hd * .17, W - 2 * m, hd * .66, hd * .14); g.stroke();
+  g.textBaseline = 'middle'; g.fillStyle = '#fff'; g.font = `800 ${hd * .26}px Geist, Arial, sans-serif`; g.fillText('SKIN', m * 1.6, hd * .44); const sw = g.measureText('SKIN ').width;
+  g.fillStyle = '#FFD21F'; g.fillText('LAB', m * 1.6 + sw, hd * .44); g.fillStyle = '#bbb'; g.font = `italic 400 ${hd * .1}px Georgia, serif`; g.fillText('by Baiden Creatives', m * 1.6, hd * .64);
+  const tx = W * .36; g.fillStyle = 'rgba(255,255,255,.25)'; g.fillRect(tx - W * .025, hd * .27, 2, hd * .46);
+  g.fillStyle = '#fff'; g.font = `800 ${hd * .17}px Geist, Arial, sans-serif`; let t = (name ? `${name.split(' ')[0]}'s picks` : 'My picks').toUpperCase(); while (g.measureText(t).width > W - tx - m * 1.6 && t.length > 4) t = t.slice(0, -2) + '…'; g.fillText(t, tx, hd * .38);
+  g.font = `500 ${hd * .085}px Geist, Arial, sans-serif`; g.fillStyle = '#cfcfcf'; g.fillText('single stickers, picked by you', tx, hd * .55);
+  let cx = tx; g.font = `700 ${hd * .07}px Geist, Arial, sans-serif`;
+  for (const c of [`${codes.length} STICKERS`, `${lay.size} SHEET`, 'PEEL • STICK • FLEX']) { const w = g.measureText(c).width + hd * .14; g.strokeStyle = '#fff'; g.lineWidth = 2; g.beginPath(); g.roundRect(cx, hd * .63, w, hd * .13, hd * .065); g.stroke(); g.fillStyle = '#fff'; g.fillText(c, cx + hd * .07, hd * .698); cx += w + hd * .05; }
+  g.imageSmoothingQuality = 'high';
+  for (const o of lay.items) { const r = ims[o.c]; if (r) g.drawImage(r.im, r.sx, r.sy, r.sw, r.sh, o.x * k, o.y * k, o.w * k, o.h * k); }
+  g.fillStyle = '#111'; g.font = `700 ${W * .014}px Geist, Arial, sans-serif`; g.fillText('SKIN LAB', m, H - W * .022); g.textAlign = 'right'; g.fillStyle = '#555'; g.font = `500 ${W * .011}px Geist, Arial, sans-serif`;
+  g.fillText(`${lay.size} · ${lay.scaled ? 'scaled to fit A3' : 'real size'} · printed in Accra`, W - m, H - W * .022); g.textAlign = 'left';
+  let img; try { img = cv.toDataURL('image/jpeg', .86); } catch (e) { img = null; }
+  const res = img && { img, size: lay.size, n: codes.length, scaled: lay.scaled, layout: lay.items.map(o => ({ c: o.c, x: +o.x.toFixed(1), y: +o.y.toFixed(1), w: +o.w.toFixed(1), h: +o.h.toFixed(1) })) };
+  picksCache = { key, res }; return res;
+}
 function openCart(focus) {
   const items = Object.entries(cart), pk = Object.entries(packs), b = $('#c-body'), dg = curDsg();
   if (!items.length && !pk.length && !dg) {
@@ -149,7 +188,9 @@ function openCart(focus) {
         <span class="dl"><a href="/design/" id="c-edit">Edit</a><button type="button" class="lnk" id="c-rmd">Remove</button></span></div></div>` : ''}
     ${pk.length ? `<div class="rows">${pk.map(([k, q]) => `<div class="row"><div class="th"><img src="${sh(pkOf(k).img, 'sheets-sm')}" alt="" loading="lazy" style="height:54px;width:auto;border-radius:3px"></div><div class="nm"><b style="font-family:var(--body)">${esc(pkOf(k).p.nice)}</b><span>${pkOf(k).skin ? `${SZ[pkOf(k).size]} · ${pkOf(k).fit}` : `${SZ[pkOf(k).size]} · ${pkOf(k).n} stickers`} · ${CUR}${pkOf(k).price}</span></div>
       <div class="qty"><button type="button" data-p="${k}" data-d="-1" aria-label="One less ${esc(pkOf(k).label)}">−</button><span>${q}</span><button type="button" data-p="${k}" data-d="1" aria-label="One more ${esc(pkOf(k).label)}">+</button></div></div>`).join('')}</div>` : ''}
-    ${items.length ? `<div class="grp">Single stickers · ${CUR}${PRICE} each</div><div class="rows">${items.map(([c, q]) => `<div class="row"><div class="th">${spr(CODE[c].p, CODE[c].it, 50)}</div><div class="nm"><b>${c}</b><span>${esc(CODE[c].p.nice)}</span></div>
+    ${items.length ? `<div class="mypk" id="c-picks"><button type="button" class="mys" id="c-psheet" aria-label="See your sheet bigger"><span class="lbl" style="display:grid;place-items:center;aspect-ratio:1/1.41;color:#888">Laying out…</span></button>
+      <div class="myt"><span class="lbl">Your singles sheet</span><b>${esc(who.name ? who.name.split(' ')[0] + "'s picks" : 'My picks')}</b><span id="c-pinfo">${nSingles()} sticker${nSingles() === 1 ? '' : 's'} · ${PICK_CM} cm each</span><span class="pr">${CUR}${nSingles() * PRICE}</span></div></div>
+      <div class="grp">Single stickers · ${CUR}${PRICE} each</div><div class="rows">${items.map(([c, q]) => `<div class="row"><div class="th">${spr(CODE[c].p, CODE[c].it, 50)}</div><div class="nm"><b>${c}</b><span>${esc(CODE[c].p.nice)}</span></div>
       <div class="qty"><button type="button" data-q="${c}" data-d="-1" aria-label="One less ${c}">−</button><span>${q}</span><button type="button" data-q="${c}" data-d="1" aria-label="One more ${c}">+</button></div></div>`).join('')}</div>` : ''}
     <div class="sum"><div class="big" style="border:0;padding:0;margin:0"><span>Total</span><span>${priceTxt(money(), dsgSkins())}</span></div><div class="small"><span>Pay with MoMo when we confirm · delivery agreed with you</span></div></div>
     <form class="ck" id="ck" novalidate>
@@ -169,6 +210,9 @@ function openCart(focus) {
   $('#c-clear').onclick = () => { cart = {}; packs = {}; store.set('sl-dsg', null); saveCart(); updBar(); openCart(); };
   if (dg) { $('#c-rmd').onclick = () => { store.set('sl-dsg', null); updBar(); openCart(); toast('Your pack was removed from the cart'); };
     if ($('#c-sheet')) $('#c-sheet').onclick = () => { $('#lb-img').src = dg.sheet; $('#lb').hidden = false; }; }
+  if (items.length) singlesSheet(who.name).then(r => { const b = $('#c-psheet'); if (!b) return; if (!r) { $('#c-picks').hidden = true; return; }
+    b.innerHTML = `<img src="${r.img}" alt="Your singles sheet">`; $('#c-pinfo').textContent = `${r.size} sheet · ${r.n} stickers${r.scaled ? ' · scaled to fit' : ' · real size'}`;
+    b.onclick = () => { $('#lb-img').src = r.img; $('#lb').hidden = false; }; });
   $('#cart').hidden = false;
   if (focus) setTimeout(() => { const f = !who.name ? '#c-name' : !who.phone ? '#c-phone' : null; if (f) $(f).focus(); else $('#ck').scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 250);
 }
@@ -181,7 +225,8 @@ async function placeOrder() {
   const btn = $('#c-send'); btn.disabled = true; btn.textContent = 'Sending your order…';
   const body = { name: who.name, phone: phoneIntl(who.phone), loc: who.loc, total: money(),
     packs: pk.map(([k, q]) => { const o = pkOf(k); return { key: k, label: o.skin ? `${o.label} (${o.fit})` : `${o.p.nice} · ${SZ[o.size]}`, size: o.size, n: o.n, q, price: o.price }; }),
-    singles: items.map(([c, q]) => ({ code: c, q, pack: CODE[c].p.nice })),
+    singles: items.map(([c, q]) => ({ code: c, q, pack: CODE[c].p.nice, img: new URL(stickerSrc(c), location.href).href })),
+    picks: items.length ? await singlesSheet(who.name).then(r => r && { sheet: r.img, size: r.size, n: r.n, scaled: r.scaled, layout: r.layout }).catch(() => null) : null,
     design: dg ? { line: dsgLine(dg), laptop: dg.laptop || dg.name, packName: dg.packName, size: dg.sheetSize || '', n: Object.values(dg.items).flat().length, skins: Object.values(dg.skin || {}).filter(Boolean).map(id => ((SKIN[id] || [])[1] || id)), skinSize: dsgSkins() ? (dg.skinSize || 'M') : '', skinPrice: dsgSkins() ? SKINP[dg.skinSize || 'M'].price : 0,
       layout: dg.layout || [], scaled: !!dg.scaled, sheet: dg.sheet || null, mock: dg.thumb || null, raw: dsgPack(dg) } : null };
   try {
@@ -257,7 +302,7 @@ function lastOrder() {
 }
 // newest packs first on the home page, so nobody misses them
 function newDrops() {
-  const TOP = ['an7-my-hero-academia', 'p11-database-backend', 'xl-barca-crest', 'fc-lamine-yamal', 'fc-barca-crests', 'fc-messi', 'v5-bmw-m', 'an2-itachi', 'fc-hala-madrid', 'gr5-boss-girl', 'g7-pubg', 'an4-monkey-d-luffy', 'm3-spider-man', 'fc-madrid-squad', 'k3-nba-classics', 'q2-gen-z-ghana', 'q3-nasa-space'];
+  const TOP = ['an7-my-hero-academia', 'p11-database-backend', 'fc-lamine-yamal', 'fc-barca-crests', 'fc-messi', 'v5-bmw-m', 'an2-itachi', 'fc-hala-madrid', 'gr5-boss-girl', 'g7-pubg', 'an4-monkey-d-luffy', 'm3-spider-man', 'fc-madrid-squad', 'k3-nba-classics', 'q2-gen-z-ghana', 'q3-nasa-space'];
   const ps = [...D.packs.filter(p => p.drop), ...TOP.map(id => PK[id])].filter(Boolean);
   const xl = D.packs.filter(p => p.size === 'XL').slice(0, 4);
   const all = [...ps.slice(0, 6), ...xl.slice(0, 2), ...ps.slice(6), ...xl.slice(2)];

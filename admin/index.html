@@ -46,6 +46,7 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(40px,10vw,64px);line
 .login button{height:54px;background:#fff;color:#000;font-weight:600}.err{color:#ff6b6b;font-size:14px}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#fff;color:#000;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:9px 14px;z-index:90}
 @media (min-width:760px){.list{grid-template-columns:1fr 1fr}}
+.sgl{display:flex;gap:12px;align-items:center}.sgl img{width:56px;height:56px;object-fit:contain;background:#1a1a1a;padding:3px;display:block}
 .sw{display:flex;align-items:center;justify-content:space-between;gap:14px}.sw b{display:block;color:#fff;font-size:15px}.sw small{display:block;color:#999;font-size:12.5px;margin-top:2px}
 .tg{flex:none;width:58px;height:34px;border-radius:17px;background:#333;position:relative;transition:background .2s}.tg i{position:absolute;top:3px;left:3px;width:28px;height:28px;border-radius:50%;background:#fff;transition:transform .2s}
 .tg.on{background:#1faa53}.tg.on i{transform:translateX(24px)}.lnk2{margin-top:10px;font-size:13px;color:#bbb;text-decoration:underline}
@@ -103,7 +104,7 @@ function list() {
     <div class="tabs" id="tabs">${[['new', 'New', cnt.new], ['active', 'In progress', cnt.active], ['done', 'Done', cnt.done], ['all', 'All', cnt.all]].map(([k, n, c]) => `<button class="${k === filter ? 'on' : ''}" data-f="${k}">${n}<i>${c}</i></button>`).join('')}</div>
     <input class="srch" id="q" placeholder="Search name, number, order…" value="${esc(q)}">
     <div class="list">${show.length ? show.map(o => { const pic = o.design && (o.design.sheet || o.design.mock);
-      const pp = !pic && (o.packs || [])[0], img = pic || (pp ? `/sheets-xs/${pp.key.replace('~5', '-a5')}.webp` : '');
+      const pp = !pic && !(o.picks && o.picks.sheet) && (o.packs || [])[0], img = pic || (o.picks && o.picks.sheet) || (pp ? `/sheets-xs/${pp.key.replace('~5', '-a5')}.webp` : '');
       return `<button class="card ${o.status === 'new' ? 'new' : ''}" data-id="${o.id}"><span class="pic" ${img ? `style="background-image:url('${esc(img)}')"` : ''}>${img ? '' : 'SINGLES'}</span>
         <span><span class="meta"><span><b>${esc(o.name)}</b><p>${esc(o.id)} · ${ago(o.at)}</p></span><span class="pill ${o.status}">${ST[o.status]}</span></span>
         <p>${esc(what(o))}</p><p>${esc(o.loc || '')}</p><div class="tot">${moneyTxt(o)}</div></span></button>`; }).join('')
@@ -127,19 +128,20 @@ function open(id) {
   const o = orders.find(x => x.id === id); if (!o) return; history.replaceState(null, '', '#' + id);
   if (!seen.has(id)) { seen.add(id); try { localStorage.setItem('sl-admin-seen', JSON.stringify([...seen].slice(-500))); } catch (e) {} }
   const d = o.design, next = { new: 'confirmed', confirmed: 'printing', printing: 'on-the-way', 'on-the-way': 'delivered' }[o.status] || o.status;
-  const printList = d ? (d.layout || []).map(l => `${l.c}  ${(Math.max(l.w, l.h) / 10).toFixed(1)} cm`).join('\n') : '';
+  const printList = [...(d ? (d.layout || []) : []), ...(o.picks ? (o.picks.layout || []) : [])].map(l => `${l.c}  ${(Math.max(l.w, l.h) / 10).toFixed(1)} cm`).join('\n');
   const v = document.createElement('div'); v.className = 'dv';
   v.innerHTML = `<div class="dhead"><button class="ib" id="bk">← Orders</button><span class="pill ${o.status}">${ST[o.status]}</span></div><div class="w">
     <span class="lbl">${esc(o.id)} · ${new Date(o.at).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
     <h1>${esc(first(o.name))}<em>’s order.</em></h1>
     <div class="cust"><b>${esc(o.name)}</b><a href="tel:+${esc(o.phone)}">+${esc(o.phone)}</a><span class="lbl">${esc(o.loc || 'No location given')}</span></div>
+    ${o.picks && o.picks.sheet ? `<div class="pics"><a href="${esc(o.picks.sheet)}" target="_blank" rel="noopener"><img src="${esc(o.picks.sheet)}" alt=""><small>Singles sheet · ${esc(o.picks.size)} · ${o.picks.n} stickers${o.picks.scaled ? ' · scaled to fit' : ''} · tap for full size</small></a></div>` : ''}
     ${d ? `<div class="pics">${d.sheet ? `<a href="${esc(d.sheet)}" target="_blank" rel="noopener"><img src="${esc(d.sheet)}" alt=""><small>${esc(d.packName || 'Custom pack')} · ${esc(d.size)} sheet${d.scaled ? ' · scaled to fit' : ''} · tap for full size</small></a>` : ''}${d.mock ? `<a href="${esc(d.mock)}" target="_blank" rel="noopener"><img src="${esc(d.mock)}" alt=""><small>${esc(d.laptop)}</small></a>` : ''}</div>` : ''}
     <div class="sec"><h3>What they ordered</h3><div class="rows">
       ${d ? `<div><span>${esc(d.packName || 'Custom pack')}<br><small>${d.n ? `${esc(d.size)} sheet · ${d.n} stickers` : 'no stickers'}</small></span><b>₵${d.n * 3}</b></div>${d.skins && d.skins.length ? `<div><span>${esc(d.skins.join(', '))} skin<br><small>${({ S: 'Small', M: 'Medium', L: 'Large', C: 'Custom' }[d.skinSize] || '')} · ${esc(d.laptop)}</small></span><b>${d.skinPrice ? '₵' + d.skinPrice : 'price on DM'}</b></div>` : ''}` : ''}
       ${(o.packs || []).map(p => `<div><span>${esc(p.label)}<br><small>${String(p.key).startsWith('skin~') ? 'laptop skin' : p.n + ' stickers'}</small></span><b>${p.q} × ₵${p.price}</b></div>`).join('')}
-      ${(o.singles || []).map(s => `<div><span>${esc(s.code)}<br><small>${esc(s.pack)}</small></span><b>× ${s.q}</b></div>`).join('')}
+      ${(o.singles || []).map(s => ({ ...s, img: s.img || (/^[A-Z]{3}-\d{3}$/.test(s.code) ? `/hd/${s.code}.avif` : '') })).map(s => `<div><span class="sgl">${s.img ? `<a href="${esc(s.img)}" target="_blank" rel="noopener"><img src="${esc(s.img)}" alt=""></a>` : ''}<span>${esc(s.code)}<br><small>${esc(s.pack)}</small></span></span><b>× ${s.q}</b></div>`).join('')}
       <div><b>Total</b><b>${moneyTxt(o)}</b></div></div></div>
-    ${printList ? `<div class="sec"><h3>Print list for the custom sheet</h3><textarea class="msg" readonly style="min-height:120px;font-family:var(--mono);font-size:12px">${esc(printList)}</textarea><button class="btn" id="cpl">Copy print list</button></div>` : ''}
+    ${printList ? `<div class="sec"><h3>Print list (sticker · size)</h3><textarea class="msg" readonly style="min-height:120px;font-family:var(--mono);font-size:12px">${esc(printList)}</textarea><button class="btn" id="cpl">Copy print list</button></div>` : ''}
     <div class="sec"><h3>Status</h3><div class="st" id="st">${Object.entries(ST).map(([k, n]) => `<button data-s="${k}" class="${k === o.status ? 'on' : ''}">${n}</button>`).join('')}</div></div>
     <div class="sec"><h3>Message ${esc(first(o.name))} on WhatsApp</h3><textarea class="msg" id="msg">${esc((MSG[next] || MSG.new)(o))}</textarea>
       <a class="wa" id="wa" target="_blank" rel="noopener">Send on WhatsApp</a>
