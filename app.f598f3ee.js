@@ -209,11 +209,23 @@ function lastOrder() {
   const label = [...pk.map(([k, q]) => `${q > 1 ? q + '× ' : ''}${pkOf(k).label}`), ns ? `${ns} single sticker${ns > 1 ? 's' : ''}` : ''].filter(Boolean).join(', ');
   return `<button type="button" class="again" id="again"><span class="ic">↻</span><span><b>Order again</b><small>${esc(label)}</small></span><span class="go">Open</span></button>`;
 }
+// newest packs first on the home page, so nobody misses them
+function newDrops() {
+  const TOP = ['fc-lamine-yamal', 'fc-barca-crests', 'fc-messi', 'v5-bmw-m', 'an2-itachi', 'fc-hala-madrid', 'gr5-boss-girl', 'g7-pubg', 'an4-monkey-d-luffy', 'm3-spider-man', 'fc-madrid-squad', 'k3-nba-classics', 'q2-gen-z-ghana', 'q3-nasa-space'];
+  const ps = TOP.map(id => PK[id]).filter(Boolean);
+  const xl = D.packs.filter(p => p.size === 'XL').slice(0, 4);
+  const all = [...ps.slice(0, 6), ...xl.slice(0, 2), ...ps.slice(6), ...xl.slice(2)];
+  if (!all.length) return '';
+  return `<div class="drops"><div class="dh"><span class="lbl">New drops</span><span class="lbl">${all.length} new · swipe →</span></div>
+    <div class="dl">${all.map(p => `<a class="dc" href="#${p.id}"><span class="di" style="--tb:${p.bg}"><img src="sheets-xs/${p.id}.${IX}" alt="${esc(p.nice)}" loading="lazy" decoding="async"></span>
+      <b>${esc(p.nice)}</b><small>${p.size === 'XL' ? `XL · ${CUR}${p.price}` : p.size === 'A3' ? `A3 · ${CUR}${p.price}` : `from ${CUR}${p.p5 || p.price}`}</small></a>`).join('')}</div></div>`;
+}
 function vHome() {
   app.innerHTML = `<section class="sec" style="padding-top:18px">
     ${lastOrder()}
     <div class="kick-row"><span>Laptop skins &amp; stickers · Accra</span><span>From ${CUR}30</span></div>
     <div class="sech hero2"><div><h1 class="h1 hero-h">Your laptop, <em>your story.</em></h1><p class="hsub">Skins and sticker packs, printed in Accra.</p></div>${INS.length > 4 ? `<a class="hcol" href="#inspo" aria-label="See sticker inspiration">${[[0, -5, 0, 4], [3, 4, 34, 0], [12, -2, 56, 14]].map(([k, r, x, y]) => `<img src="inspo/sm/${INS[k].id}.${IX}" alt="" loading="lazy" style="left:${x}%;top:${y}%;transform:rotate(${r}deg)">`).join('')}<span class="lbl">Inspiration →</span></a>` : ''}</div>
+    ${newDrops()}
     <div class="seg hseg" id="h-seg"><button type="button" data-h="st">Stickers</button><button type="button" data-h="sk">Skins</button></div>
     <div id="h-grid"></div>
     <div class="extra">

@@ -470,8 +470,14 @@ function initGL(host) {
 }
 const save3 = () => { if (LL) return; try { localStorage.setItem('sl-design3', JSON.stringify({ i: L && L.i, n: L && `${L.brand} ${L.name}`, col, items, skin })); } catch (e) {} };
 const store = { get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
-function thumb(w = 420) { R.render(scene, cam); const c = document.createElement('canvas'), src = R.domElement; c.width = w; c.height = Math.round(w * src.height / src.width);
-  const g = c.getContext('2d'); g.fillStyle = '#0a0a0a'; g.fillRect(0, 0, c.width, c.height); g.drawImage(src, 0, 0, c.width, c.height); return c.toDataURL('image/jpeg', .72); }
+function thumb(w = 420) {
+  if (mode === 'ph') {   // the photo view hides the 3D model: take the picture from the 3D laptop in its hero pose instead
+    const cv = R.domElement, v = cv.style.visibility; cv.style.visibility = ''; const sv = ['lid', 'kb', 'bot'].reduce((m, k) => items[k].length + (skin[k] ? 3 : 0) > items[m].length + (skin[m] ? 3 : 0) ? k : m, 'lid');   // show the side with the design
+    const [hp, ht] = viewPos(sv); cam.position.copy(hp); ctl.target.copy(ht); ctl.update(); setLid(VIEWS[sv][1]);
+    R.render(scene, cam); const t = thumbOf(w); cv.style.visibility = v; return t; }
+  R.render(scene, cam); return thumbOf(w); }
+function thumbOf(w) { const c = document.createElement('canvas'), src = R.domElement; c.width = w; c.height = Math.round(w * src.height / src.width);
+  const g = c.getContext('2d'); g.fillStyle = '#f4f4f4'; g.fillRect(0, 0, c.width, c.height); g.drawImage(src, 0, 0, c.width, c.height); return c.toDataURL('image/jpeg', .72); }
 const v3 = () => ({ v: 3, name: `${L.brand} ${L.name}`, li: L.i, col, skin: { ...skin }, items: JSON.parse(JSON.stringify(items)) });
 const snap = () => { hist.push(JSON.stringify({ items, skin })); if (hist.length > 60) hist.shift(); };
 
@@ -610,7 +616,7 @@ function refresh() { save3();
   document.querySelectorAll('#tab [data-t]').forEach(b => b.classList.toggle('on', b.dataset.t === tab));
   const sb = $('#selbar'); if (!sb) return; sb.hidden = sel < 0; $('#hint').hidden = mode === 'ph'; $('#hint').textContent = sel >= 0 ? (matchMedia('(pointer:coarse)').matches ? 'Drag to move · two fingers to resize & turn' : 'Drag to move · scroll to resize · shift+scroll to turn') : 'Drag to turn · pinch to zoom'; $('.ctrl').hidden = sel >= 0 || mode === 'ph'; if ($('#shots')) $('#shots').hidden = mode !== 'ph' || sel >= 0;
   if (sel >= 0) { const o = items[surf][sel]; $('#ssz').value = Math.round(o.s * 100); $('#srt').value = o.r; }
-  const n = Object.values(items).flat().length; $('#cart').textContent = n ? `Add to cart · GH₵${n * 3}` : 'Add to cart';
+  const n = Object.values(items).flat().length; $('#cart').textContent = 'Add to cart';   // no price while designing; the cart shows it
 }
 function pane() {
   const p = $('#pane'); refresh();
