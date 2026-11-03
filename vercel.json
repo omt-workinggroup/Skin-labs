@@ -16,7 +16,7 @@
    ]
   },
   {
-   "source": "/(atlas|sheets|sheets-sm|sheets-xs|inspo|skins|laptops|laptops-real|fonts)/(.*)",
+   "source": "/(atlas|sheets|sheets-sm|sheets-xs|inspo|skins|laptops|laptops-real|hd|fonts)/(.*)",
    "headers": [
     {
      "key": "Cache-Control",

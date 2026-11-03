@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en-GH"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#000000">
 <title>Design your laptop in 3D | Skin Lab, Accra</title><meta name="description" content="Pick your laptop from 750+ models (HP, Dell, Lenovo, Apple, Acer, Asus, MSI and more), turn it in 3D and design it with skins and stickers. Order on WhatsApp."><link rel="canonical" href="https://skin-labs.vercel.app/design/"><link rel="icon" type="image/png" href="/favicon.png"><meta property="og:image" content="https://skin-labs.vercel.app/og.jpg">
 <link rel="preload" href="/fonts/f49f83ef.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/fonts/37ddf465.woff2" as="font" type="font/woff2" crossorigin><style>@font-face { font-family: 'Geist'; font-style: normal; font-weight: 400; font-display: swap; src: url(/fonts/999bb767.woff2) format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
@@ -122,6 +122,15 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 .stage.fs .ovl.t{top:calc(12px + env(safe-area-inset-top,0px))}
 .bomb{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;min-height:50px;padding:0 14px;margin-bottom:8px;background:linear-gradient(90deg,#fff,#e9e9e9);color:#000;text-align:left;font-weight:600;font-size:14px}
 .bomb small{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#555;font-weight:400}
+.tf{position:absolute;inset:0;pointer-events:none;z-index:6}.tfs{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+#tfp{fill:none;stroke:#2f7bff;stroke-width:1.6}#tfl{stroke:#2f7bff;stroke-width:1.6}
+.tf .hd,.tf .hr{position:absolute;width:30px;height:30px;margin:-15px 0 0 -15px;pointer-events:auto;touch-action:none;display:grid;place-items:center}
+.tf .hd:after{content:"";width:13px;height:13px;border-radius:50%;background:#fff;border:2px solid #2f7bff;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.tf .hr{width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;background:#fff;color:#2f7bff;border:2px solid #2f7bff;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+.tbar{position:absolute;display:flex;align-items:center;gap:2px;padding:3px;background:#fff;color:#111;border-radius:10px;box-shadow:0 4px 18px rgba(0,0,0,.18);pointer-events:auto;white-space:nowrap;transform:translateX(-50%)}
+.tbar button{height:34px;min-width:36px;padding:0 9px;border-radius:7px;display:grid;place-items:center;font-size:13px;font-weight:600}.tbar button:active{background:#eee}.tbar button.w{background:#111;color:#fff;margin-left:2px}
+.tbar span{font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;padding:0 8px;color:#555}
+.selbar{display:none!important}
 </style>
 <script type="importmap">{"imports":{"three":"/vendor/three/three.module.min.js"}}</script>
 </head><body>
@@ -184,7 +193,8 @@ function vPick() {
 }
 
 // ---------- textures ----------
-const TW = Math.min(2048, (window.innerWidth >= 1000 ? 2048 : 1536));
+const TW = 2048;   // laptop surfaces drawn at 2048 px on every device (sharp lid, keys and logo)
+const MAXA = () => (R && R.capabilities.getMaxAnisotropy()) || 8;
 const imgCache = {};
 const img = src => imgCache[src] || (imgCache[src] = new Promise(ok => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => ok(null); i.src = src; }));
 function rr(g, x, y, w, h, r) { g.beginPath(); g.roundRect(x, y, w, h, r); }
@@ -227,9 +237,13 @@ const surfPos = (s, u, v) => { const { w, d, tb, tl } = GEO;
   if (s === 'kb') return new THREE.Vector3(u * (w - .5) - (w / 2 - .25), tb + .03, v * (d - .5) - (d / 2 - .25));
   if (s === 'bot') return new THREE.Vector3((w / 2 - .25) - u * (w - .5), -.03, v * (d - .5) - (d / 2 - .25));
   return new THREE.Vector3((w / 2 - .15) - u * (w - .3), tl + .03, (d / 2 - .15) - v * (d - .3) + d / 2); };
-const atlasTex = p => ATX[p.id] || (ATX[p.id] = (() => { const t = new THREE.Texture(); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+const atlasTex = p => ATX[p.id] || (ATX[p.id] = (() => { const t = new THREE.Texture(); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = MAXA();
   const m = new THREE.MeshBasicMaterial({ map: t, transparent: true, alphaTest: .02, depthWrite: false, toneMapped: false, polygonOffset: true, polygonOffsetFactor: -4, side: THREE.DoubleSide });
   atlas(p.id).then(im => { if (im) { ready[p.id] = im; t.image = im; t.needsUpdate = true; kick(); } }); return m; })());
+const HDM = {}, HDUV = [[0, 1], [1, 1], [1, 0], [0, 0]];
+const hdMat = c => HDM[c] || (HDM[c] = (() => { const t = new THREE.Texture(); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = MAXA(); t.minFilter = THREE.LinearMipmapLinearFilter; t.generateMipmaps = true;
+  const m = new THREE.MeshBasicMaterial({ map: t, transparent: true, alphaTest: .02, depthWrite: false, toneMapped: false, polygonOffset: true, polygonOffsetFactor: -4, side: THREE.DoubleSide }); m.userData.ok = false;
+  img(`/hd/${c}.avif`).then(im => { if (!im) return; t.image = im; t.needsUpdate = true; m.userData.ok = true; ['lid', 'kb', 'bot'].forEach(s => syncStickers(s)); kick(); }); return m; })());
 function quad(o, s) { const { p, it } = CODE[o.c], C = surfPos(s, o.x, o.y), R = surfPos(s, o.x + 1, o.y).sub(C), Dv = surfPos(s, o.x, o.y + 1).sub(C);
   const pw = R.length(), Rn = R.normalize(), Dn = Dv.normalize(), k = o.s * popK(o) * pw / Math.max(it[3], it[4]), hw = it[3] * k / 2, hh = it[4] * k / 2, a = o.r * Math.PI / 180;
   const Rr = Rn.clone().multiplyScalar(Math.cos(a)).addScaledVector(Dn, Math.sin(a)), Dr = Rn.clone().multiplyScalar(-Math.sin(a)).addScaledVector(Dn, Math.cos(a));
@@ -239,13 +253,13 @@ function syncStickers(s) { if (!GEO || !lap) return; dirty = true; const parent 
   while (pool.length > list.length) { const m = pool.pop(); parent.remove(m); m.geometry.dispose(); }
   list.forEach((o, i) => { const { p } = CODE[o.c]; let m = pool[i];
     if (!m) { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(12, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(8, 2)); g.setIndex([0, 2, 1, 0, 3, 2]); m = new THREE.Mesh(g, atlasTex(p)); m.renderOrder = 2; parent.add(m); pool[i] = m; }
-    if (m.material !== atlasTex(p)) m.material = atlasTex(p);
-    const { P, uv } = quad(o, s), pa = m.geometry.attributes.position, ua = m.geometry.attributes.uv;
+    const hm = hdMat(o.c), hd = hm && hm.userData.ok, want = hd ? hm : atlasTex(p); if (m.material !== want) m.material = want;
+    const q = quad(o, s), P = q.P, uv = hd ? HDUV : q.uv, pa = m.geometry.attributes.position, ua = m.geometry.attributes.uv;
     P.forEach((v, j) => pa.setXYZ(j, v.x, v.y, v.z)); uv.forEach(([u, v], j) => ua.setXY(j, u, v)); pa.needsUpdate = ua.needsUpdate = true; m.geometry.computeBoundingSphere(); m.geometry.computeBoundingBox();
     m.renderOrder = 2 + i; m.userData = { s, i }; });
   // selection frame
   if (SELL[s]) { (s === 'lid' ? lid : lap).remove(SELL[s]); SELL[s].geometry.dispose(); SELL[s] = null; }
-  if (s === surf && sel >= 0 && list[sel]) { const { P } = quad({ ...list[sel], s: list[sel].s * 1.12 }, s), g = new THREE.BufferGeometry().setFromPoints([...P, P[0]]);
+  if (false) { const { P } = quad({ ...list[sel], s: list[sel].s * 1.12 }, s), g = new THREE.BufferGeometry().setFromPoints([...P, P[0]]);
     SELL[s] = new THREE.Line(g, new THREE.LineDashedMaterial({ color: 0xffffff, dashSize: .35, gapSize: .25, depthTest: false })); SELL[s].computeLineDistances(); SELL[s].renderOrder = 99; parent.add(SELL[s]); } }
 let phQ = 0;
 // stickers land with a little slap: start bigger, settle to size; staggered for sticker-bombs
@@ -449,8 +463,8 @@ function go(v, ms = 700) { curView = v; lastTouch = performance.now();
   idle = v === 'hero';
 }
 function initGL(host) {
-  R = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true }); let PR = Math.min(innerWidth < 700 ? 1.6 : 2, devicePixelRatio); R.setPixelRatio(PR); window.__pr = () => PR;
-  let ft = 0, fn = 0, fl = 0; const guard = now => { if (fl) { ft += now - fl; fn++; } fl = now; if (fn >= 40) { if (ft / fn > 30 && PR > 1) { PR = Math.max(1, PR - .25); R.setPixelRatio(PR); lastSz = ''; resize(); } ft = fn = 0; } }; R.toneMapping = THREE.NeutralToneMapping || THREE.ACESFilmicToneMapping; R.toneMappingExposure = 1.05;
+  R = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true }); let PR = Math.min(2, devicePixelRatio); R.setPixelRatio(PR); window.__pr = () => PR;
+  let ft = 0, fn = 0, fl = 0; const guard = now => { if (fl) { ft += now - fl; fn++; } fl = now; if (fn >= 40) { if (ft / fn > 34 && PR > 1.25) { PR = Math.max(1.25, PR - .25); R.setPixelRatio(PR); lastSz = ''; resize(); } ft = fn = 0; } }; R.toneMapping = THREE.NeutralToneMapping || THREE.ACESFilmicToneMapping; R.toneMappingExposure = 1.05;
   R.shadowMap.enabled = true; R.shadowMap.type = THREE.PCFSoftShadowMap; R.shadowMap.autoUpdate = false; host.appendChild(R.domElement);
   scene = new THREE.Scene(); const pm = new THREE.PMREMGenerator(R); scene.environment = pm.fromScene(new RoomEnvironment(), .04).texture; scene.environmentIntensity = .95;
   cam = new THREE.PerspectiveCamera(32, 1, .5, 800);
@@ -464,7 +478,7 @@ function initGL(host) {
   RO = new ResizeObserver(() => resize()); RO.observe(host); resize();
   const loop = now => { raf = requestAnimationFrame(loop); if (!idle && !tween && !busy() && curView === 'hero' && now - lastTouch > 5000) idle = true;   // showroom spin, back on its own
     const moving = !!tween || idle; if (tween) tween(now); else if (idle) { const a = .0025, t = ctl.target, x = cam.position.x - t.x, z = cam.position.z - t.z; cam.position.x = t.x + x * Math.cos(a) - z * Math.sin(a); cam.position.z = t.z + x * Math.sin(a) + z * Math.cos(a); }
-    const ch = ctl.update(); if (!(moving || ch || dirty)) { fl = 0; return; } guard(now); dirty = false; floor.visible = cam.position.y > 0; R.render(scene, cam); }; raf = requestAnimationFrame(loop);
+    const ch = ctl.update(); if (!(moving || ch || dirty)) { fl = 0; return; } guard(now); dirty = false; floor.visible = cam.position.y > 0; R.render(scene, cam); updateTF(); }; raf = requestAnimationFrame(loop);
   // sticker picking and dragging on the 3D surfaces
   const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
   const hitAt = (e, only) => { const r = R.domElement.getBoundingClientRect(); ndc.set((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1); ray.setFromCamera(ndc, cam);
@@ -492,6 +506,34 @@ function initGL(host) {
   addEventListener('pointerup', e => { lift(e); if (pinch) return;  if (drag) { drag = null; ctl.enabled = true; return; }
     if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && e.target === R.domElement) { const h = hitAt(e); if (h) { surf = h.s; } if (sel >= 0) { sel = -1; } refresh(); ['lid', 'kb', 'bot'].forEach(schedule); } down = null; });
 }
+let TG = null, tfC = [0, 0], tfPts = null;
+const projQ = (o, s) => { const par = s === 'lid' ? lid : lap, r = R.domElement.getBoundingClientRect(); par.updateMatrixWorld();
+  return quad(o, s).P.map(v => { const w = v.clone().applyMatrix4(par.matrixWorld).project(cam); return [(w.x + 1) / 2 * r.width, (1 - w.y) / 2 * r.height]; }); };
+function updateTF() { const tf = $('#tf'); if (!tf || !cam) return; const o = sel >= 0 && items[surf][sel]; if (!o || !GEO) { tf.hidden = true; tfPts = null; return; }
+  const P = projQ(o, surf), cx = P.reduce((a, p) => a + p[0], 0) / 4, cy = P.reduce((a, p) => a + p[1], 0) / 4; tfC = [cx, cy]; tfPts = P; tf.hidden = false;
+  $('#tfp').setAttribute('points', P.map(p => p.join(',')).join(' '));
+  tf.querySelectorAll('.hd').forEach((h, i) => { h.style.left = P[i][0] + 'px'; h.style.top = P[i][1] + 'px'; });
+  const mx = (P[0][0] + P[1][0]) / 2, my = (P[0][1] + P[1][1]) / 2, dx = mx - cx, dy = my - cy, dl = Math.hypot(dx, dy) || 1, rx = mx + dx / dl * 30, ry = my + dy / dl * 30;
+  const hr = tf.querySelector('.hr'); hr.style.left = rx + 'px'; hr.style.top = ry + 'px'; const ln = $('#tfl'); ln.setAttribute('x1', mx); ln.setAttribute('y1', my); ln.setAttribute('x2', rx); ln.setAttribute('y2', ry);
+  const st = $('#stage').getBoundingClientRect(), ys = P.map(p => p[1]).concat(ry), top = Math.min(...ys), bot = Math.max(...P.map(p => p[1])), tb = $('#tbar');
+  let ty = top - 50; if (ty < 54) ty = Math.min(st.height - 46, bot + 16); tb.style.top = ty + 'px'; tb.style.left = Math.min(st.width - tb.offsetWidth / 2 - 8, Math.max(tb.offsetWidth / 2 + 8, cx)) + 'px';
+  $('#tsz').textContent = `${cmOf(o).toFixed(1)} cm · ${((Math.round(o.r) % 360) + 360) % 360}°`; }
+function tfDown(e) { const h = e.target.closest('[data-h]'); if (!h || sel < 0) return; e.preventDefault(); e.stopPropagation(); h.setPointerCapture(e.pointerId); snap();
+  const o = items[surf][sel], r = $('#stage').getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
+  const A = projQ(o, surf), B = projQ({ ...o, r: o.r + 10 }, surf), ang = P => Math.atan2(P[1][1] - P[0][1], P[1][0] - P[0][0]);
+  const sign = Math.sign(Math.sin(ang(B) - ang(A))) || 1;   // which way the sticker turns on screen for this view
+  TG = { h: h.dataset.h, o, d0: Math.hypot(px - tfC[0], py - tfC[1]) || 1, a0: Math.atan2(py - tfC[1], px - tfC[0]), s0: o.s, r0: o.r, sign }; ctl.enabled = false; idle = false; tween = null; }
+function tfMove(e) { if (!TG) return; e.preventDefault(); const r = $('#stage').getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top, o = TG.o;
+  if (TG.h === 'r') { let d = TG.r0 + TG.sign * (Math.atan2(py - tfC[1], px - tfC[0]) - TG.a0) * 180 / Math.PI; const n = Math.round(d / 45) * 45; if (Math.abs(d - n) < 4) d = n; o.r = Math.round(d); }
+  else o.s = Math.min(.95, Math.max(.02, TG.s0 * Math.hypot(px - tfC[0], py - tfC[1]) / TG.d0));
+  schedule(surf); }
+function tfUp() { if (!TG) return; TG = null; ctl.enabled = true; lastTouch = performance.now(); refresh(); }
+function tfAct(a) { const L_ = items[surf]; if (sel < 0) return; snap(); const o = L_[sel];
+  if (a === 'dup') { const c = { ...o, x: Math.min(.97, o.x + .05), y: Math.min(.97, o.y + .05) }; L_.push(c); sel = L_.length - 1; popIn([c], surf); }
+  else if (a === 'front') { L_.push(L_.splice(sel, 1)[0]); sel = L_.length - 1; }
+  else if (a === 'del') { L_.splice(sel, 1); sel = -1; }
+  else sel = -1;
+  refresh(); schedule(surf); }
 const save3 = () => { if (LL) return; try { localStorage.setItem('sl-design3', JSON.stringify({ i: L && L.i, n: L && `${L.brand} ${L.name}`, col, items, skin })); } catch (e) {} };
 const store = { get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
 function thumb(w = 420) {
@@ -513,6 +555,9 @@ async function vEditor() {
       <div class="ovl t"><div class="name"><b>${esc(L.brand)} ${esc(L.name.replace(/ \(.+\)$/, ''))}</b><span class="lbl">${L.scr}″ · ${L.w} × ${L.d} cm · <a class="chg lbl" href="#pick" id="chg">Change</a></span></div>
         <div class="ovr"><button class="fsb" id="fsb" aria-label="Full screen"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button></div></div>
       <span class="hint" id="hint">Drag to turn · pinch to zoom</span>
+      <div class="tf" id="tf" hidden><svg class="tfs"><polygon id="tfp"/><line id="tfl"/></svg><i class="hd" data-h="0"></i><i class="hd" data-h="1"></i><i class="hd" data-h="2"></i><i class="hd" data-h="3"></i>
+        <i class="hr" data-h="r"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5"/></svg></i>
+        <div class="tbar" id="tbar"><span id="tsz"></span><button data-a="dup" aria-label="Duplicate"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg></button><button data-a="front" aria-label="Bring to front"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button><button data-a="del" aria-label="Delete"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button><button data-a="ok" class="w">Done</button></div></div>
 </div>
       <div class="ctrl"><div class="views" id="views"><button data-v="hero">360°</button><button data-v="lid">Lid</button><button data-v="kb">Keys</button><button data-v="bot">Base</button></div>
         <label class="lidc" id="lidrow"><span class="lbl">Open</span><input type="range" id="lida" min="0" max="140" value="${lidA}"></label></div>
@@ -528,6 +573,10 @@ async function vEditor() {
   $('#stage .load').remove(); build(); const [hp, ht] = viewPos('hero'); cam.position.copy(hp); ctl.target.copy(ht); setLid(110); idle = true;
   const fs = on => { const st = $('#stage'); st.classList.toggle('fs', on); document.body.style.overflow = on ? 'hidden' : ''; $('#fsb').innerHTML = on ? '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg>' : '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>'; setTimeout(() => { resize(); phLayout(); }, 30); };
   $('#fsb').onclick = () => fs(!$('#stage').classList.contains('fs')); addEventListener('keydown', e => { if (e.key === 'Escape' && $('#stage')?.classList.contains('fs')) fs(false); });
+  const tf = $('#tf'); tf.addEventListener('pointerdown', tfDown); addEventListener('pointermove', tfMove, { passive: false }); addEventListener('pointerup', tfUp); addEventListener('pointercancel', tfUp);
+  $('#tbar').onclick = e => { const b = e.target.closest('[data-a]'); if (b) tfAct(b.dataset.a); };
+  const stg = $('#stage'); ['touchstart', 'touchmove'].forEach(ev => stg.addEventListener(ev, e => { if (!e.target.closest('.tbar, button, a')) e.preventDefault(); }, { passive: false }));
+  stg.addEventListener('dblclick', e => e.preventDefault()); ['gesturestart', 'gesturechange'].forEach(ev => document.addEventListener(ev, e => e.preventDefault()));
   $('#views').onclick = e => { const b = e.target.closest('[data-v]'); if (!b) return; const v = b.dataset.v; document.querySelectorAll('#views button').forEach(x => x.classList.toggle('on', x === b)); if (v !== 'hero') { surf = v; refresh(); } go(v); };
   $('#lida').oninput = e => { setLid(+e.target.value); idle = false; };
   $('#surf').onclick = e => { const b = e.target.closest('[data-s]'); if (!b) return; surf = b.dataset.s; sel = -1; refresh(); go(surf); ['lid', 'kb', 'bot'].forEach(schedule); };
@@ -562,7 +611,7 @@ function saveMine(d) { const mine = store.get('sl-mine', []).filter(m => m.id !=
 function refresh() { save3();
   document.querySelectorAll('#surf [data-s]').forEach(b => { b.classList.toggle('on', b.dataset.s === surf); const n = items[b.dataset.s].length + (skin[b.dataset.s] ? 1 : 0); b.querySelector('i').textContent = n || ''; });
   document.querySelectorAll('#tab [data-t]').forEach(b => b.classList.toggle('on', b.dataset.t === tab));
-  const sb = $('#selbar'); if (!sb) return; sb.hidden = sel < 0; $('#hint').hidden = mode === 'ph'; $('#hint').textContent = sel >= 0 ? (matchMedia('(pointer:coarse)').matches ? 'Drag to move · two fingers to resize & turn' : 'Drag to move · scroll to resize · shift+scroll to turn') : 'Drag to turn · pinch to zoom'; $('.ctrl').hidden = sel >= 0 || mode === 'ph'; if ($('#shots')) $('#shots').hidden = mode !== 'ph' || sel >= 0;
+  const sb = $('#selbar'); if (!sb) return; sb.hidden = true; $('#hint').hidden = sel >= 0; $('#hint').textContent = sel >= 0 ? (matchMedia('(pointer:coarse)').matches ? 'Drag to move · corners to resize · ↻ to turn' : 'Drag to move · corners to resize · ↻ to turn') : 'Drag to turn · pinch to zoom'; updateTF();
   if (sel >= 0) { const o = items[surf][sel]; $('#ssz').value = Math.round(o.s * 100); $('#srt').value = o.r; }
   const n = Object.values(items).flat().length; $('#cart').textContent = 'Add to cart';   // no price while designing; the cart shows it
 }
