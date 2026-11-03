@@ -36,8 +36,8 @@ const nPacks = () => Object.values(packs).reduce((a, b) => a + b, 0);
 function curDsg() { const d = store.get('sl-dsg', null); if (!d || !(d.lap || d.v === 3) || !d.items) return null;
   return Object.values(d.items).some(v => v.length) || Object.values(d.skin || {}).some(Boolean) ? d : null; }
 const dsgSkins = () => { const d = curDsg(); return d ? Object.values(d.skin).filter(Boolean).length : 0; };
-const count = () => nSingles() + nPacks() + dsgSkins();
-const money = () => nSingles() * PRICE + Object.entries(packs).reduce((a, [k, q]) => a + q * pkOf(k).price, 0);
+const count = () => nSingles() + nPacks() + (curDsg() ? 1 : 0);
+const money = () => nSingles() * PRICE + Object.entries(packs).reduce((a, [k, q]) => a + q * pkOf(k).price, 0) + dsgPrice(curDsg());
 const buzz = () => { try { navigator.vibrate && navigator.vibrate(12); } catch (e) {} };
 function toggle(code) { if (cart[code]) delete cart[code]; else cart[code] = 1; buzz(); saveCart(); updBar(); }
 function setQty(code, q) { if (q <= 0) delete cart[code]; else cart[code] = Math.min(q, 99); saveCart(); updBar(); }
@@ -101,13 +101,13 @@ const waLink = t => `https://wa.me/${WA}?text=${encodeURIComponent(t)}`;
 function updBar() {
   const n = count(), np = nPacks(), ns = nSingles();
   $('#bar-n').textContent = n;
-  const nk = dsgSkins(); $('#bar-t').textContent = [np ? `${np} pack${np > 1 ? 's' : ''}` : '', ns ? `${ns} sticker${ns > 1 ? 's' : ''}` : '', nk ? `${nk} skin${nk > 1 ? 's' : ''}` : ''].filter(Boolean).join(' + ') + ' in your cart';
+  const nk = dsgSkins(); $('#bar-t').textContent = [np ? `${np} pack${np > 1 ? 's' : ''}` : '', ns ? `${ns} sticker${ns > 1 ? 's' : ''}` : '', curDsg() ? 'your pack' : '', nk ? `${nk} skin${nk > 1 ? 's' : ''}` : ''].filter(Boolean).join(' + ') + ' in your cart';
   $('#bar-p').textContent = `${CUR}${money()}${nk ? ' + skin (price on DM)' : ''}`;
   $('#bar').classList.toggle('show', n > 0);
   for (const id of ['#t-bd', '#nv-bd']) { $(id).hidden = !n; $(id).textContent = n; }
   document.querySelectorAll('.grid .tile[data-c]').forEach(t => { const q = cart[t.dataset.c]; t.classList.toggle('sel', !!q); const k = t.querySelector('.chk'); if (k) k.textContent = q > 1 ? q : '✓'; });
   document.querySelectorAll('[data-packbtn]').forEach(b => { const q = packs[b.dataset.packbtn]; b.innerHTML = q ? `In your cart (${q}) · add one more` : `Add to cart, keep shopping`; });
-  const go = $('#bar-go'); if (go) go.innerHTML = `${waIcon}Order now`;
+  const go = $('#bar-go'); if (go) go.innerHTML = `Checkout`;
 }
 function toast(m) { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 2000); }
 async function copy(text) { try { await navigator.clipboard.writeText(text); toast('Order copied'); } catch (e) { toast('Could not copy. Long-press to select instead.'); } }
@@ -116,53 +116,81 @@ document.querySelectorAll('.sheet').forEach(s => s.addEventListener('click', e =
 
 // WhatsApp-style preview of the exact message we will receive
 const waFmt = t => esc(t).replace(/\*([^*\n]+)\*/g, '<b>$1</b>').replace(/(https?:\/\/\S+)/g, '<u>$1</u>').replace(/\n/g, '<br>');
-function openCart() {
-  const items = Object.entries(cart), pk = Object.entries(packs), b = $('#c-body');
-  const dg = curDsg();
+// ---------- cart + checkout: the order goes straight to the Skin Lab admin (no long WhatsApp text) ----------
+const dsgPrice = d => d ? (d.price ?? Object.values(d.items || {}).flat().length * PRICE) : 0;
+function openCart(focus) {
+  const items = Object.entries(cart), pk = Object.entries(packs), b = $('#c-body'), dg = curDsg();
   if (!items.length && !pk.length && !dg) {
     b.innerHTML = `<div class="empty-c"><b>Your cart is empty</b>Pick a pack, or design your laptop.</div><a class="btn y" href="#" id="c-go">Choose a category</a>`;
-    $('#c-go').onclick = () => $('#cart').hidden = true;
-  } else {
-    const ns = nSingles();
-    b.innerHTML = `${dg ? `<div class="dsgc"><div class="dimg" id="c-dsg"></div><div class="dtx"><b>Your laptop design</b><span>${esc(dsgLine(dg))}</span><span class="dl"><a href="#design" id="c-edit">Edit</a><button type="button" class="lnk" id="c-rmd">Remove</button></span></div></div>` : ''}${pk.length ? `<div class="rows">${pk.map(([k, q]) => `<div class="row"><div class="th"><img src="sheets-sm/${pkOf(k).img}.${IX}" alt="" loading="lazy" style="height:54px;width:auto;border-radius:3px"></div><div class="nm"><b style="font-family:var(--body)">${esc(pkOf(k).p.nice)}</b><span>${SZ[pkOf(k).size]} · ${pkOf(k).n} stickers · ${CUR}${pkOf(k).price}</span></div>
-        <div class="qty"><button type="button" data-p="${k}" data-d="-1" aria-label="One less ${esc(pkOf(k).label)}">−</button><span>${q}</span><button type="button" data-p="${k}" data-d="1" aria-label="One more ${esc(pkOf(k).label)}">+</button></div></div>`).join('')}</div>` : ''}
-      ${items.length ? `<div class="grp">Single stickers · ${CUR}${PRICE} each</div><div class="rows">${items.map(([c, q]) => `<div class="row"><div class="th">${spr(CODE[c].p, CODE[c].it, 50)}</div><div class="nm"><b>${c}</b><span>${esc(CODE[c].p.nice)}</span></div>
-        <div class="qty"><button type="button" data-q="${c}" data-d="-1" aria-label="One less ${c}">−</button><span>${q}</span><button type="button" data-q="${c}" data-d="1" aria-label="One more ${c}">+</button></div></div>`).join('')}</div>` : ''}
-      <div class="sum"><div class="big" style="border:0;padding:0;margin:0"><span>Total</span><span>${CUR}${money()}</span></div><div class="small"><span>Delivery is agreed on WhatsApp</span></div></div>
-      <div class="two"><div class="fld" id="f-name"><label for="c-name">Your name <i style="font-style:normal;opacity:.6">(optional)</i></label><input id="c-name" autocomplete="name" placeholder="e.g. Ama" value="${esc(who.name)}"></div>
-      <div class="fld"><label for="c-loc">Location</label><input id="c-loc" autocomplete="address-level2" placeholder="e.g. Legon" value="${esc(who.loc)}"></div></div>
-      <div class="grp">This is the message we'll get</div>
-      <div class="wachat"><div class="wahead">${waIcon}<span><b>Skin Lab</b><small>055 836 2423</small></span></div><div class="wabody"><div class="bub" id="c-prev"></div></div></div>
-      <button class="btn wa" type="button" id="c-send">${waIcon}Send order on WhatsApp</button>
-      <div class="two"><button class="btn o" type="button" id="c-copy">Copy order</button><button class="btn o" type="button" id="c-clear">Empty cart</button></div>`;
-    const txt = () => orderText(Object.entries(packs), Object.entries(cart), false), sealed = () => sealedText(Object.entries(packs), Object.entries(cart));
-    const keep = () => { who = { name: $('#c-name').value.trim(), loc: $('#c-loc').value.trim(), note: who.note || '' }; store.set('sl-who', who); $('#c-prev').innerHTML = waFmt(txt()) + '<span class="tm">now ✓✓</span>'; };
-    ['#c-name', '#c-loc'].forEach(s => $(s).addEventListener('input', keep)); keep();
-    b.onclick = e => { const k = e.target.closest('[data-q],[data-p]'); if (!k) return;
-      if (k.dataset.q) setQty(k.dataset.q, (cart[k.dataset.q] || 0) + +k.dataset.d); else setPack(k.dataset.p, (packs[k.dataset.p] || 0) + +k.dataset.d); openCart(); };
-    $('#c-send').onclick = async () => { keep();
-      store.set('sl-last', { packs: { ...packs }, cart: { ...cart }, at: Date.now() });
-      const b = $('#c-send'); b.disabled = true; const u = waLink(await sealed()); b.disabled = false;
-      if (!window.open(u, '_blank', 'noopener')) location.href = u; };
-    $('#c-copy').onclick = async () => { keep(); copy(await sealed()); };
-    $('#c-clear').onclick = () => { cart = {}; packs = {}; store.set('sl-dsg', null); saveCart(); updBar(); openCart(); };
-    if (dg && dg.v === 3) { const el = $('#c-dsg'); if (el && dg.thumb) el.innerHTML = `<img src="${dg.thumb}" alt="Your laptop design" style="width:100%;display:block">`; $('#c-edit').href = '/design/'; }
-    if (dg) { if (dg.v !== 3) designPicture(dg, 150).then(c => { const el = $('#c-dsg'); if (el) { el.innerHTML = ''; el.appendChild(c); } });
-      $('#c-edit').onclick = () => { $('#cart').hidden = true; };
-      $('#c-rmd').onclick = () => { Object.values(dg.items).flat().forEach(o => { if (cart[o.c]) { cart[o.c]--; if (cart[o.c] <= 0) delete cart[o.c]; } });
-        store.set('sl-dsg', null); saveCart(); updBar(); openCart(); toast('Design removed from the cart'); }; }
+    $('#c-go').onclick = () => $('#cart').hidden = true; $('#cart').hidden = false; return;
   }
+  const dn = dg ? Object.values(dg.items || {}).flat().length : 0;
+  b.innerHTML = `${dg ? `<div class="mypk">${dg.sheet ? `<button type="button" class="mys" id="c-sheet" aria-label="See your sheet bigger"><img src="${dg.sheet}" alt="Your sticker sheet"></button>` : ''}
+      <div class="myt">${dg.thumb ? `<img src="${dg.thumb}" alt="Your laptop design">` : ''}<span class="lbl">Your own pack</span><b>${esc(dg.packName || 'Your laptop design')}</b>
+        <span>${dg.sheetSize ? `${dg.sheetSize} sheet · ` : ''}${dn} sticker${dn === 1 ? '' : 's'}${dsgSkins() ? ' · + skin' : ''}</span><span class="pr">${CUR}${dsgPrice(dg)}${dsgSkins() ? ' + skin' : ''}</span>
+        <span class="dl"><a href="/design/" id="c-edit">Edit</a><button type="button" class="lnk" id="c-rmd">Remove</button></span></div></div>` : ''}
+    ${pk.length ? `<div class="rows">${pk.map(([k, q]) => `<div class="row"><div class="th"><img src="sheets-sm/${pkOf(k).img}.${IX}" alt="" loading="lazy" style="height:54px;width:auto;border-radius:3px"></div><div class="nm"><b style="font-family:var(--body)">${esc(pkOf(k).p.nice)}</b><span>${SZ[pkOf(k).size]} · ${pkOf(k).n} stickers · ${CUR}${pkOf(k).price}</span></div>
+      <div class="qty"><button type="button" data-p="${k}" data-d="-1" aria-label="One less ${esc(pkOf(k).label)}">−</button><span>${q}</span><button type="button" data-p="${k}" data-d="1" aria-label="One more ${esc(pkOf(k).label)}">+</button></div></div>`).join('')}</div>` : ''}
+    ${items.length ? `<div class="grp">Single stickers · ${CUR}${PRICE} each</div><div class="rows">${items.map(([c, q]) => `<div class="row"><div class="th">${spr(CODE[c].p, CODE[c].it, 50)}</div><div class="nm"><b>${c}</b><span>${esc(CODE[c].p.nice)}</span></div>
+      <div class="qty"><button type="button" data-q="${c}" data-d="-1" aria-label="One less ${c}">−</button><span>${q}</span><button type="button" data-q="${c}" data-d="1" aria-label="One more ${c}">+</button></div></div>`).join('')}</div>` : ''}
+    <div class="sum"><div class="big" style="border:0;padding:0;margin:0"><span>Total</span><span>${CUR}${money()}${dsgSkins() ? ' + skin' : ''}</span></div><div class="small"><span>Pay with MoMo when we confirm · delivery agreed with you</span></div></div>
+    <form class="ck" id="ck" novalidate>
+      <div class="grp">Your details</div>
+      <div class="fld" id="f-name"><label for="c-name">Name</label><input id="c-name" autocomplete="name" placeholder="e.g. Ama Mensah" value="${esc(who.name)}" required></div>
+      <div class="fld" id="f-phone"><label for="c-phone">WhatsApp number</label><input id="c-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="e.g. 024 123 4567" value="${esc(who.phone || '')}" required></div>
+      <div class="fld"><label for="c-loc">Location</label><input id="c-loc" autocomplete="address-level2" placeholder="e.g. East Legon" value="${esc(who.loc)}"></div>
+      <button class="btn y" type="submit" id="c-send">Place order · ${CUR}${money()}${dsgSkins() ? ' + skin' : ''}</button>
+      <p class="small ckn">We'll message you on WhatsApp to confirm, then you pay with MoMo.</p>
+    </form>
+    <button class="btn o" type="button" id="c-clear">Empty cart</button>`;
+  const keep = () => { who = { ...who, name: $('#c-name').value.trim(), phone: $('#c-phone').value.trim(), loc: $('#c-loc').value.trim() }; store.set('sl-who', who); };
+  ['#c-name', '#c-phone', '#c-loc'].forEach(s => $(s).addEventListener('input', () => { keep(); $(s).closest('.fld').classList.remove('err'); }));
+  b.onclick = e => { const k = e.target.closest('[data-q],[data-p]'); if (!k) return;
+    if (k.dataset.q) setQty(k.dataset.q, (cart[k.dataset.q] || 0) + +k.dataset.d); else setPack(k.dataset.p, (packs[k.dataset.p] || 0) + +k.dataset.d); openCart(); };
+  $('#ck').onsubmit = e => { e.preventDefault(); keep(); placeOrder(); };
+  $('#c-clear').onclick = () => { cart = {}; packs = {}; store.set('sl-dsg', null); saveCart(); updBar(); openCart(); };
+  if (dg) { $('#c-rmd').onclick = () => { store.set('sl-dsg', null); updBar(); openCart(); toast('Your pack was removed from the cart'); };
+    if ($('#c-sheet')) $('#c-sheet').onclick = () => { $('#lb-img').src = dg.sheet; $('#lb').hidden = false; }; }
   $('#cart').hidden = false;
+  if (focus) setTimeout(() => { const f = !who.name ? '#c-name' : !who.phone ? '#c-phone' : null; if (f) $(f).focus(); else $('#ck').scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 250);
+}
+const phoneOk = p => { const d = p.replace(/\D/g, ''); return d.length >= 9 && d.length <= 13; };
+const phoneIntl = p => { let d = p.replace(/\D/g, ''); if (d.startsWith('0')) d = '233' + d.slice(1); else if (d.length === 9) d = '233' + d; return d; };
+async function placeOrder() {
+  const dg = curDsg(), pk = Object.entries(packs), items = Object.entries(cart);
+  if (!who.name) { $('#f-name').classList.add('err'); $('#c-name').focus(); return toast('Add your name'); }
+  if (!phoneOk(who.phone || '')) { $('#f-phone').classList.add('err'); $('#c-phone').focus(); return toast('Add your WhatsApp number'); }
+  const btn = $('#c-send'); btn.disabled = true; btn.textContent = 'Sending your order…';
+  const body = { name: who.name, phone: phoneIntl(who.phone), loc: who.loc, total: money(),
+    packs: pk.map(([k, q]) => { const o = pkOf(k); return { key: k, label: `${o.p.nice} · ${SZ[o.size]}`, size: o.size, n: o.n, q, price: o.price }; }),
+    singles: items.map(([c, q]) => ({ code: c, q, pack: CODE[c].p.nice })),
+    design: dg ? { line: dsgLine(dg), laptop: dg.laptop || dg.name, packName: dg.packName, size: dg.sheetSize || '', n: Object.values(dg.items).flat().length, skins: Object.values(dg.skin || {}).filter(Boolean).map(id => ((SKIN[id] || [])[1] || id)),
+      layout: dg.layout || [], scaled: !!dg.scaled, sheet: dg.sheet || null, mock: dg.thumb || null, raw: dsgPack(dg) } : null };
+  try {
+    const r = await fetch('/api/order/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }), j = await r.json().catch(() => ({}));
+    if (!r.ok || !j.id) throw new Error(j.error || 'The order could not be sent');
+    store.set('sl-last', { packs: { ...packs }, cart: { ...cart }, at: Date.now() }); store.set('sl-orders', [{ id: j.id, at: Date.now(), total: body.total }, ...store.get('sl-orders', [])].slice(0, 20));
+    cart = {}; packs = {}; store.set('sl-dsg', null); saveCart(); updBar(); orderDone(j.id, body);
+  } catch (e) {
+    btn.disabled = false; btn.textContent = 'Try again';
+    const f = $('#ckfail') || Object.assign(document.createElement('div'), { id: 'ckfail', className: 'ckfail' }); btn.after(f);
+    f.innerHTML = `<b>${esc(e.message || 'No connection')}.</b> Check your internet and try again, or <a href="https://wa.me/${WA}?text=${encodeURIComponent(`Hello Skin Lab, I'd like to order (my order would not send). Name: ${who.name}`)}" target="_blank" rel="noopener">chat with us on WhatsApp</a>.`;
+  }
+}
+function orderDone(id, body) {
+  $('#c-body').innerHTML = `<div class="okd"><span class="okc">✓</span><span class="lbl">Order ${esc(id)}</span><h3>Order received, <em>${esc(body.name.split(' ')[0])}.</em></h3>
+    <p>We'll message you on WhatsApp at <b>+${esc(body.phone)}</b> to confirm your order and payment.</p>
+    <a class="btn y" href="/o/${esc(id)}/">See my order</a><button class="btn o" type="button" id="okb">Back to the shop</button></div>`;
+  $('#okb').onclick = () => { $('#cart').hidden = true; location.hash = ''; }; buzz();
 }
 function reorder() { const l = store.get('sl-last', null); if (!l) return; cart = {}; packs = {};
   Object.entries(l.cart || {}).forEach(([c, q]) => { if (CODE[c]) cart[c] = q; }); Object.entries(l.packs || {}).forEach(([k, q]) => { if (pkOf(k)) packs[k] = q; });
   saveCart(); updBar(); openCart(); }
 // one tap: everything picked goes to WhatsApp as one message; the cart is still there to change amounts
-async function orderNow(pk = Object.entries(packs), items = Object.entries(cart), noDsg = false) {
-  if (!pk.length && !items.length && (noDsg || !curDsg())) return toast('Pick a sheet or a sticker first');
-  store.set('sl-last', { packs: Object.fromEntries(pk), cart: Object.fromEntries(items), at: Date.now() }); buzz();
-  const u = waLink(await sealedText(pk, items, noDsg)); if (!window.open(u, '_blank', 'noopener')) location.href = u; }
-$('#bar-go').onclick = () => orderNow(); $('#bar').querySelector('.t').onclick = openCart; $('#t-cart').onclick = openCart; $('#nv-cart').onclick = openCart;
+function orderNow(pk = [], items = []) {   // add, then straight to the checkout form
+  pk.forEach(([k, q]) => { if (!packs[k]) packs[k] = q; }); items.forEach(([c, q]) => { if (!cart[c]) cart[c] = q; });
+  saveCart(); updBar(); buzz(); openCart(true); }
+$('#bar-go').onclick = () => openCart(true); $('#bar').querySelector('.t').onclick = openCart; $('#t-cart').onclick = openCart; $('#nv-cart').onclick = openCart;
 $('#c-x').onclick = () => $('#cart').hidden = true;
 
 // send your inspo
@@ -269,11 +297,11 @@ function vPack(p) {
           <button type="button" role="radio" data-sz="4"><b>A4</b><span>Big sheet</span><span>${p.items.length} stickers</span><em>${CUR}${p.price}</em></button></div>`
         : p.size === 'XL' ? `<div class="sizes one"><div class="on"><b>XL</b><span>One big sticker, about 18 cm</span><span>for the middle of your lid</span><em>${CUR}${p.price}</em></div></div>`
         : `<div class="sizes one"><div class="on"><b>A3</b><span>Pick &amp; mix sheet</span><span>${p.items.length} stickers</span><em>${CUR}${p.price}</em></div></div>`}
-        <button class="btn wa" type="button" id="orderpack">${waIcon}<span id="op-t">Order on WhatsApp</span></button>
+        <button class="btn wa" type="button" id="orderpack"><span id="op-t">Order</span></button>
         <button class="btn o" type="button" data-packbtn="${p.id}" id="addpack"></button>
       </div>
     </div>
-    <div class="sech" style="margin-top:26px"><div><h2 style="font-size:clamp(32px,8vw,48px)">What's <em>inside</em></h2><p class="sub">Only want a few? Tap the ones you like (${CUR}${PRICE} each), then <b>Order now</b>. Hold one to see it bigger.</p></div></div>
+    <div class="sech" style="margin-top:26px"><div><h2 style="font-size:clamp(32px,8vw,48px)">What's <em>inside</em></h2><p class="sub">Only want a few? Tap the ones you like (${CUR}${PRICE} each), then <b>Checkout</b>. Hold one to see it bigger.</p></div></div>
     <div class="grid ${lt ? 'lt-grid' : ''}" id="grid" style="background:${p.bg}"></div>
   </section>${footer}`;
   const g = $('#grid'), cols = getComputedStyle(g).gridTemplateColumns.split(' ').length, cell = (g.clientWidth - 20 - (cols - 1) * 8) / cols;
@@ -289,11 +317,11 @@ function vPack(p) {
   const showSize = () => { const o = pkOf(key); $('#addpack').dataset.packbtn = key; updBar();
     document.querySelectorAll('#sizes [data-sz]').forEach(b => { const on = (b.dataset.sz === '5') === o.a5; b.classList.toggle('on', on); b.setAttribute('aria-checked', on); });
     const im = $('#sheetim'); im.src = `sheets/${o.img}.${IX}`; im.width = o.a5 ? p.sw5 : p.sw; im.height = o.a5 ? p.sh5 : p.sh;
-    $('#op-t').textContent = `Order ${o.size} · ${CUR}${o.price} on WhatsApp`;
+    $('#op-t').textContent = `Order ${o.size} · ${CUR}${o.price}`;
     const in5 = new Set(p.a5 || []); g.querySelectorAll('.tile').forEach(t => t.classList.toggle('dim', o.a5 && !in5.has(t.dataset.c))); };
   if ($('#sizes')) $('#sizes').onclick = e => { const b = e.target.closest('[data-sz]'); if (!b) return; key = b.dataset.sz === '5' ? p.id + '~5' : p.id; store.set('sl-size', b.dataset.sz); buzz(); showSize(); };
   $('#addpack').onclick = () => { setPack(key, (packs[key] || 0) + 1); buzz(); toast(`${pkOf(key).label} added. Tap Order now when you're ready.`); };
-  $('#orderpack').onclick = () => orderNow([[key, 1]], [], true);
+  $('#orderpack').onclick = () => orderNow([[key, 1]], []);
   $('#toinspo') && ($('#toinspo').onclick = openInspo);
   $('#zoom').onclick = () => { $('#lb-img').src = `sheets/${pkOf(key).img}.${IX}`; $('#lb').hidden = false; };
   showSize();

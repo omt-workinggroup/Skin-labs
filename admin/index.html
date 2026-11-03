@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#000000">
+<title>Orders · Skin Lab admin</title><link rel="icon" href="/favicon.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap">
+<style>
+:root{--fg:#fff;--mute:#8c8c8c;--line:rgba(255,255,255,.12);--line2:rgba(255,255,255,.28);--g:#1faa53;--gut:max(16px,env(safe-area-inset-left,0px));--serif:'Instrument Serif',Georgia,serif;--mono:'Geist Mono',ui-monospace,monospace}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}[hidden]{display:none!important}
+html,body{background:#000;color:#fff;font:15px/1.45 Geist,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}button{background:none;border:0;cursor:pointer;padding:0}a{color:inherit}
+.lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:10px;height:58px;padding:0 var(--gut);background:rgba(0,0,0,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.top b{font-weight:700;font-size:19px;letter-spacing:-.045em}.top .r{display:flex;gap:6px;align-items:center}
+.ib{height:36px;padding:0 12px;border:1px solid var(--line2);font-size:13px}
+.w{max-width:980px;margin:0 auto;padding:16px var(--gut) 80px}
+h1{font-family:var(--serif);font-weight:400;font-size:clamp(40px,10vw,64px);line-height:.95;margin:10px 0 4px}h1 em{font-style:italic}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin:18px 0 14px}
+.stats div{background:#000;padding:12px}.stats b{display:block;font-size:24px;font-weight:600;letter-spacing:-.02em}
+.tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 calc(-1*var(--gut));padding:0 var(--gut)}.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:none;height:36px;padding:0 14px;border:1px solid var(--line);font-size:13px;color:#ccc}.tabs .on{background:#fff;color:#000;border-color:#fff}
+.tabs i{font-style:normal;font-family:var(--mono);font-size:10px;opacity:.6;margin-left:5px}
+.srch{width:100%;height:46px;background:none;border:1px solid var(--line2);padding:0 14px;margin:10px 0 6px;outline:none;font-size:16px}
+.alert{border:1px solid var(--line2);padding:12px 14px;margin:14px 0 0;font-size:13.5px;color:#ccc}.alert b{color:#fff}
+.list{display:grid;gap:10px;margin-top:12px}
+.card{display:grid;grid-template-columns:84px minmax(0,1fr);gap:12px;text-align:left;border:1px solid var(--line);padding:10px;width:100%;position:relative}
+.card.new{border-color:#fff}.card .pic{width:84px;height:110px;background:#151515 center/cover;display:grid;place-items:center;font-family:var(--mono);font-size:10px;color:#666}
+.card b{font-size:16px;font-weight:600}.card .meta{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.card p{color:#aaa;font-size:13px;margin-top:2px}.card .tot{font-weight:600;font-size:16px;margin-top:6px}
+.pill{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 7px;border:1px solid var(--line2);white-space:nowrap}
+.pill.new{background:#fff;color:#000;border-color:#fff}.pill.confirmed{border-color:#4cc2ff;color:#4cc2ff}.pill.printing{border-color:#ffd21f;color:#ffd21f}.pill.on-the-way{border-color:#ff9f43;color:#ff9f43}.pill.delivered{border-color:var(--g);color:var(--g)}.pill.cancelled{color:#777}
+.empty{border:1px dashed var(--line2);padding:30px 16px;text-align:center;color:#aaa}
+/* detail */
+.dv{position:fixed;inset:0;z-index:50;background:#000;overflow:auto;padding:0 0 60px}
+.dv .w{padding-top:0}.dhead{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;height:58px;padding:0 var(--gut);background:rgba(0,0,0,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.pics{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:16px 0}.pics a{display:block;background:#151515}.pics img{width:100%;display:block}
+.pics small{display:block;padding:6px 8px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#aaa}
+.cust{display:grid;gap:4px;border:1px solid var(--line);padding:14px}.cust b{font-size:20px}.cust a{font-size:16px}
+.sec{margin-top:18px}.sec h3{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);font-weight:400;margin-bottom:8px}
+.rows{border-top:1px solid var(--line)}.rows div{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}.rows small{color:#999;font-family:var(--mono);font-size:11px}
+.st{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.st button{height:44px;border:1px solid var(--line2);font-size:13px}.st button.on{background:#fff;color:#000;border-color:#fff}
+.wa{display:flex;align-items:center;justify-content:center;gap:10px;height:52px;background:var(--g);color:#fff;font-weight:600;text-decoration:none;margin-top:10px}
+.btn{display:flex;align-items:center;justify-content:center;height:46px;border:1px solid var(--line2);text-decoration:none;font-size:14px;margin-top:8px}
+.msg{width:100%;min-height:96px;background:#0d0d0d;border:1px solid var(--line2);padding:12px;font:14px/1.45 Geist,sans-serif;color:#fff;resize:vertical}
+.login{max-width:420px;margin:12vh auto 0;padding:0 var(--gut);display:grid;gap:12px}.login input{height:54px;background:none;border:1px solid var(--line2);padding:0 16px;font-size:17px;outline:none}
+.login button{height:54px;background:#fff;color:#000;font-weight:600}.err{color:#ff6b6b;font-size:14px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#fff;color:#000;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:9px 14px;z-index:90}
+@media (min-width:760px){.list{grid-template-columns:1fr 1fr}}
+</style></head><body>
+<div id="app"></div><div class="toast" id="toast" hidden></div>
+<script>
+const $ = s => document.querySelector(s), app = $('#app');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+const toast = m => { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 1800); };
+const KEY = () => { try { return localStorage.getItem('sl-admin') || ''; } catch (e) { return ''; } };
+const ST = { new: 'New', confirmed: 'Confirmed', printing: 'Printing', 'on-the-way': 'On the way', delivered: 'Delivered', cancelled: 'Cancelled' };
+const ACTIVE = ['confirmed', 'printing', 'on-the-way'];
+let orders = [], filter = 'new', q = '', alerts = 'off', seen = new Set(JSON.parse(localStorage.getItem('sl-admin-seen') || '[]')), timer = 0;
+const ago = t => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : new Date(t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }); };
+const first = n => (n || '').split(' ')[0];
+const what = o => [o.design ? `${o.design.packName || 'Custom pack'} (${o.design.size || '–'}, ${o.design.n} stickers)` : '', ...(o.packs || []).map(p => `${p.q}× ${p.label}`), (o.singles || []).length ? `${o.singles.reduce((a, s) => a + s.q, 0)} singles` : ''].filter(Boolean).join(' · ');
+async function api(path, opt = {}) { const r = await fetch(path, { ...opt, headers: { 'Content-Type': 'application/json', 'x-admin-key': KEY(), ...(opt.headers || {}) } }); if (r.status === 401) throw Object.assign(new Error('Wrong password'), { code: 401 }); const j = await r.json(); if (!r.ok) throw new Error(j.error || 'Error'); return j; }
+
+function login(msg) {
+  clearInterval(timer);
+  app.innerHTML = `<div class="login"><span class="lbl">Skin Lab · admin</span><h1>Your <em>orders.</em></h1>
+    <input id="pw" type="password" placeholder="Password" autocomplete="current-password"><button id="go">Open</button><p class="err" id="er">${esc(msg || '')}</p></div>`;
+  const go = async () => { try { localStorage.setItem('sl-admin', $('#pw').value.trim()); } catch (e) {} $('#go').textContent = 'Opening…'; await load(true); };
+  $('#go').onclick = go; $('#pw').onkeydown = e => { if (e.key === 'Enter') go(); }; $('#pw').focus();
+}
+async function load(first) {
+  try { const j = await api('/api/orders/'); const before = new Set(orders.map(o => o.id)); orders = j.orders; alerts = j.alerts;
+    const fresh = orders.filter(o => o.status === 'new' && !before.has(o.id) && before.size);
+    if (fresh.length) { ding(); toast(`${fresh.length} new order${fresh.length > 1 ? 's' : ''}`); }
+    if (first) { list(); clearInterval(timer); timer = setInterval(() => load(), 20000); const h = decodeURIComponent(location.hash.slice(1)); if (h) open(h); } else if (!$('.dv')) list(); else badge();
+  } catch (e) { if (e.code === 401) { try { localStorage.removeItem('sl-admin'); } catch (x) {} login('Wrong password'); } else if (first) login(e.message); }
+}
+function ding() { try { const c = new (window.AudioContext || window.webkitAudioContext)(), o = c.createOscillator(), g = c.createGain(); o.frequency.value = 880; o.connect(g); g.connect(c.destination); g.gain.setValueAtTime(.2, c.currentTime); g.gain.exponentialRampToValueAtTime(.001, c.currentTime + .6); o.start(); o.stop(c.currentTime + .6); } catch (e) {} try { navigator.vibrate && navigator.vibrate([80, 60, 80]); } catch (e) {} }
+function badge() { const n = orders.filter(o => o.status === 'new').length; document.title = (n ? `(${n}) ` : '') + 'Orders · Skin Lab admin'; }
+function list() {
+  badge(); const cnt = { new: 0, active: 0, done: 0, all: orders.length }; orders.forEach(o => { if (o.status === 'new') cnt.new++; else if (ACTIVE.includes(o.status)) cnt.active++; else cnt.done++; });
+  const today = orders.filter(o => Date.now() - o.at < 864e5), money = orders.filter(o => o.status !== 'cancelled').reduce((a, o) => a + (o.total || 0), 0);
+  const show = orders.filter(o => (filter === 'all' || (filter === 'new' ? o.status === 'new' : filter === 'active' ? ACTIVE.includes(o.status) : !ACTIVE.includes(o.status) && o.status !== 'new'))
+    && (!q || `${o.id} ${o.name} ${o.phone} ${o.loc}`.toLowerCase().includes(q.toLowerCase())));
+  app.innerHTML = `<header class="top"><b>Skin Lab</b><div class="r"><span class="lbl">Admin</span><button class="ib" id="rf">Refresh</button><button class="ib" id="lo">Log out</button></div></header>
+  <div class="w"><span class="lbl">${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}</span><h1>Orders<em>.</em></h1>
+    <div class="stats"><div><b>${cnt.new}</b><span class="lbl">New</span></div><div><b>${cnt.active}</b><span class="lbl">In progress</span></div><div><b>${today.length}</b><span class="lbl">Today</span></div><div><b>₵${money}</b><span class="lbl">All time</span></div></div>
+    <div class="tabs" id="tabs">${[['new', 'New', cnt.new], ['active', 'In progress', cnt.active], ['done', 'Done', cnt.done], ['all', 'All', cnt.all]].map(([k, n, c]) => `<button class="${k === filter ? 'on' : ''}" data-f="${k}">${n}<i>${c}</i></button>`).join('')}</div>
+    <input class="srch" id="q" placeholder="Search name, number, order…" value="${esc(q)}">
+    <div class="list">${show.length ? show.map(o => { const pic = o.design && (o.design.sheet || o.design.mock);
+      return `<button class="card ${o.status === 'new' ? 'new' : ''}" data-id="${o.id}"><span class="pic" ${pic ? `style="background-image:url('${esc(pic)}')"` : ''}>${pic ? '' : 'PACKS'}</span>
+        <span><span class="meta"><span><b>${esc(o.name)}</b><p>${esc(o.id)} · ${ago(o.at)}</p></span><span class="pill ${o.status}">${ST[o.status]}</span></span>
+        <p>${esc(what(o))}</p><p>${esc(o.loc || '')}</p><div class="tot">₵${o.total}${o.skinOnDM ? ' + skin' : ''}</div></span></button>`; }).join('')
+      : `<div class="empty">${orders.length ? 'Nothing here.' : 'No orders yet. They land here the moment a customer taps “Place order”.'}</div>`}</div>
+    ${alerts === 'on' ? '' : `<div class="alert"><b>WhatsApp alerts are off.</b> New orders still appear here (keep this page open and it rings). To get a WhatsApp message for every order, finish the one-time CallMeBot step from the setup note.</div>`}
+  </div>`;
+  $('#tabs').onclick = e => { const b = e.target.closest('[data-f]'); if (b) { filter = b.dataset.f; list(); } };
+  $('#q').oninput = e => { q = e.target.value; const p = e.target.selectionStart; list(); const i = $('#q'); i.focus(); i.setSelectionRange(p, p); };
+  $('#rf').onclick = () => load(); $('#lo').onclick = () => { try { localStorage.removeItem('sl-admin'); } catch (e) {} login(); };
+  app.querySelectorAll('.card').forEach(c => c.onclick = () => open(c.dataset.id));
+}
+const MSG = {
+  confirmed: o => `Hi ${first(o.name)}, it's Skin Lab 👋\nYour order ${o.id} is confirmed: ${what(o)}.\nTotal: GH₵${o.total}${o.skinOnDM ? ' + skin (price below)' : ''}.\nPlease pay with MoMo and send the screenshot here, then we start printing.`,
+  printing: o => `Hi ${first(o.name)}, your Skin Lab order ${o.id} is printing now 🖨️ We'll tell you when it's on the way.`,
+  'on-the-way': o => `Hi ${first(o.name)}, your Skin Lab order ${o.id} is on the way 🚚 We'll call you when we're close${o.loc ? ' to ' + o.loc : ''}.`,
+  delivered: o => `Hi ${first(o.name)}, enjoy your stickers! 🙌 Show us your laptop: tag @baidencreatives on Instagram. Thanks for ordering from Skin Lab.`,
+  cancelled: o => `Hi ${first(o.name)}, about your Skin Lab order ${o.id}: `,
+  new: o => `Hi ${first(o.name)}, thanks for your Skin Lab order ${o.id}! `,
+};
+function open(id) {
+  const o = orders.find(x => x.id === id); if (!o) return; history.replaceState(null, '', '#' + id);
+  if (!seen.has(id)) { seen.add(id); try { localStorage.setItem('sl-admin-seen', JSON.stringify([...seen].slice(-500))); } catch (e) {} }
+  const d = o.design, next = { new: 'confirmed', confirmed: 'printing', printing: 'on-the-way', 'on-the-way': 'delivered' }[o.status] || o.status;
+  const printList = d ? (d.layout || []).map(l => `${l.c}  ${(Math.max(l.w, l.h) / 10).toFixed(1)} cm`).join('\n') : '';
+  const v = document.createElement('div'); v.className = 'dv';
+  v.innerHTML = `<div class="dhead"><button class="ib" id="bk">← Orders</button><span class="pill ${o.status}">${ST[o.status]}</span></div><div class="w">
+    <span class="lbl">${esc(o.id)} · ${new Date(o.at).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
+    <h1>${esc(first(o.name))}<em>’s order.</em></h1>
+    <div class="cust"><b>${esc(o.name)}</b><a href="tel:+${esc(o.phone)}">+${esc(o.phone)}</a><span class="lbl">${esc(o.loc || 'No location given')}</span></div>
+    ${d ? `<div class="pics">${d.sheet ? `<a href="${esc(d.sheet)}" target="_blank" rel="noopener"><img src="${esc(d.sheet)}" alt=""><small>${esc(d.packName || 'Custom pack')} · ${esc(d.size)} sheet${d.scaled ? ' · scaled to fit' : ''} · tap for full size</small></a>` : ''}${d.mock ? `<a href="${esc(d.mock)}" target="_blank" rel="noopener"><img src="${esc(d.mock)}" alt=""><small>${esc(d.laptop)}</small></a>` : ''}</div>` : ''}
+    <div class="sec"><h3>What they ordered</h3><div class="rows">
+      ${d ? `<div><span>${esc(d.packName || 'Custom pack')}<br><small>${esc(d.size)} sheet · ${d.n} stickers${d.skins && d.skins.length ? ' · skin: ' + esc(d.skins.join(', ')) : ''}</small></span><b>₵${d.n * 3}</b></div>` : ''}
+      ${(o.packs || []).map(p => `<div><span>${esc(p.label)}<br><small>${p.n} stickers</small></span><b>${p.q} × ₵${p.price}</b></div>`).join('')}
+      ${(o.singles || []).map(s => `<div><span>${esc(s.code)}<br><small>${esc(s.pack)}</small></span><b>× ${s.q}</b></div>`).join('')}
+      <div><b>Total</b><b>₵${o.total}${o.skinOnDM ? ' + skin' : ''}</b></div></div></div>
+    ${printList ? `<div class="sec"><h3>Print list for the custom sheet</h3><textarea class="msg" readonly style="min-height:120px;font-family:var(--mono);font-size:12px">${esc(printList)}</textarea><button class="btn" id="cpl">Copy print list</button></div>` : ''}
+    <div class="sec"><h3>Status</h3><div class="st" id="st">${Object.entries(ST).map(([k, n]) => `<button data-s="${k}" class="${k === o.status ? 'on' : ''}">${n}</button>`).join('')}</div></div>
+    <div class="sec"><h3>Message ${esc(first(o.name))} on WhatsApp</h3><textarea class="msg" id="msg">${esc((MSG[next] || MSG.new)(o))}</textarea>
+      <a class="wa" id="wa" target="_blank" rel="noopener">Send on WhatsApp</a>
+      <a class="btn" href="/o/${esc(o.id)}/" target="_blank" rel="noopener">The customer's order page</a>
+      <button class="btn" id="del" style="width:100%;color:#ff6b6b;border-color:rgba(255,107,107,.4);margin-top:28px">Delete this order</button></div></div>`;
+  document.body.appendChild(v); document.body.style.overflow = 'hidden';
+  const wa = () => { $('#wa').href = `https://wa.me/${o.phone}?text=${encodeURIComponent($('#msg').value)}`; }; wa(); $('#msg').oninput = wa;
+  $('#bk').onclick = () => { v.remove(); document.body.style.overflow = ''; history.replaceState(null, '', location.pathname); list(); };
+  if ($('#cpl')) $('#cpl').onclick = () => { navigator.clipboard.writeText(printList).then(() => toast('Copied')); };
+  $('#del').onclick = async () => { if (!confirm(`Delete order ${o.id} from ${o.name}? This can't be undone.`)) return;
+    try { await api('/api/delete/', { method: 'POST', body: JSON.stringify({ id: o.id }) }); orders = orders.filter(x => x.id !== o.id); v.remove(); document.body.style.overflow = ''; history.replaceState(null, '', location.pathname); list(); toast('Deleted'); } catch (x) { toast(x.message); } };
+  $('#st').onclick = async e => { const b = e.target.closest('[data-s]'); if (!b || b.dataset.s === o.status) return; b.textContent = '…';
+    try { const j = await api('/api/status/', { method: 'POST', body: JSON.stringify({ id: o.id, status: b.dataset.s }) }); Object.assign(o, j.order); v.remove(); document.body.style.overflow = ''; open(o.id);
+      $('#msg').value = (MSG[o.status] || MSG.new)(o); wa(); toast(ST[o.status]); } catch (x) { toast(x.message); b.textContent = ST[b.dataset.s]; } };
+}
+if (KEY()) { app.innerHTML = '<div class="login"><span class="lbl">Opening your orders…</span></div>'; load(true); } else login();
+</script></body></html>

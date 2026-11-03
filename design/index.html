@@ -131,6 +131,12 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 .tbar button{height:34px;min-width:36px;padding:0 9px;border-radius:7px;display:grid;place-items:center;font-size:13px;font-weight:600}.tbar button:active{background:#eee}.tbar button.w{background:#111;color:#fff;margin-left:2px}
 .tbar span{font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;padding:0 8px;color:#555}
 .selbar{display:none!important}
+.pk{position:fixed;inset:0;z-index:250;background:rgba(0,0,0,.72);display:grid;place-items:end center;backdrop-filter:blur(6px)}.pk[hidden]{display:none}
+.pkc{width:min(560px,100%);max-height:94dvh;overflow:auto;background:#0b0b0b;border:1px solid var(--line2);padding:16px var(--gut) calc(16px + env(safe-area-inset-bottom,0px));display:grid;gap:12px}
+@media (min-width:700px){.pk{place-items:center}}
+.pkh{display:flex;justify-content:space-between;align-items:center}.pkh button{width:40px;height:40px;font-size:18px}
+.pkn{display:grid;gap:6px}.pkn input{height:50px;background:none;border:1px solid var(--line2);color:#fff;font:16px var(--body);padding:0 14px;outline:none}
+.pki{min-height:200px;display:grid;place-items:center;background:#151515}.pki img{width:100%;display:block}
 </style>
 <script type="importmap">{"imports":{"three":"/vendor/three/three.module.min.js"}}</script>
 </head><body>
@@ -536,8 +542,10 @@ function tfAct(a) { const L_ = items[surf]; if (sel < 0) return; snap(); const o
   refresh(); schedule(surf); }
 const save3 = () => { if (LL) return; try { localStorage.setItem('sl-design3', JSON.stringify({ i: L && L.i, n: L && `${L.brand} ${L.name}`, col, items, skin })); } catch (e) {} };
 const store = { get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
-function thumb(w = 420) {
-  R.render(scene, cam); return thumbOf(w); }
+function thumb(w = 420) {   // picture of the side with the design, then the camera goes back where the customer left it
+  const sv = ['lid', 'kb', 'bot'].reduce((m, k) => items[k].length + (skin[k] ? 3 : 0) > items[m].length + (skin[m] ? 3 : 0) ? k : m, 'lid');
+  const p0 = cam.position.clone(), t0 = ctl.target.clone(), a0 = lidA, [hp, ht] = viewPos(sv); cam.position.copy(hp); ctl.target.copy(ht); cam.lookAt(ht); setLid(VIEWS[sv][1]);
+  const tf = $('#tf'); if (tf) tf.hidden = true; R.render(scene, cam); const t = thumbOf(w); cam.position.copy(p0); ctl.target.copy(t0); cam.lookAt(t0); setLid(a0); kick(); return t; }
 function thumbOf(w) { const c = document.createElement('canvas'), src = R.domElement; c.width = w; c.height = Math.round(w * src.height / src.width);
   const g = c.getContext('2d'); g.fillStyle = '#f4f4f4'; g.fillRect(0, 0, c.width, c.height); g.drawImage(src, 0, 0, c.width, c.height); return c.toDataURL('image/jpeg', .72); }
 const v3 = () => ({ v: 3, name: `${L.brand} ${L.name}`, li: L.i, col, skin: { ...skin }, items: JSON.parse(JSON.stringify(items)) });
@@ -590,10 +598,7 @@ async function vEditor() {
   $('#undo').onclick = () => { const h = hist.pop(); if (!h) return toast('Nothing to undo'); const o = JSON.parse(h); Object.assign(items, o.items); Object.assign(skin, o.skin); sel = -1; refresh(); ['lid', 'kb', 'bot'].forEach(x => paint(x)); };
   $('#shot').onclick = () => { const n = Object.values(items).flat().length + Object.values(skin).filter(Boolean).length; if (!n) return toast('Add a sticker or a skin first');
     saveMine(v3()); toast('Saved to Inspo → Mine'); };
-  $('#cart').onclick = () => { const n = Object.values(items).flat().length, k = Object.values(skin).filter(Boolean).length; if (!n && !k) return toast('Add a sticker or a skin first');
-    const cart = store.get('sl-cart', {}), counts = {}; Object.values(items).flat().forEach(o => counts[o.c] = (counts[o.c] || 0) + 1);
-    Object.entries(counts).forEach(([c, q]) => cart[c] = Math.max(cart[c] || 0, q)); store.set('sl-cart', cart);
-    const d = v3(); d.thumb = thumb(); store.set('sl-dsg', d); saveMine(d); location.href = '/#cart'; };
+  $('#cart').onclick = () => { const n = Object.values(items).flat().length, k = Object.values(skin).filter(Boolean).length; if (!n && !k) return toast('Add a sticker or a skin first'); sel = -1; refresh(); schedule(surf); packSheet(); };
   pane(); refresh();
 }
 const toPhotoOrGL = () => false;
@@ -606,6 +611,61 @@ function bomb(pk) { snap(); const s = surf, rnd = (a, b) => a + Math.random() * 
   cells.sort(() => Math.random() - .5);
   const add = list.map((c, i) => { const [x, y] = cells[i % cells.length]; return { c, x: Math.min(.97, Math.max(.03, x + rnd(-.22, .22) * cw)), y: Math.min(y1, Math.max(y0, y + rnd(-.22, .22) * ch)), s: cw * rnd(1.05, 1.35), r: Math.round(rnd(-14, 14)) }; });
   items[s].push(...add); sel = -1; refresh(); popIn(add, s, 45); if (!toPhotoOrGL()) go(s); toast(`${add.length} stickers on the ${SN[s].toLowerCase()}`); }
+// ---------- your own pack: the stickers from the laptop laid out on a Skin Lab sheet, sized A5 / A4 / A3 ----------
+const SHEETS = [['A5', 148, 210], ['A4', 210, 297], ['A3', 297, 420]];
+function layoutSheet(list) {   // list: [{c, w, h}] in mm (real size on the laptop). Shelf packing, biggest first.
+  const fit = (W, H, k) => { const hd = W * .15, x0 = 6, y0 = hd + 6, x1 = W - 6, y1 = H - 10, g = 2.2; let x = x0, y = y0, row = 0; const out = [];
+    for (const t of [...list].sort((a, b) => b.h - a.h || b.w - a.w)) { const w = t.w * k, h = t.h * k;
+      if (w > x1 - x0) return null; if (x + w > x1) { x = x0; y += row + g; row = 0; } if (y + h > y1) return null;
+      out.push({ c: t.c, x: +x.toFixed(1), y: +y.toFixed(1), w: +w.toFixed(1), h: +h.toFixed(1) }); x += w + g; row = Math.max(row, h); }
+    // centre the block
+    const bx = Math.max(...out.map(o => o.x + o.w)), by = Math.max(...out.map(o => o.y + o.h)), dx = (x1 - bx - x0 + x0) / 2 + 0, dy = (y1 - by) / 2;
+    out.forEach(o => { o.x = +(o.x + (x1 - bx) / 2).toFixed(1); o.y = +(o.y + dy).toFixed(1); }); return out; };
+  for (const [n, W, H] of SHEETS) { const r = fit(W, H, 1); if (r) return { size: n, W, H, items: r, scaled: false }; }
+  for (let k = .95; k > .2; k -= .05) { const r = fit(297, 420, k); if (r) return { size: 'A3', W: 297, H: 420, items: r, scaled: true }; }
+  return null; }
+function stickerImg(c) { const m = HDM[c]; if (m && m.userData.ok) return { im: m.map.image, sx: 0, sy: 0, sw: m.map.image.width, sh: m.map.image.height };
+  const { p, it } = CODE[c], im = ready[p.id]; return im ? { im, sx: it[1], sy: it[2], sw: it[3], sh: it[4] } : null; }
+async function drawSheet(name) {
+  const all = Object.values(items).flat(); if (!all.length) return null;
+  await Promise.all(all.map(o => img(`/hd/${o.c}.avif`).then(im => { if (im) hdMat(o.c); })));
+  await new Promise(r => setTimeout(r, 60));
+  const list = all.map(o => { const { it } = CODE[o.c], L_ = cmOf(o) * 10, a = it[3] / it[4]; return { c: o.c, w: a >= 1 ? L_ : L_ * a, h: a >= 1 ? L_ / a : L_ }; });
+  const lay = layoutSheet(list); if (!lay) return null;
+  const PX = 1240, k = PX / lay.W, cv = document.createElement('canvas'); cv.width = PX; cv.height = Math.round(lay.H * k); const g = cv.getContext('2d'), W = cv.width, H = cv.height, hd = lay.W * .15 * k;
+  g.fillStyle = '#efefef'; g.fillRect(0, 0, W, H); g.fillStyle = '#0a0a0a'; g.fillRect(0, 0, W, hd);
+  const m = W * .04; g.strokeStyle = '#fff'; g.lineWidth = W * .004; rr(g, m, hd * .17, W - 2 * m, hd * .66, hd * .14); g.stroke();
+  g.textBaseline = 'middle'; g.fillStyle = '#fff'; g.font = `800 ${hd * .26}px Geist, Arial, sans-serif`; g.fillText('SKIN', m * 1.6, hd * .44); const sw = g.measureText('SKIN ').width;
+  g.fillStyle = '#FFD21F'; g.fillText('LAB', m * 1.6 + sw, hd * .44); g.fillStyle = '#bbb'; g.font = `italic 400 ${hd * .1}px Georgia, serif`; g.fillText('by Baiden Creatives', m * 1.6, hd * .64);
+  const tx = W * .36; g.fillStyle = 'rgba(255,255,255,.25)'; g.fillRect(tx - W * .025, hd * .27, 2, hd * .46);
+  g.fillStyle = '#fff'; g.font = `800 ${hd * .17}px Geist, Arial, sans-serif`; let t = (name || 'My pack').toUpperCase(); while (g.measureText(t).width > W - tx - m * 1.6 && t.length > 4) t = t.slice(0, -2) + '…'; g.fillText(t, tx, hd * .38);
+  g.font = `500 ${hd * .085}px Geist, Arial, sans-serif`; g.fillStyle = '#cfcfcf'; g.fillText(`custom pack · ${L.brand} ${L.name.replace(/ \(.+\)$/, '')}`, tx, hd * .55);
+  let cx = tx; g.font = `700 ${hd * .07}px Geist, Arial, sans-serif`;
+  for (const c of [`${all.length} STICKERS`, `${lay.size} SHEET`, 'PEEL • STICK • FLEX']) { const w = g.measureText(c).width + hd * .14; g.strokeStyle = '#fff'; g.lineWidth = 2; rr(g, cx, hd * .63, w, hd * .13, hd * .065); g.stroke(); g.fillStyle = '#fff'; g.fillText(c, cx + hd * .07, hd * .698); cx += w + hd * .05; }
+  for (const o of lay.items) { const s = stickerImg(o.c); if (!s) continue; g.imageSmoothingQuality = 'high'; g.drawImage(s.im, s.sx, s.sy, s.sw, s.sh, o.x * k, o.y * k, o.w * k, o.h * k); }
+  g.fillStyle = '#111'; g.font = `700 ${W * .014}px Geist, Arial, sans-serif`; g.textAlign = 'left'; g.fillText('SKIN LAB', m, H - W * .022); g.textAlign = 'right'; g.font = `500 ${W * .011}px Geist, Arial, sans-serif`; g.fillStyle = '#555';
+  g.fillText(`${lay.size} · ${lay.scaled ? 'scaled to fit A3' : 'real size'} · printed in Accra`, W - m, H - W * .022); g.textAlign = 'left';
+  return { img: cv.toDataURL('image/jpeg', .86), size: lay.size, scaled: lay.scaled, layout: lay.items, n: all.length };
+}
+async function packSheet() {
+  const who = store.get('sl-who', {}) || {}, first = (who.name || '').split(' ')[0];
+  let box = $('#pk'); if (!box) { box = document.createElement('div'); box.id = 'pk'; box.className = 'pk'; document.body.appendChild(box); }
+  box.innerHTML = `<div class="pkc"><div class="pkh"><span class="lbl">Your own pack</span><button id="pkx" aria-label="Close">✕</button></div>
+    <label class="pkn"><span class="lbl">Name your pack</span><input id="pkname" maxlength="28" value="${esc(first ? first + "'s Pack" : '')}" placeholder="e.g. Ama's Pack"></label>
+    <div class="pki" id="pki"><span class="lbl">Laying out your stickers…</span></div><p class="lbl" id="pks"></p>
+    <button class="btn y" id="pkgo" disabled>Add to cart</button></div>`;
+  box.hidden = false; document.body.style.overflow = 'hidden';
+  const close = () => { box.hidden = true; document.body.style.overflow = ''; }; $('#pkx').onclick = close; box.onclick = e => { if (e.target === box) close(); };
+  let res = null, tm = 0; const gen = async () => { res = await drawSheet($('#pkname').value.trim()); const n = Object.values(items).flat().length;
+    if (res) { $('#pki').innerHTML = `<img src="${res.img}" alt="Your sticker sheet">`; $('#pks').textContent = `${res.size} sheet · ${res.n} stickers${res.scaled ? ' · scaled to fit' : ' · real size'}`; }
+    else $('#pki').innerHTML = `<span class="lbl">${n ? 'Could not lay out the stickers' : 'Skin only, no sticker sheet'}</span>`;
+    $('#pkgo').disabled = false; };
+  $('#pkname').oninput = () => { clearTimeout(tm); tm = setTimeout(gen, 350); }; await gen();
+  $('#pkgo').onclick = () => { const d = v3(), name = $('#pkname').value.trim(); d.thumb = thumb(640); d.packName = name || 'My pack'; d.laptop = `${L.brand} ${L.name}`;
+    d.n = Object.values(items).flat().length; d.price = d.n * 3;
+    if (res) { d.sheet = res.img; d.sheetSize = res.size; d.layout = res.layout; d.scaled = res.scaled; }
+    store.set('sl-dsg', d); const m = { ...d }; delete m.sheet; saveMine(m); location.href = '/#cart'; };
+}
 function saveMine(d) { const mine = store.get('sl-mine', []).filter(m => m.id !== saveMine.id); saveMine.id ||= Date.now().toString(36);
   mine.unshift({ id: saveMine.id, at: Date.now(), name: d.name, d, thumb: d.thumb || thumb() }); store.set('sl-mine', mine.slice(0, 12)); }
 function refresh() { save3();
