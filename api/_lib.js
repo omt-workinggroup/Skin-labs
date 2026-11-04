@@ -2,7 +2,7 @@
 import { list, put, del } from '@vercel/blob';
 
 export const STATUSES = ['new', 'confirmed', 'printing', 'on-the-way', 'delivered', 'cancelled'];
-export const SITE = 'https://skin-labs.vercel.app';
+export const SITE = (process.env.SITE_URL || 'https://skin-labs.vercel.app').replace(/\/$/, '');
 const A = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
 const rnd = (n, abc = A) => { const b = crypto.getRandomValues(new Uint8Array(n)); return [...b].map(x => abc[x % abc.length]).join(''); };
 export const newId = () => 'SL-' + rnd(5);
@@ -52,4 +52,26 @@ export async function pushAll(payload) {
     catch (e) { if (e && (e.statusCode === 404 || e.statusCode === 410)) await del(b.url).catch(() => {}); }   // phone unsubscribed: forget it
   }));
   return `${sent}/${blobs.length} devices`;
+}
+
+// ---------- Paystack (Mobile Money + card). Switched on by setting PAYSTACK_SECRET_KEY in Vercel. ----------
+export const payOn = () => !!process.env.PAYSTACK_SECRET_KEY;
+export async function paystack(path, body) {
+  const r = await fetch('https://api.paystack.co' + path, { method: body ? 'POST' : 'GET', headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`, 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined, signal: AbortSignal.timeout(15000) });
+  const j = await r.json().catch(() => ({})); if (!r.ok || !j.status) throw new Error(j.message || 'Paystack error ' + r.status); return j.data;
+}
+// Ask Paystack (never the browser) whether a payment went through; if it did, mark the order paid once and tell the shop.
+export async function confirmPayment(reference) {
+  if (!payOn() || !/^SL-[2-9A-Z]{5}-[a-z0-9]{4,12}$/.test(reference || '')) return null;
+  const tx = await paystack('/transaction/verify/' + encodeURIComponent(reference));
+  if (!tx || tx.status !== 'success' || tx.currency !== 'GHS') return null;
+  const f = await findOrder(reference.slice(0, 8)); if (!f) return null;
+  if (f.order.paid && f.order.paid.ref === reference) return f.order;
+  const amount = tx.amount / 100;
+  f.order.paid = { amount, ref: reference, at: Date.now(), channel: tx.channel || '', short: amount + 0.001 < f.order.total };
+  (f.order.history ||= []).push({ s: 'paid', at: Date.now() });
+  if (f.order.status === 'new') { f.order.status = 'confirmed'; f.order.history.push({ s: 'confirmed', at: Date.now() }); }
+  await saveOrder(f.dir, f.order);
+  await pushAll({ title: `💰 Paid GH₵${amount} · ${f.order.id}`, body: `${f.order.name}${f.order.paid.short ? ` · ⚠ order total was GH₵${f.order.total}` : ''} · ${tx.channel === 'mobile_money' ? 'MoMo' : tx.channel || ''}`, url: `/admin/#${f.order.id}`, tag: f.order.id + '-paid' }).catch(() => {});
+  return f.order;
 }

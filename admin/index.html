@@ -46,7 +46,7 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(40px,10vw,64px);line
 .login button{height:54px;background:#fff;color:#000;font-weight:600}.err{color:#ff6b6b;font-size:14px}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#fff;color:#000;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:9px 14px;z-index:90}
 @media (min-width:760px){.list{grid-template-columns:1fr 1fr}}
-.sales{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);margin:0 0 14px}.sales>div{background:#000;padding:12px}.sales b{display:block;font-size:22px;font-weight:600}.sales small{color:#999;font-size:12px}
+.pd{color:#1faa53;font-weight:700}.pd.short{color:#ff8a7a}.sales{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);margin:0 0 14px}.sales>div{background:#000;padding:12px}.sales b{display:block;font-size:22px;font-weight:600}.sales small{color:#999;font-size:12px}
 .sales .top{grid-column:1/-1}.sales .top p{display:flex;justify-content:space-between;font-size:14px;padding:4px 0;border-bottom:1px solid #161616}.sales .ib{grid-column:1/-1;height:44px;background:#000;border:0}
 .sgl{display:flex;gap:12px;align-items:center}.sgl img{width:56px;height:56px;object-fit:contain;background:#1a1a1a;padding:3px;display:block}
 .sw{display:flex;align-items:center;justify-content:space-between;gap:14px}.sw b{display:block;color:#fff;font-size:15px}.sw small{display:block;color:#999;font-size:12.5px;margin-top:2px}
@@ -73,7 +73,7 @@ const ST = { new: 'New', confirmed: 'Confirmed', printing: 'Printing', 'on-the-w
 const ACTIVE = ['confirmed', 'printing', 'on-the-way'];
 let view = 'orders', orders = [], filter = 'new', q = '', alerts = 'off', seen = new Set(JSON.parse(localStorage.getItem('sl-admin-seen') || '[]')), timer = 0;
 const ago = t => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : new Date(t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }); };
-const moneyTxt = o => o.skinOnDM ? (o.total > 0 ? `₵${o.total} + skin (price on DM)` : 'Skin · price on DM') : `₵${o.total}`;
+const moneyTxt = o => (o.skinOnDM ? (o.total > 0 ? `₵${o.total} + skin (price on DM)` : 'Skin · price on DM') : `₵${o.total}`) + (o.paid ? ` · <span class="pd ${o.paid.short ? 'short' : ''}">${o.paid.short ? `⚠ paid ₵${o.paid.amount}` : '✓ PAID'}</span>` : '');
 const first = n => (n || '').split(' ')[0];
 const what = o => [o.design ? `${o.design.packName || 'Custom pack'} (${o.design.size || '–'}, ${o.design.n} stickers)` : '', ...(o.packs || []).map(p => `${p.q}× ${p.label}`), (o.singles || []).length ? `${o.singles.reduce((a, s) => a + s.q, 0)} singles` : ''].filter(Boolean).join(' · ');
 async function api(path, opt = {}) { const r = await fetch(path, { ...opt, headers: { 'Content-Type': 'application/json', 'x-admin-key': KEY(), ...(opt.headers || {}) } }); if (r.status === 401) throw Object.assign(new Error('Wrong password'), { code: 401 }); const j = await r.json(); if (!r.ok) throw new Error(j.error || 'Error'); return j; }
@@ -118,16 +118,17 @@ function list() {
       : `<div class="empty">${orders.length ? 'Nothing here.' : 'No orders yet. They land here the moment a customer taps “Place order”.'}</div>`}</div>
   </div>`;
   notifCard();
-  $('#csv').onclick = () => { const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`, rows = [['Order', 'Date', 'Status', 'Name', 'WhatsApp', 'Location', 'Items', 'Free sticker', 'Total GHS']];
-    orders.forEach(o => rows.push([o.id, new Date(o.at).toISOString().slice(0, 16).replace('T', ' '), ST[o.status], o.name, '+' + o.phone, o.loc, what(o), o.free ? o.free.code : '', o.total]));
+  $('#csv').onclick = () => { const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`, rows = [['Order', 'Date', 'Status', 'Name', 'WhatsApp', 'Location', 'Items', 'Free sticker', 'Total GHS', 'Paid GHS', 'Paystack ref']];
+    orders.forEach(o => rows.push([o.id, new Date(o.at).toISOString().slice(0, 16).replace('T', ' '), ST[o.status], o.name, '+' + o.phone, o.loc, what(o), o.free ? o.free.code : '', o.total, o.paid ? o.paid.amount : '', o.paid ? o.paid.ref : '']));
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\ufeff' + rows.map(r => r.map(q).join(',')).join('\n')], { type: 'text/csv' })); a.download = `skin-lab-orders-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); toast('Downloaded'); };
   $('#tabs').onclick = e => { const b = e.target.closest('[data-f]'); if (b) { filter = b.dataset.f; list(); } };
   $('#q').oninput = e => { q = e.target.value; const p = e.target.selectionStart; list(); const i = $('#q'); i.focus(); i.setSelectionRange(p, p); };
   wireTop();
   app.querySelectorAll('.card').forEach(c => c.onclick = () => open(c.dataset.id));
 }
+let PAYON = false; fetch('/api/pay/').then(r => r.json()).then(j => { PAYON = !!j.enabled; }).catch(() => {});
 const MSG = {
-  confirmed: o => `Hi ${first(o.name)}, it's Skin Lab 👋\nYour order ${o.id} is confirmed: ${what(o)}.\nTotal: GH₵${o.total}.\nPlease pay with MoMo and send the screenshot here, then we start printing.`,
+  confirmed: o => `Hi ${first(o.name)}, it's Skin Lab 👋\nYour order ${o.id} is confirmed: ${what(o)}.\n${o.paid ? `Payment of GH₵${o.paid.amount} received ✓ We're printing it next.` : `Total: GH₵${o.total}.\n${PAYON ? `Pay here (MoMo or card): ${location.origin}/o/${o.id}/ , then we start printing.` : 'Please pay with MoMo and send the screenshot here, then we start printing.'}`}`,
   printing: o => `Hi ${first(o.name)}, your Skin Lab order ${o.id} is printing now 🖨️ We'll tell you when it's on the way.`,
   'on-the-way': o => `Hi ${first(o.name)}, your Skin Lab order ${o.id} is on the way 🚚 We'll call you when we're close${o.loc ? ' to ' + o.loc : ''}.`,
   delivered: o => `Hi ${first(o.name)}, enjoy your stickers! 🙌 Show us your laptop: tag @baidencreatives on Instagram. Thanks for ordering from Skin Lab.`,

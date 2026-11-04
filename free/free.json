@@ -64,6 +64,27 @@
    "art": "xq-div-a",
    "w": 1280,
    "h": 359
+  },
+  {
+   "code": "XQV-010",
+   "name": "In My Tech Girl Era",
+   "art": "xq-tech-girl",
+   "w": 1280,
+   "h": 989
+  },
+  {
+   "code": "XQV-011",
+   "name": "Emotionally Offline",
+   "art": "xq-offline",
+   "w": 1280,
+   "h": 1026
+  },
+  {
+   "code": "XQV-012",
+   "name": "Xqivo Runner Logo",
+   "art": "xq-logo-runner",
+   "w": 1059,
+   "h": 1213
   }
  ]
 }

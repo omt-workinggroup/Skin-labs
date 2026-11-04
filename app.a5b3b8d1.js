@@ -53,6 +53,8 @@ function pkOf(k) { if (String(k).startsWith('skin~')) { const [, id, z] = String
   const size = a5 ? 'A5' : p.size || 'A4';
   return { k, id, p, a5, size, price: a5 ? p.p5 : p.price, n: a5 ? p.a5.length : p.items.length, img: a5 ? id + '-a5' : id, label: `${p.nice} · ${SZ[size]}` }; }
 Object.keys(packs).forEach(k => { if (!(packs[k] > 0) || (!String(k).startsWith('skin~') && !pkOf(k))) delete packs[k]; });   // skins are checked once the skin list is loaded
+// online payment (Paystack): on once the shop adds its key; asked once per visit
+let PAY = false; fetch('/api/pay/').then(r => r.json()).then(j => { PAY = !!j.enabled; }).catch(() => {});
 let who = store.get('sl-who', { name: '', loc: '', note: '' });
 const saveCart = () => { store.set('sl-cart', cart); store.set('sl-packs', packs); };
 const nSingles = () => Object.values(cart).reduce((a, b) => a + b, 0);
@@ -205,18 +207,19 @@ function openCart(focus) {
       <div class="grp">Single stickers · ${CUR}${PRICE} each</div><div class="rows">${items.map(([c, q]) => `<div class="row"><div class="th">${spr(CODE[c].p, CODE[c].it, 50)}</div><div class="nm"><b>${c}</b><span>${esc(CODE[c].p.nice)}</span></div>
       <div class="qty"><button type="button" data-q="${c}" data-d="-1" aria-label="One less ${c}">−</button><span>${q}</span><button type="button" data-q="${c}" data-d="1" aria-label="One more ${c}">+</button></div></div>`).join('')}</div>` : ''}
     ${FREE.length ? `<div class="grp">Your free sticker · pick 1</div>${dsgFree() ? `<p class="small" style="margin:4px 0 10px">Your free sticker is already on your laptop design.</p>` : `<div class="fl fl2">${FREE.map(x => `<button type="button" class="fc ${x.code === freePick ? 'on' : ''}" data-free="${x.code}" aria-label="${esc(x.name)}, free"><img src="free/${x.code}-s.webp" alt="" loading="lazy"><i>FREE</i></button>`).join('')}</div>`}` : ''}
-    <div class="sum"><div class="big" style="border:0;padding:0;margin:0"><span>Total</span><span>${priceTxt(money(), dsgSkins())}</span></div><div class="small"><span>Pay with MoMo when we confirm · delivery agreed with you</span></div></div>
+    <div class="sum"><div class="big" style="border:0;padding:0;margin:0"><span>Total</span><span>${priceTxt(money(), dsgSkins())}</span></div><div class="small"><span>${PAY ? 'Pay now with Mobile Money or card · delivery agreed on WhatsApp' : 'Pay with MoMo when we confirm · delivery agreed with you'}</span></div></div>
     <form class="ck" id="ck" novalidate>
       <div class="grp">Your details</div>
       <div class="fld" id="f-name"><label for="c-name">Name</label><input id="c-name" autocomplete="name" placeholder="e.g. Ama Mensah" value="${esc(who.name)}" required></div>
       <div class="fld" id="f-phone"><label for="c-phone">WhatsApp number</label><input id="c-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="e.g. 024 123 4567" value="${esc(who.phone || '')}" required></div>
+      ${PAY ? `<div class="fld"><label for="c-email">Email <span style="opacity:.6">(optional, for your receipt)</span></label><input id="c-email" type="email" inputmode="email" autocomplete="email" placeholder="e.g. ama@gmail.com" value="${esc(who.email || '')}"></div>` : ''}
       <div class="fld"><label for="c-loc">Location</label><input id="c-loc" autocomplete="address-level2" placeholder="e.g. East Legon" value="${esc(who.loc)}"></div>
-      <button class="btn y" type="submit" id="c-send">Place order${money() ? ` · ${CUR}${money()}` : ''}</button>
-      <p class="small ckn">We'll message you on WhatsApp to confirm, then you pay with MoMo.</p>
+      <button class="btn y" type="submit" id="c-send">${PAY && money() ? `Pay ${CUR}${money()} · MoMo or card` : `Place order${money() ? ` · ${CUR}${money()}` : ''}`}</button>
+      <p class="small ckn">${PAY ? 'Secure payment by Paystack. We print once you\'ve paid, then WhatsApp you about delivery.' : "We'll message you on WhatsApp to confirm, then you pay with MoMo."}</p>
     </form>
     <button class="btn o" type="button" id="c-clear">Empty cart</button>`;
-  const keep = () => { who = { ...who, name: $('#c-name').value.trim(), phone: $('#c-phone').value.trim(), loc: $('#c-loc').value.trim() }; store.set('sl-who', who); };
-  ['#c-name', '#c-phone', '#c-loc'].forEach(s => $(s).addEventListener('input', () => { keep(); $(s).closest('.fld').classList.remove('err'); }));
+  const keep = () => { who = { ...who, name: $('#c-name').value.trim(), phone: $('#c-phone').value.trim(), loc: $('#c-loc').value.trim(), email: $('#c-email') ? $('#c-email').value.trim() : who.email || '' }; store.set('sl-who', who); };
+  ['#c-name', '#c-phone', '#c-loc', '#c-email'].filter(s => $(s)).forEach(s => $(s).addEventListener('input', () => { keep(); $(s).closest('.fld').classList.remove('err'); }));
   b.onclick = e => { const fr = e.target.closest('[data-free]'); if (fr) { pickFree(fr.dataset.free, true); picksCache.key = ''; return openCart(); } const k = e.target.closest('[data-q],[data-p]'); if (!k) return;
     if (k.dataset.q) setQty(k.dataset.q, (cart[k.dataset.q] || 0) + +k.dataset.d); else setPack(k.dataset.p, (packs[k.dataset.p] || 0) + +k.dataset.d); openCart(); };
   $('#ck').onsubmit = e => { e.preventDefault(); keep(); placeOrder(); };
@@ -237,7 +240,7 @@ async function placeOrder() {
   if (!who.name) { $('#f-name').classList.add('err'); $('#c-name').focus(); return toast('Add your name'); }
   if (!phoneOk(who.phone || '')) { $('#f-phone').classList.add('err'); $('#c-phone').focus(); return toast('Add your WhatsApp number'); }
   const btn = $('#c-send'); btn.disabled = true; btn.textContent = 'Sending your order…';
-  const body = { name: who.name, phone: phoneIntl(who.phone), loc: who.loc, total: money(),
+  const body = { name: who.name, phone: phoneIntl(who.phone), email: who.email || '', loc: who.loc, total: money(),
     packs: pk.map(([k, q]) => { const o = pkOf(k); return { key: k, label: o.skin ? `${o.label} (${o.fit})` : `${o.p.nice} · ${SZ[o.size]}`, size: o.size, n: o.n, q, price: o.price }; }),
     singles: items.map(([c, q]) => ({ code: c, q, pack: CODE[c].p.nice, img: new URL(stickerSrc(c), location.href).href })),
     free: (() => { const c = dsgFree() || freeCode(), x = FREE.find(f => f.code === c); return x ? { code: c, name: x.name, img: new URL(`free/${c}.webp`, location.href).href, onDesign: !!dsgFree() } : null; })(),
@@ -248,18 +251,23 @@ async function placeOrder() {
     const r = await fetch('/api/order/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }), j = await r.json().catch(() => ({}));
     if (!r.ok || !j.id) throw new Error(j.error || 'The order could not be sent');
     store.set('sl-last', { packs: { ...packs }, cart: { ...cart }, at: Date.now() }); store.set('sl-orders', [{ id: j.id, at: Date.now(), total: body.total }, ...store.get('sl-orders', [])].slice(0, 20));
-    cart = {}; packs = {}; store.set('sl-dsg', null); saveCart(); updBar(); orderDone(j.id, body);
+    cart = {}; packs = {}; store.set('sl-dsg', null); saveCart(); updBar();
+    if (PAY && body.total > 0) { btn.textContent = 'Opening Paystack…'; const u = await payLink(j.id); if (u) return location.href = u; }
+    orderDone(j.id, body);
   } catch (e) {
     btn.disabled = false; btn.textContent = 'Try again';
     const f = $('#ckfail') || Object.assign(document.createElement('div'), { id: 'ckfail', className: 'ckfail' }); btn.after(f);
     f.innerHTML = `<b>${esc(e.message || 'No connection')}.</b> Check your internet and try again, or <a href="https://wa.me/${WA}?text=${encodeURIComponent(`Hello Skin Lab, I'd like to order (my order would not send). Name: ${who.name}`)}" target="_blank" rel="noopener">chat with us on WhatsApp</a>.`;
   }
 }
+const payLink = id => fetch('/api/pay/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) }).then(r => r.json()).then(j => j.url || null).catch(() => null);
 function orderDone(id, body) {
+  cartAt = 0;
+  const pay = PAY && body.total > 0;
   $('#c-body').innerHTML = `<div class="okd"><span class="okc">✓</span><span class="lbl">Order ${esc(id)}</span><h3>Order received, <em>${esc(body.name.split(' ')[0])}.</em></h3>
-    <p>We'll message you on WhatsApp at <b>+${esc(body.phone)}</b> to confirm your order and payment.</p>
-    <a class="btn y" href="/o/${esc(id)}/">See my order</a><button class="btn o" type="button" id="okb">Back to the shop</button></div>`;
-  $('#okb').onclick = () => { $('#cart').hidden = true; location.hash = ''; }; buzz();
+    <p>${pay ? `Pay ${CUR}${body.total} to send it to print. We'll WhatsApp you at <b>+${esc(body.phone)}</b> about delivery.` : `We'll message you on WhatsApp at <b>+${esc(body.phone)}</b> to confirm your order and payment.`}</p>
+    ${pay ? `<a class="btn y" href="/o/${esc(id)}/">Pay ${CUR}${body.total} now</a>` : ''}<a class="btn ${pay ? 'o' : 'y'}" href="/o/${esc(id)}/">See my order</a><button class="btn o" type="button" id="okb">Back to the shop</button></div>`;
+  $('#okb').onclick = () => { cartAt = 0; $('#cart').hidden = true; location.hash = ''; }; buzz();
 }
 function reorder() { const l = store.get('sl-last', null); if (!l) return; cart = {}; packs = {};
   Object.entries(l.cart || {}).forEach(([c, q]) => { if (CODE[c]) cart[c] = q; }); Object.entries(l.packs || {}).forEach(([k, q]) => { if (pkOf(k)) packs[k] = q; });
@@ -269,7 +277,7 @@ function orderNow(pk = [], items = []) {   // add, then straight to the checkout
   pk.forEach(([k, q]) => { if (!packs[k]) packs[k] = q; }); items.forEach(([c, q]) => { if (!cart[c]) cart[c] = q; });
   saveCart(); updBar(); buzz(); openCart(true); }
 $('#bar-go').onclick = () => openCart(true); $('#bar').querySelector('.t').onclick = openCart; $('#t-cart').onclick = openCart; $('#nv-cart').onclick = openCart;
-$('#c-x').onclick = () => $('#cart').hidden = true;
+$('#c-x').onclick = () => { cartAt = 0; $('#cart').hidden = true; };
 
 // send your inspo
 function openInspo() {
@@ -904,10 +912,13 @@ function wireSkins(root) {
 }
 
 // ---------- router ----------
+let cartAt = 0;   // a late re-render (live stickers loading) must not close a cart that was just opened
 function render() {
-  const r = route(); closeSheets();
+  const r = route();
+  if (!r && Date.now() - cartAt < 15000 && !$('#cart').hidden) { vHome(); $('#cart').hidden = false; updBar(); return; }
+  closeSheets();
   if (r === 'design' || r === 'studio' || r === 'design-pick') { location.replace('/design/'); return; }
-  if (r === 'cart') { history.replaceState(null, '', location.pathname); vHome(); setTimeout(openCart, 50); } else if (r === 'inspo') vInspo(); else if (r === 'mine') vMine(); else if (r === 'categories') vCats(); else if (r.startsWith('order-')) vOrder(r); else if (r.startsWith('v-')) vView(r.slice(2)); else if (r.startsWith('o-')) vSealed(r.slice(2).split('.')[0]); else if (r.startsWith('unlock-')) vUnlock(r.slice(7)); else if (r === 'unlocked') vUnlock(store.get('sl-owner', '')); else if (CAT[r]) vCat(CAT[r]); else if (PK[r]) vPack(PK[r]); else vHome();
+  if (r === 'cart') { history.replaceState(null, '', location.pathname); cartAt = Date.now(); vHome(); setTimeout(openCart, 50); } else if (r === 'inspo') vInspo(); else if (r === 'mine') vMine(); else if (r === 'categories') vCats(); else if (r.startsWith('order-')) vOrder(r); else if (r.startsWith('v-')) vView(r.slice(2)); else if (r.startsWith('o-')) vSealed(r.slice(2).split('.')[0]); else if (r.startsWith('unlock-')) vUnlock(r.slice(7)); else if (r === 'unlocked') vUnlock(store.get('sl-owner', '')); else if (CAT[r]) vCat(CAT[r]); else if (PK[r]) vPack(PK[r]); else vHome();
   scrollTo(0, 0);
   const tab = r === 'inspo' || r === 'mine' ? 'inspo' : r.startsWith('design') || r === 'studio' ? 'design' : 'home'; document.body.classList.toggle('is-design', tab === 'design' && r !== 'design-pick' && !!G.lap);
   ['home', 'design', 'inspo'].forEach(k => { $('#t-' + k).classList.toggle('on', tab === k); $('#nv-' + k).classList.toggle('on', tab === k); });
