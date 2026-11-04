@@ -273,6 +273,42 @@ function reorder() { const l = store.get('sl-last', null); if (!l) return; cart 
   Object.entries(l.cart || {}).forEach(([c, q]) => { if (CODE[c]) cart[c] = q; }); Object.entries(l.packs || {}).forEach(([k, q]) => { if (pkOf(k)) packs[k] = q; });
   saveCart(); updBar(); openCart(); }
 // one tap: everything picked goes to WhatsApp as one message; the cart is still there to change amounts
+// Buy now: just this one product (+ the free sticker) -> Paystack -> back to the order page. The cart is left as it is.
+function buyNow(k) {
+  if (!PAY) return orderNow([[k, 1]], []);
+  const o = pkOf(k); if (!o) return;
+  let box = $('#qb'); if (!box) { box = document.createElement('div'); box.id = 'qb'; box.className = 'sheet'; document.body.appendChild(box); box.addEventListener('click', e => { if (e.target === box) box.hidden = true; }); }
+  if (FREE.length && !freeCode()) pickFree(FREE[0].code, true);
+  const thumb = o.skin ? `skins/${o.id}-s.${IX}` : sh(o.img, 'sheets-sm');
+  box.innerHTML = `<div class="in" role="dialog" aria-label="Buy now"><div class="grab"></div><h3>Buy now <button type="button" class="chip" id="qb-x">Close</button></h3>
+    <div class="row" style="border:0;padding:0 0 6px"><div class="th"><img src="${thumb}" alt="" style="height:64px;width:auto;border-radius:3px" onerror="this.style.display='none'"></div><div class="nm"><b style="font-family:var(--body)">${esc(o.skin ? o.label : `${o.p.nice} · ${SZ[o.size]}`)}</b><span>${o.skin ? o.fit : `${o.n} stickers`}</span></div><b style="font-size:20px">${CUR}${o.price}</b></div>
+    ${FREE.length ? `<div class="grp">Your free sticker · pick 1</div><div class="fl" id="qb-fr" style="margin-bottom:12px;flex-shrink:0">${FREE.map(x => `<button type="button" class="fc ${x.code === freeCode() ? 'on' : ''}" data-free="${x.code}" aria-label="${esc(x.name)}, free"><img src="free/${x.code}-s.webp" alt="" loading="lazy"><i>FREE</i></button>`).join('')}</div>` : ''}
+    <form class="ck" id="qb-f" novalidate>
+      <div class="fld" id="qf-name"><label for="q-name">Name</label><input id="q-name" autocomplete="name" placeholder="e.g. Ama Mensah" value="${esc(who.name || '')}"></div>
+      <div class="fld" id="qf-phone"><label for="q-phone">WhatsApp number</label><input id="q-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="e.g. 024 123 4567" value="${esc(who.phone || '')}"></div>
+      <div class="fld"><label for="q-loc">Location</label><input id="q-loc" autocomplete="address-level2" placeholder="e.g. East Legon" value="${esc(who.loc || '')}"></div>
+      <button class="btn y" type="submit" id="qb-go">Pay ${CUR}${o.price} · MoMo or card</button>
+      <p class="small ckn">You'll pay on Paystack, then come straight back here to see your order. We WhatsApp you about delivery.</p></form></div>`;
+  $('#qb-x').onclick = () => box.hidden = true;
+  if ($('#qb-fr')) $('#qb-fr').onclick = e => { const b = e.target.closest('[data-free]'); if (!b) return; pickFree(b.dataset.free, true); box.querySelectorAll('#qb-fr .fc').forEach(x => x.classList.toggle('on', x.dataset.free === freeCode())); };
+  $('#qb-f').onsubmit = async e => { e.preventDefault();
+    who = { ...who, name: $('#q-name').value.trim(), phone: $('#q-phone').value.trim(), loc: $('#q-loc').value.trim() }; store.set('sl-who', who);
+    if (!who.name) { $('#qf-name').classList.add('err'); $('#q-name').focus(); return toast('Add your name'); }
+    if (!phoneOk(who.phone || '')) { $('#qf-phone').classList.add('err'); $('#q-phone').focus(); return toast('Add your WhatsApp number'); }
+    const btn = $('#qb-go'); btn.disabled = true; btn.textContent = 'Opening Paystack…';
+    const fc = freeCode(), fx = FREE.find(f => f.code === fc);
+    const body = { name: who.name, phone: phoneIntl(who.phone), email: who.email || '', loc: who.loc, total: o.price,
+      packs: [{ key: k, label: o.skin ? `${o.label} (${o.fit})` : `${o.p.nice} · ${SZ[o.size]}`, size: o.size, n: o.n, q: 1, price: o.price }], singles: [],
+      free: fx ? { code: fc, name: fx.name, img: new URL(`free/${fc}.webp`, location.href).href, onDesign: false } : null };
+    try {
+      const r = await fetch('/api/order/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }), j = await r.json().catch(() => ({}));
+      if (!r.ok || !j.id) throw new Error(j.error || 'The order could not be sent');
+      store.set('sl-orders', [{ id: j.id, at: Date.now(), total: o.price }, ...store.get('sl-orders', [])].slice(0, 20));
+      const u = await payLink(j.id); location.href = u || `/o/${j.id}/`;
+    } catch (x) { btn.disabled = false; btn.textContent = 'Try again'; toast(x.message || 'No connection, try again'); }
+  };
+  box.hidden = false; buzz();
+}
 function orderNow(pk = [], items = []) {   // add, then straight to the checkout form
   pk.forEach(([k, q]) => { if (!packs[k]) packs[k] = q; }); items.forEach(([c, q]) => { if (!cart[c]) cart[c] = q; });
   saveCart(); updBar(); buzz(); openCart(true); }
@@ -415,11 +451,11 @@ function vPack(p) {
   const showSize = () => { const o = pkOf(key); $('#addpack').dataset.packbtn = key; updBar();
     document.querySelectorAll('#sizes [data-sz]').forEach(b => { const on = (b.dataset.sz === '5') === o.a5; b.classList.toggle('on', on); b.setAttribute('aria-checked', on); });
     const im = $('#sheetim'); im.src = `${sh(o.img, 'sheets')}`; im.width = o.a5 ? p.sw5 : p.sw; im.height = o.a5 ? p.sh5 : p.sh;
-    $('#op-t').textContent = `Order ${o.size} · ${CUR}${o.price}`;
+    $('#op-t').textContent = `${PAY ? 'Buy now' : 'Order'} ${o.size} · ${CUR}${o.price}`;
     const in5 = new Set(p.a5 || []); g.querySelectorAll('.tile').forEach(t => t.classList.toggle('dim', o.a5 && !in5.has(t.dataset.c))); };
   if ($('#sizes')) $('#sizes').onclick = e => { const b = e.target.closest('[data-sz]'); if (!b) return; key = b.dataset.sz === '5' ? p.id + '~5' : p.id; store.set('sl-size', b.dataset.sz); buzz(); showSize(); };
   $('#addpack').onclick = () => { setPack(key, (packs[key] || 0) + 1); buzz(); toast(`${pkOf(key).label} added. Tap Order now when you're ready.`); };
-  $('#orderpack').onclick = () => orderNow([[key, 1]], []);
+  $('#orderpack').onclick = () => buyNow(key);
   $('#toinspo') && ($('#toinspo').onclick = openInspo);
   $('#zoom').onclick = () => { $('#lb-img').src = `${sh(pkOf(key).img, 'sheets')}`; $('#lb').hidden = false; };
   showSize();
@@ -896,7 +932,7 @@ function skinSheet(id) {   // pick a size, like a product page
     $('#skx').onclick = () => box.hidden = true;
     box.querySelector('.skz').onclick = e => { const b = e.target.closest('[data-z]'); if (b) { z = b.dataset.z; store.set('sl-skinsize', z); buzz(); draw(); } };
     $('#skadd').onclick = () => { const k = `skin~${id}~${z}`; setPack(k, (packs[k] || 0) + 1); buzz(); box.hidden = true; toast(`${sk[1]} skin (${SKINP[z].name}) added`); };
-    $('#skbuy').onclick = () => { box.hidden = true; orderNow([[`skin~${id}~${z}`, 1]], []); };
+    $('#skbuy').onclick = () => { box.hidden = true; buyNow(`skin~${id}~${z}`); };
     $('#sktry').onclick = () => { const st = store.get('sl-design3', {}) || {}; st.skin = { ...(st.skin || {}), lid: id }; st.skinSize = z; store.set('sl-design3', st); }; };
   draw(); box.hidden = false; }
 function skinsGrid() {
