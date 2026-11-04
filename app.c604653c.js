@@ -308,6 +308,9 @@ function catGrid() {
     return `<a class="catc" href="#${c.id}"><div class="table" style="--tb:${ps[0].bg}">${ps.slice(0, 2).reverse().map((p, i, a) => `<img src="${sh(p.id, 'sheets-xs')}" alt="${esc(p.nice)} sticker pack" width="${Math.round(p.sw * .3)}" height="${Math.round(p.sh * .3)}" ${ci < 4 ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async" style="--r:${[-5, 9][a.length - 1 - i]}deg;--x:${[-10, 24][a.length - 1 - i]}%">`).join('')}</div>
       <div class="cmeta"><span class="no">${String(ci + 1).padStart(2, '0')}</span><b>${esc(c.name)}${ps.some(p => p.new) ? '<i class="newb in">New</i>' : ''}</b><span>${c.packs.length} pack${c.packs.length > 1 ? 's' : ''} · from ${CUR}${lo}</span></div></a>`; }).join('')}</div>`;
 }
+function myOrders() {   // orders placed on this phone: one tap to their tracking page
+  const os = (store.get('sl-orders', []) || []).filter(o => o && o.id).slice(0, 3); if (!os.length) return '';
+  return `<div class="myo"><span class="lbl">Your orders</span>${os.map(o => `<a href="/o/${esc(o.id)}/"><b>${esc(o.id)}</b><span>${new Date(o.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} · ${CUR}${o.total}</span><i>Track →</i></a>`).join('')}</div>`; }
 function lastOrder() {
   const l = store.get('sl-last', null); if (!l) return '';
   const pk = Object.entries(l.packs || {}).filter(([k]) => pkOf(k)), ns = Object.values(l.cart || {}).reduce((a, b) => a + b, 0);
@@ -334,7 +337,7 @@ function newDrops() {
 }
 function vHome() {
   app.innerHTML = `<section class="sec" style="padding-top:18px">
-    ${lastOrder()}
+    ${myOrders()}${lastOrder()}
     <div class="kick-row"><span>Laptop skins &amp; stickers · Accra</span><span>From ${CUR}30</span></div>
     <div class="sech hero2"><div><h1 class="h1 hero-h">Your laptop, <em>your story.</em></h1><p class="hsub">Skins and sticker packs, printed in Accra.</p></div>${INS.length > 4 ? `<a class="hcol" href="#inspo" aria-label="See sticker inspiration">${[[0, -5, 0, 4], [3, 4, 34, 0], [12, -2, 56, 14]].map(([k, r, x, y]) => `<img src="inspo/sm/${INS[k].id}.${IX}" alt="" loading="lazy" style="left:${x}%;top:${y}%;transform:rotate(${r}deg)">`).join('')}<span class="lbl">Inspiration →</span></a>` : ''}</div>
     ${freeStrip()}

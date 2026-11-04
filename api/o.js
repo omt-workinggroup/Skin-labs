@@ -32,5 +32,7 @@ ${pk && pk.sheet ? `<div class="pics"><a href="${esc(pk.sheet)}"><img src="${esc
 ${lines ? `<ul>${lines}</ul>` : ''}
 <div class="tot"><span>Total</span><b>${o.skinOnDM ? (o.total > 0 ? `GH₵${o.total} + skin (price on DM)` : 'Skin · price on DM') : `GH₵${o.total}`}</b></div>
 <p class="lbl" style="margin-top:8px">We'll message you on WhatsApp to confirm delivery and payment (MoMo).</p>
-<a class="btn" href="https://wa.me/233558362423?text=${encodeURIComponent(`Hello Skin Lab, about my order ${o.id}`)}">Chat with Skin Lab</a></div></body></html>`);
+<a class="btn" href="https://wa.me/233558362423?text=${encodeURIComponent(`Hello Skin Lab, about my order ${o.id}`)}">Chat with Skin Lab</a>
+<a class="btn" style="background:#1faa53;color:#fff" href="https://wa.me/?text=${encodeURIComponent(`Just ordered my laptop stickers from Skin Lab 🔥 Free sticker with every order. Design yours: ${SITE}/`)}">Show your friends on WhatsApp</a>
+<a class="btn" style="background:none;color:#fff;border:1px solid #444" href="/">Back to the shop</a></div></body></html>`);
 }

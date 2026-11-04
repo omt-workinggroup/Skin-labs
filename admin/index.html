@@ -46,6 +46,8 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(40px,10vw,64px);line
 .login button{height:54px;background:#fff;color:#000;font-weight:600}.err{color:#ff6b6b;font-size:14px}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#fff;color:#000;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:9px 14px;z-index:90}
 @media (min-width:760px){.list{grid-template-columns:1fr 1fr}}
+.sales{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);margin:0 0 14px}.sales>div{background:#000;padding:12px}.sales b{display:block;font-size:22px;font-weight:600}.sales small{color:#999;font-size:12px}
+.sales .top{grid-column:1/-1}.sales .top p{display:flex;justify-content:space-between;font-size:14px;padding:4px 0;border-bottom:1px solid #161616}.sales .ib{grid-column:1/-1;height:44px;background:#000;border:0}
 .sgl{display:flex;gap:12px;align-items:center}.sgl img{width:56px;height:56px;object-fit:contain;background:#1a1a1a;padding:3px;display:block}
 .sw{display:flex;align-items:center;justify-content:space-between;gap:14px}.sw b{display:block;color:#fff;font-size:15px}.sw small{display:block;color:#999;font-size:12.5px;margin-top:2px}
 .tg{flex:none;width:58px;height:34px;border-radius:17px;background:#333;position:relative;transition:background .2s}.tg i{position:absolute;top:3px;left:3px;width:28px;height:28px;border-radius:50%;background:#fff;transition:transform .2s}
@@ -101,6 +103,11 @@ function list() {
   <div class="w"><span class="lbl">${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}</span><h1>Orders<em>.</em></h1>
     <div class="alert" id="nt"></div>
     <div class="stats"><div><b>${cnt.new}</b><span class="lbl">New</span></div><div><b>${cnt.active}</b><span class="lbl">In progress</span></div><div><b>${today.length}</b><span class="lbl">Today</span></div><div><b>₵${money}</b><span class="lbl">All time</span></div></div>
+    ${(() => { const ok = orders.filter(o => o.status !== 'cancelled'), wk = ok.filter(o => Date.now() - o.at < 7 * 864e5), mo = ok.filter(o => new Date(o.at).getMonth() === new Date().getMonth() && new Date(o.at).getFullYear() === new Date().getFullYear());
+      const cnt = {}; ok.forEach(o => { (o.packs || []).forEach(p => cnt[p.label.split(' · ')[0]] = (cnt[p.label.split(' · ')[0]] || 0) + p.q); if (o.design) cnt['Custom laptop packs'] = (cnt['Custom laptop packs'] || 0) + 1; const s = (o.singles || []).reduce((a, x) => a + x.q, 0); if (s) cnt['Single stickers'] = (cnt['Single stickers'] || 0) + s; });
+      const top = Object.entries(cnt).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      return `<div class="sales"><div><span class="lbl">This week</span><b>₵${wk.reduce((a, o) => a + o.total, 0)}</b><small>${wk.length} orders</small></div><div><span class="lbl">This month</span><b>₵${mo.reduce((a, o) => a + o.total, 0)}</b><small>${mo.length} orders</small></div>
+        <div class="top"><span class="lbl">Best sellers</span>${top.length ? top.map(([n, q]) => `<p><span>${esc(n)}</span><b>${q}</b></p>`).join('') : '<p><span>No sales yet</span></p>'}</div><button class="ib" id="csv">Download orders (CSV)</button></div>`; })()}
     <div class="tabs" id="tabs">${[['new', 'New', cnt.new], ['active', 'In progress', cnt.active], ['done', 'Done', cnt.done], ['all', 'All', cnt.all]].map(([k, n, c]) => `<button class="${k === filter ? 'on' : ''}" data-f="${k}">${n}<i>${c}</i></button>`).join('')}</div>
     <input class="srch" id="q" placeholder="Search name, number, order…" value="${esc(q)}">
     <div class="list">${show.length ? show.map(o => { const pic = o.design && (o.design.sheet || o.design.mock);
@@ -111,6 +118,9 @@ function list() {
       : `<div class="empty">${orders.length ? 'Nothing here.' : 'No orders yet. They land here the moment a customer taps “Place order”.'}</div>`}</div>
   </div>`;
   notifCard();
+  $('#csv').onclick = () => { const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`, rows = [['Order', 'Date', 'Status', 'Name', 'WhatsApp', 'Location', 'Items', 'Free sticker', 'Total GHS']];
+    orders.forEach(o => rows.push([o.id, new Date(o.at).toISOString().slice(0, 16).replace('T', ' '), ST[o.status], o.name, '+' + o.phone, o.loc, what(o), o.free ? o.free.code : '', o.total]));
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\ufeff' + rows.map(r => r.map(q).join(',')).join('\n')], { type: 'text/csv' })); a.download = `skin-lab-orders-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); toast('Downloaded'); };
   $('#tabs').onclick = e => { const b = e.target.closest('[data-f]'); if (b) { filter = b.dataset.f; list(); } };
   $('#q').oninput = e => { q = e.target.value; const p = e.target.selectionStart; list(); const i = $('#q'); i.focus(); i.setSelectionRange(p, p); };
   wireTop();
