@@ -1,5 +1,5 @@
 (() => {
-const WA = '233558362423', PRICE = 3, CUR = 'GH₵', SITE = 'https://skin-labs.vercel.app/';
+const WA = '233558362423', PRICE = 3, CUR = 'GH₵', SITE = 'https://shop.baidencreatives.org/';
 const D = window.SL, $ = s => document.querySelector(s), app = $('#app');
 const framed = (() => { try { return window.top !== window; } catch (e) { return true; } })();
 const base = framed ? SITE : location.origin + location.pathname;

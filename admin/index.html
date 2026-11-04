@@ -323,7 +323,7 @@ async function notifCard() { const el = $('#nt'); if (!el) return; const st = aw
     if ($('#ntt')) $('#ntt').onclick = async () => { const r = await api('/api/push-test/', { method: 'POST', body: '{}' }).catch(e => ({ result: e.message })); toast('Sent · ' + r.result); };
     return; }
   el.innerHTML = { 'ios-install': '<b>On iPhone, add this page to your Home Screen first:</b> tap Share ⬆︎ then “Add to Home Screen”, open “SL Orders” from your Home Screen, then switch notifications on here.',
-    denied: '<b>Notifications are blocked</b> for this site. Allow them in your browser or phone settings for skin-labs.vercel.app, then come back.',
+    denied: '<b>Notifications are blocked</b> for this site. Allow them in your browser or phone settings for this site, then come back.',
     unsupported: '<b>This browser can’t show notifications.</b> Use Chrome on Android, or Safari on iPhone with the page added to the Home Screen.' }[st];
 }
 if (KEY()) { app.innerHTML = '<div class="login"><span class="lbl">Opening your orders…</span></div>'; load(true); } else login();

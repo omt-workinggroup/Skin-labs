@@ -2,7 +2,7 @@
 import { list, put, del } from '@vercel/blob';
 
 export const STATUSES = ['new', 'confirmed', 'printing', 'on-the-way', 'delivered', 'cancelled'];
-export const SITE = (process.env.SITE_URL || 'https://skin-labs.vercel.app').replace(/\/$/, '');
+export const SITE = (process.env.SITE_URL || 'https://shop.baidencreatives.org').replace(/\/$/, '');
 const A = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
 const rnd = (n, abc = A) => { const b = crypto.getRandomValues(new Uint8Array(n)); return [...b].map(x => abc[x % abc.length]).join(''); };
 export const newId = () => 'SL-' + rnd(5);

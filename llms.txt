@@ -8,7 +8,7 @@
 - Custom stickers from your own picture, name or logo: from GH₵15
 
 ## How to order
-1. Browse packs at https://skin-labs.vercel.app/ or the category pages below
+1. Browse packs at https://shop.baidencreatives.org/ or the category pages below
 2. Add packs or single stickers to the cart, enter name and location
 3. Tap "Send order on WhatsApp"; the order arrives as one message; pay with MoMo; delivery or pickup is arranged
 
@@ -16,118 +16,118 @@
 - Material: die-cut vinyl, laminated
 - Typical size: 2.5 to 7.5 cm per sticker, thin 0.8 mm white outline
 - Laptop skins: Small (up to 13.3") GH₵70, Medium (14-15.6") GH₵80, Large (16-17.3") GH₵90, Custom (full wrap or own picture) GH₵120
-- Online designer: pick your laptop model, then place skins and stickers on the lid, keyboard area and bottom at real size: https://skin-labs.vercel.app/#design
-- Inspiration gallery: https://skin-labs.vercel.app/#inspo
+- Online designer: pick your laptop model, then place skins and stickers on the lid, keyboard area and bottom at real size: https://shop.baidencreatives.org/#design
+- Inspiration gallery: https://shop.baidencreatives.org/#inspo
 - Instagram: https://www.instagram.com/baidencreatives/
 
 ## Categories and packs
-- [Lid Centrepieces stickers](https://skin-labs.vercel.app/stickers/xl/): Lid centrepieces: one big sticker, about 18 cm, made for the middle of your laptop lid. Ghost, Yamal, EA FC, eFootball, Rick and Morty and more.
-  - [Ghost Mugshot](https://skin-labs.vercel.app/stickers/xl/xl-ghost-mugshot/): 1 stickers, GH₵25
-  - [Ghost Ink](https://skin-labs.vercel.app/stickers/xl/xl-ghost-ink/): 1 stickers, GH₵25
-  - [Yamal](https://skin-labs.vercel.app/stickers/xl/xl-yamal/): 1 stickers, GH₵25
-  - [Efootball 27](https://skin-labs.vercel.app/stickers/xl/xl-efootball/): 1 stickers, GH₵25
-  - [Fc Mobile Ronaldo](https://skin-labs.vercel.app/stickers/xl/xl-fc-mobile-ronaldo/): 1 stickers, GH₵25
-  - [Fc Mobile Anime](https://skin-labs.vercel.app/stickers/xl/xl-fc-mobile-anime/): 1 stickers, GH₵25
-  - [Fc Mobile Mono](https://skin-labs.vercel.app/stickers/xl/xl-fc-mobile-mono/): 1 stickers, GH₵25
-  - [Gold Strength](https://skin-labs.vercel.app/stickers/xl/xl-gold-strength/): 1 stickers, GH₵25
-  - [Just Do It](https://skin-labs.vercel.app/stickers/xl/xl-just-do-it/): 1 stickers, GH₵25
-  - [No Days Off](https://skin-labs.vercel.app/stickers/xl/xl-no-days-off/): 1 stickers, GH₵25
-  - [Rick & Morty](https://skin-labs.vercel.app/stickers/xl/xl-rick-and-morty/): 2 stickers, GH₵25
-- [Pick & Mix stickers](https://skin-labs.vercel.app/stickers/mix/): Pick and mix: big A3 sheets with about 84 stickers from a whole group of categories, plus mixed packs with a bit of everything.
-  - [Pick & Mix: Tech + Gaming](https://skin-labs.vercel.app/stickers/mix/pm1-tech-and-gaming/): 84 stickers, GH₵100
-  - [Pick & Mix: Ball, Cars + Street](https://skin-labs.vercel.app/stickers/mix/pm2-football-cars-street/): 84 stickers, GH₵100
-  - [Pick & Mix: Anime, Heroes + Vibes](https://skin-labs.vercel.app/stickers/mix/pm3-anime-heroes-vibes/): 84 stickers, GH₵100
-  - [Starter Mix](https://skin-labs.vercel.app/stickers/mix/mx1-starter-mix/): 30 stickers, GH₵60
-  - [Campus Mix](https://skin-labs.vercel.app/stickers/mix/mx2-campus-mix/): 26 stickers, GH₵60
-  - [Game Night Mix](https://skin-labs.vercel.app/stickers/mix/mx3-game-night-mix/): 29 stickers, GH₵60
-  - [Street & Speed Mix](https://skin-labs.vercel.app/stickers/mix/mx4-street-and-speed-mix/): 28 stickers, GH₵60
-  - [Soft Girl Mix](https://skin-labs.vercel.app/stickers/mix/mx5-soft-girl-mix/): 26 stickers, GH₵60
-- [Programmers stickers](https://skin-labs.vercel.app/stickers/programmers/): Stickers for developers, computer science students and anyone who lives in a terminal: programming language logos, hacker and cybersecurity designs, AI and vibe-coding tools, and the dev jokes that only make sense at 2am.
-  - [Dev Life](https://skin-labs.vercel.app/stickers/programmers/p9-dev-life/): 30 stickers, GH₵60
-  - [Stack & Logos](https://skin-labs.vercel.app/stickers/programmers/p10-stack-and-logos/): 27 stickers, GH₵60
-  - [Database & Backend](https://skin-labs.vercel.app/stickers/programmers/p11-database-backend/): 35 stickers, GH₵60
-  - [Hacker Mode](https://skin-labs.vercel.app/stickers/programmers/p1-hacker-mode/): 33 stickers, GH₵60
-  - [Ai & Vibe Coding](https://skin-labs.vercel.app/stickers/programmers/p2-ai-vibe-coding/): 25 stickers, GH₵60
-  - [Code Languages I](https://skin-labs.vercel.app/stickers/programmers/p3-code-languages-1/): 29 stickers, GH₵60
-  - [Code Languages Ii](https://skin-labs.vercel.app/stickers/programmers/p4-code-languages-2/): 29 stickers, GH₵60
-  - [Code Languages Iii](https://skin-labs.vercel.app/stickers/programmers/p5-code-languages-3/): 28 stickers, GH₵60
-  - [Dev Jokes I](https://skin-labs.vercel.app/stickers/programmers/p6-dev-jokes-1/): 27 stickers, GH₵60
-  - [Dev Jokes Ii](https://skin-labs.vercel.app/stickers/programmers/p7-dev-jokes-2/): 27 stickers, GH₵60
-  - [Dev Jokes Iii](https://skin-labs.vercel.app/stickers/programmers/p8-dev-jokes-3/): 27 stickers, GH₵60
-- [Gaming stickers](https://skin-labs.vercel.app/stickers/gaming/): For gamers: GTA and Rockstar, Call of Duty and Warzone, PlayStation buttons, retro controllers and gamer-mode signs.
-  - [Game On](https://skin-labs.vercel.app/stickers/gaming/g5-game-on/): 27 stickers, GH₵60
-  - [Retro & Console](https://skin-labs.vercel.app/stickers/gaming/g6-retro-and-console/): 25 stickers, GH₵60
-  - [Fc Mobile Cards I](https://skin-labs.vercel.app/stickers/gaming/fc-mobile-cards-1/): 28 stickers, GH₵60
-  - [Fc Mobile Icons Ii](https://skin-labs.vercel.app/stickers/gaming/fc-mobile-cards-2/): 28 stickers, GH₵60
-  - [Pubg](https://skin-labs.vercel.app/stickers/gaming/g7-pubg/): 12 stickers, GH₵60
-  - [Ghost Chibi](https://skin-labs.vercel.app/stickers/gaming/g8-ghost-chibi/): 20 stickers, GH₵60
-  - [Gamer Street](https://skin-labs.vercel.app/stickers/gaming/g9-gamer-street/): 27 stickers, GH₵60
-  - [Fc Playstyles](https://skin-labs.vercel.app/stickers/gaming/g10-fc-playstyles/): 38 stickers, GH₵60
-  - [Gta & Rockstar](https://skin-labs.vercel.app/stickers/gaming/g1-gta-rockstar/): 26 stickers, GH₵60
-  - [Warzone & Cod](https://skin-labs.vercel.app/stickers/gaming/g2-warzone-cod/): 36 stickers, GH₵60
-  - [Gamer Mode](https://skin-labs.vercel.app/stickers/gaming/g3-gamer-mode/): 28 stickers, GH₵60
-  - [Player One](https://skin-labs.vercel.app/stickers/gaming/g4-player-one/): 28 stickers, GH₵60
-- [Football stickers](https://skin-labs.vercel.app/stickers/football/): Club crests from the Premier League, La Liga, Serie A, Bundesliga and beyond, plus football legends, trophies and red cards.
-  - [Matchday](https://skin-labs.vercel.app/stickers/football/f4-matchday/): 16 stickers, GH₵60
-  - [Barça Crests](https://skin-labs.vercel.app/stickers/football/fc-barca-crests/): 24 stickers, GH₵60
-  - [Barça Squad](https://skin-labs.vercel.app/stickers/football/fc-barca-squad/): 21 stickers, GH₵60
-  - [Lamine Yamal](https://skin-labs.vercel.app/stickers/football/fc-lamine-yamal/): 9 stickers, GH₵60
-  - [Messi](https://skin-labs.vercel.app/stickers/football/fc-messi/): 16 stickers, GH₵60
-  - [Hala Madrid](https://skin-labs.vercel.app/stickers/football/fc-hala-madrid/): 16 stickers, GH₵60
-  - [Madrid Squad](https://skin-labs.vercel.app/stickers/football/fc-madrid-squad/): 8 stickers, GH₵60
-  - [Club Crests I](https://skin-labs.vercel.app/stickers/football/f1-club-crests-i/): 30 stickers, GH₵60
-  - [Club Crests Ii](https://skin-labs.vercel.app/stickers/football/f2-club-crests-ii/): 30 stickers, GH₵60
-  - [Football Legends](https://skin-labs.vercel.app/stickers/football/f3-football-legends/): 29 stickers, GH₵60
-- [Anime stickers](https://skin-labs.vercel.app/stickers/anime/): One Piece, Naruto and other anime favourites, plus kawaii food, Japanese text and main-character energy.
-  - [Itachi Uchiha](https://skin-labs.vercel.app/stickers/anime/an2-itachi/): 9 stickers, GH₵60
-  - [Akatsuki](https://skin-labs.vercel.app/stickers/anime/an3-akatsuki/): 13 stickers, GH₵60
-  - [Monkey D. Luffy](https://skin-labs.vercel.app/stickers/anime/an4-monkey-d-luffy/): 15 stickers, GH₵60
-  - [One Piece](https://skin-labs.vercel.app/stickers/anime/an5-one-piece/): 11 stickers, GH₵60
-  - [Anime Legends Ii](https://skin-labs.vercel.app/stickers/anime/an6-anime-legends-ii/): 20 stickers, GH₵60
-  - [My Hero Academia](https://skin-labs.vercel.app/stickers/anime/an7-my-hero-academia/): 46 stickers, GH₵60
-  - [Anime Legends](https://skin-labs.vercel.app/stickers/anime/an1-anime-legends/): 31 stickers, GH₵60
-  - [Anime Vibes](https://skin-labs.vercel.app/stickers/anime/anime-vibes/): 27 stickers, GH₵60
-- [Cartoons stickers](https://skin-labs.vercel.app/stickers/cartoons/): Chibi superheroes and classic cartoons, from Marvel minis to SpongeBob and Looney Tunes style chaos.
-  - [Heroes & Cartoons I](https://skin-labs.vercel.app/stickers/cartoons/c1-marvel-chibis/): 32 stickers, GH₵60
-  - [Heroes & Cartoons Ii](https://skin-labs.vercel.app/stickers/cartoons/c2-cartoon-chaos/): 32 stickers, GH₵60
-- [Streetwear stickers](https://skin-labs.vercel.app/stickers/streetwear/): Hip-hop, skate and 90s street culture: graffiti, sneakers, fast cars and attitude.
-  - [Street Legends](https://skin-labs.vercel.app/stickers/streetwear/s3-street-legends/): 27 stickers, GH₵60
-  - [Retro Tape](https://skin-labs.vercel.app/stickers/streetwear/s4-retro-tape/): 5 stickers, GH₵60
-  - [Street Culture](https://skin-labs.vercel.app/stickers/streetwear/s1-street-culture/): 28 stickers, GH₵60
-  - [Cars & Culture](https://skin-labs.vercel.app/stickers/streetwear/s2-cars-and-culture/): 28 stickers, GH₵60
-- [Quotes & Vibes stickers](https://skin-labs.vercel.app/stickers/quotes/): Short quotes and good-vibes lettering for laptops, journals and water bottles.
-  - [Gen Z Ghana](https://skin-labs.vercel.app/stickers/quotes/q2-gen-z-ghana/): 29 stickers, GH₵60
-  - [Nasa & Space](https://skin-labs.vercel.app/stickers/quotes/q3-nasa-space/): 12 stickers, GH₵60
-  - [Quotes & Vibes](https://skin-labs.vercel.app/stickers/quotes/q1-quotes-and-vibes/): 25 stickers, GH₵60
-- [Girly & Cute stickers](https://skin-labs.vercel.app/stickers/girly/): Soft, cute and pretty stickers: drippy smileys, cherries, bows, Y2K icons, emoji moods and Gen Z quotes.
-  - [Boss Girl](https://skin-labs.vercel.app/stickers/girly/gr5-boss-girl/): 26 stickers, GH₵60
-  - [Soft Life](https://skin-labs.vercel.app/stickers/girly/gr6-soft-life/): 22 stickers, GH₵60
-  - [Good Vibes Doodles](https://skin-labs.vercel.app/stickers/girly/good-vibes-doodles/): 22 stickers, GH₵60
-  - [Y2K Dreamgirl](https://skin-labs.vercel.app/stickers/girly/y2k-dreamgirl/): 20 stickers, GH₵60
-  - [Emoji Mood](https://skin-labs.vercel.app/stickers/girly/emoji-mood/): 19 stickers, GH₵60
-  - [Gen Z Girlies](https://skin-labs.vercel.app/stickers/girly/gen-z-girlies/): 27 stickers, GH₵60
-- [Marvel & Heroes stickers](https://skin-labs.vercel.app/stickers/marvel/): Avengers and Spider-Man stickers: Iron Man, Thor, Captain America, Venom and the whole Spider-Verse.
-  - [Spider-man](https://skin-labs.vercel.app/stickers/marvel/m3-spider-man/): 14 stickers, GH₵60
-  - [Spidey Pop](https://skin-labs.vercel.app/stickers/marvel/m4-spidey-pop/): 10 stickers, GH₵60
-  - [Marvel Avengers](https://skin-labs.vercel.app/stickers/marvel/m1-marvel-avengers/): 29 stickers, GH₵60
-  - [Spider-verse](https://skin-labs.vercel.app/stickers/marvel/m2-spider-verse/): 31 stickers, GH₵60
-- [Sneakers & Hype stickers](https://skin-labs.vercel.app/stickers/sneakers/): For sneakerheads: Jordans, Air Force 1s, Dunks, swooshes and limited-drop energy.
-  - [Nba Classics](https://skin-labs.vercel.app/stickers/sneakers/k3-nba-classics/): 12 stickers, GH₵60
-  - [Sneakerhead I](https://skin-labs.vercel.app/stickers/sneakers/k1-sneakerhead-1/): 25 stickers, GH₵60
-  - [Sneakerhead Ii](https://skin-labs.vercel.app/stickers/sneakers/k1-sneakerhead-2/): 25 stickers, GH₵60
-- [Cars & JDM stickers](https://skin-labs.vercel.app/stickers/cars/): Car badges and JDM and Euro icons: BMW M, AMG, Supra, Skyline R34, Mustang, Golf GTI and more.
-  - [Motors & Moto](https://skin-labs.vercel.app/stickers/cars/v3-motors-and-moto/): 18 stickers, GH₵60
-  - [Bmw Real](https://skin-labs.vercel.app/stickers/cars/v4-bmw-real/): 10 stickers, GH₵60
-  - [Bmw M](https://skin-labs.vercel.app/stickers/cars/v5-bmw-m/): 25 stickers, GH₵60
-  - [Car Badges](https://skin-labs.vercel.app/stickers/cars/v1-car-badges/): 25 stickers, GH₵60
-  - [Jdm & Euro](https://skin-labs.vercel.app/stickers/cars/v2-jdm-and-euro/): 31 stickers, GH₵60
-- [Moto & Bike Life stickers](https://skin-labs.vercel.app/stickers/moto/): Motocross and bike-life stickers: helmets, wheelies, racing brands and ride-or-die lettering.
-  - [Ride Or Die](https://skin-labs.vercel.app/stickers/moto/b2-ride-or-die/): 21 stickers, GH₵60
-  - [Moto & Bike Life I](https://skin-labs.vercel.app/stickers/moto/b1-moto-bike-life-1/): 21 stickers, GH₵60
-  - [Moto & Bike Life Ii](https://skin-labs.vercel.app/stickers/moto/b1-moto-bike-life-2/): 21 stickers, GH₵60
-- [Dark Street Art stickers](https://skin-labs.vercel.app/stickers/dark/): Black-and-white street art: skulls, graffiti, Thug Life, Bad Boys and no-rules designs.
-  - [Dark Street Art I](https://skin-labs.vercel.app/stickers/dark/d1-dark-street-art-1/): 21 stickers, GH₵60
-  - [Dark Street Art Ii](https://skin-labs.vercel.app/stickers/dark/d1-dark-street-art-2/): 21 stickers, GH₵60
+- [Lid Centrepieces stickers](https://shop.baidencreatives.org/stickers/xl/): Lid centrepieces: one big sticker, about 18 cm, made for the middle of your laptop lid. Ghost, Yamal, EA FC, eFootball, Rick and Morty and more.
+  - [Ghost Mugshot](https://shop.baidencreatives.org/stickers/xl/xl-ghost-mugshot/): 1 stickers, GH₵25
+  - [Ghost Ink](https://shop.baidencreatives.org/stickers/xl/xl-ghost-ink/): 1 stickers, GH₵25
+  - [Yamal](https://shop.baidencreatives.org/stickers/xl/xl-yamal/): 1 stickers, GH₵25
+  - [Efootball 27](https://shop.baidencreatives.org/stickers/xl/xl-efootball/): 1 stickers, GH₵25
+  - [Fc Mobile Ronaldo](https://shop.baidencreatives.org/stickers/xl/xl-fc-mobile-ronaldo/): 1 stickers, GH₵25
+  - [Fc Mobile Anime](https://shop.baidencreatives.org/stickers/xl/xl-fc-mobile-anime/): 1 stickers, GH₵25
+  - [Fc Mobile Mono](https://shop.baidencreatives.org/stickers/xl/xl-fc-mobile-mono/): 1 stickers, GH₵25
+  - [Gold Strength](https://shop.baidencreatives.org/stickers/xl/xl-gold-strength/): 1 stickers, GH₵25
+  - [Just Do It](https://shop.baidencreatives.org/stickers/xl/xl-just-do-it/): 1 stickers, GH₵25
+  - [No Days Off](https://shop.baidencreatives.org/stickers/xl/xl-no-days-off/): 1 stickers, GH₵25
+  - [Rick & Morty](https://shop.baidencreatives.org/stickers/xl/xl-rick-and-morty/): 2 stickers, GH₵25
+- [Pick & Mix stickers](https://shop.baidencreatives.org/stickers/mix/): Pick and mix: big A3 sheets with about 84 stickers from a whole group of categories, plus mixed packs with a bit of everything.
+  - [Pick & Mix: Tech + Gaming](https://shop.baidencreatives.org/stickers/mix/pm1-tech-and-gaming/): 84 stickers, GH₵100
+  - [Pick & Mix: Ball, Cars + Street](https://shop.baidencreatives.org/stickers/mix/pm2-football-cars-street/): 84 stickers, GH₵100
+  - [Pick & Mix: Anime, Heroes + Vibes](https://shop.baidencreatives.org/stickers/mix/pm3-anime-heroes-vibes/): 84 stickers, GH₵100
+  - [Starter Mix](https://shop.baidencreatives.org/stickers/mix/mx1-starter-mix/): 30 stickers, GH₵60
+  - [Campus Mix](https://shop.baidencreatives.org/stickers/mix/mx2-campus-mix/): 26 stickers, GH₵60
+  - [Game Night Mix](https://shop.baidencreatives.org/stickers/mix/mx3-game-night-mix/): 29 stickers, GH₵60
+  - [Street & Speed Mix](https://shop.baidencreatives.org/stickers/mix/mx4-street-and-speed-mix/): 28 stickers, GH₵60
+  - [Soft Girl Mix](https://shop.baidencreatives.org/stickers/mix/mx5-soft-girl-mix/): 26 stickers, GH₵60
+- [Programmers stickers](https://shop.baidencreatives.org/stickers/programmers/): Stickers for developers, computer science students and anyone who lives in a terminal: programming language logos, hacker and cybersecurity designs, AI and vibe-coding tools, and the dev jokes that only make sense at 2am.
+  - [Dev Life](https://shop.baidencreatives.org/stickers/programmers/p9-dev-life/): 30 stickers, GH₵60
+  - [Stack & Logos](https://shop.baidencreatives.org/stickers/programmers/p10-stack-and-logos/): 27 stickers, GH₵60
+  - [Database & Backend](https://shop.baidencreatives.org/stickers/programmers/p11-database-backend/): 35 stickers, GH₵60
+  - [Hacker Mode](https://shop.baidencreatives.org/stickers/programmers/p1-hacker-mode/): 33 stickers, GH₵60
+  - [Ai & Vibe Coding](https://shop.baidencreatives.org/stickers/programmers/p2-ai-vibe-coding/): 25 stickers, GH₵60
+  - [Code Languages I](https://shop.baidencreatives.org/stickers/programmers/p3-code-languages-1/): 29 stickers, GH₵60
+  - [Code Languages Ii](https://shop.baidencreatives.org/stickers/programmers/p4-code-languages-2/): 29 stickers, GH₵60
+  - [Code Languages Iii](https://shop.baidencreatives.org/stickers/programmers/p5-code-languages-3/): 28 stickers, GH₵60
+  - [Dev Jokes I](https://shop.baidencreatives.org/stickers/programmers/p6-dev-jokes-1/): 27 stickers, GH₵60
+  - [Dev Jokes Ii](https://shop.baidencreatives.org/stickers/programmers/p7-dev-jokes-2/): 27 stickers, GH₵60
+  - [Dev Jokes Iii](https://shop.baidencreatives.org/stickers/programmers/p8-dev-jokes-3/): 27 stickers, GH₵60
+- [Gaming stickers](https://shop.baidencreatives.org/stickers/gaming/): For gamers: GTA and Rockstar, Call of Duty and Warzone, PlayStation buttons, retro controllers and gamer-mode signs.
+  - [Game On](https://shop.baidencreatives.org/stickers/gaming/g5-game-on/): 27 stickers, GH₵60
+  - [Retro & Console](https://shop.baidencreatives.org/stickers/gaming/g6-retro-and-console/): 25 stickers, GH₵60
+  - [Fc Mobile Cards I](https://shop.baidencreatives.org/stickers/gaming/fc-mobile-cards-1/): 28 stickers, GH₵60
+  - [Fc Mobile Icons Ii](https://shop.baidencreatives.org/stickers/gaming/fc-mobile-cards-2/): 28 stickers, GH₵60
+  - [Pubg](https://shop.baidencreatives.org/stickers/gaming/g7-pubg/): 12 stickers, GH₵60
+  - [Ghost Chibi](https://shop.baidencreatives.org/stickers/gaming/g8-ghost-chibi/): 20 stickers, GH₵60
+  - [Gamer Street](https://shop.baidencreatives.org/stickers/gaming/g9-gamer-street/): 27 stickers, GH₵60
+  - [Fc Playstyles](https://shop.baidencreatives.org/stickers/gaming/g10-fc-playstyles/): 38 stickers, GH₵60
+  - [Gta & Rockstar](https://shop.baidencreatives.org/stickers/gaming/g1-gta-rockstar/): 26 stickers, GH₵60
+  - [Warzone & Cod](https://shop.baidencreatives.org/stickers/gaming/g2-warzone-cod/): 36 stickers, GH₵60
+  - [Gamer Mode](https://shop.baidencreatives.org/stickers/gaming/g3-gamer-mode/): 28 stickers, GH₵60
+  - [Player One](https://shop.baidencreatives.org/stickers/gaming/g4-player-one/): 28 stickers, GH₵60
+- [Football stickers](https://shop.baidencreatives.org/stickers/football/): Club crests from the Premier League, La Liga, Serie A, Bundesliga and beyond, plus football legends, trophies and red cards.
+  - [Matchday](https://shop.baidencreatives.org/stickers/football/f4-matchday/): 16 stickers, GH₵60
+  - [Barça Crests](https://shop.baidencreatives.org/stickers/football/fc-barca-crests/): 24 stickers, GH₵60
+  - [Barça Squad](https://shop.baidencreatives.org/stickers/football/fc-barca-squad/): 21 stickers, GH₵60
+  - [Lamine Yamal](https://shop.baidencreatives.org/stickers/football/fc-lamine-yamal/): 9 stickers, GH₵60
+  - [Messi](https://shop.baidencreatives.org/stickers/football/fc-messi/): 16 stickers, GH₵60
+  - [Hala Madrid](https://shop.baidencreatives.org/stickers/football/fc-hala-madrid/): 16 stickers, GH₵60
+  - [Madrid Squad](https://shop.baidencreatives.org/stickers/football/fc-madrid-squad/): 8 stickers, GH₵60
+  - [Club Crests I](https://shop.baidencreatives.org/stickers/football/f1-club-crests-i/): 30 stickers, GH₵60
+  - [Club Crests Ii](https://shop.baidencreatives.org/stickers/football/f2-club-crests-ii/): 30 stickers, GH₵60
+  - [Football Legends](https://shop.baidencreatives.org/stickers/football/f3-football-legends/): 29 stickers, GH₵60
+- [Anime stickers](https://shop.baidencreatives.org/stickers/anime/): One Piece, Naruto and other anime favourites, plus kawaii food, Japanese text and main-character energy.
+  - [Itachi Uchiha](https://shop.baidencreatives.org/stickers/anime/an2-itachi/): 9 stickers, GH₵60
+  - [Akatsuki](https://shop.baidencreatives.org/stickers/anime/an3-akatsuki/): 13 stickers, GH₵60
+  - [Monkey D. Luffy](https://shop.baidencreatives.org/stickers/anime/an4-monkey-d-luffy/): 15 stickers, GH₵60
+  - [One Piece](https://shop.baidencreatives.org/stickers/anime/an5-one-piece/): 11 stickers, GH₵60
+  - [Anime Legends Ii](https://shop.baidencreatives.org/stickers/anime/an6-anime-legends-ii/): 20 stickers, GH₵60
+  - [My Hero Academia](https://shop.baidencreatives.org/stickers/anime/an7-my-hero-academia/): 46 stickers, GH₵60
+  - [Anime Legends](https://shop.baidencreatives.org/stickers/anime/an1-anime-legends/): 31 stickers, GH₵60
+  - [Anime Vibes](https://shop.baidencreatives.org/stickers/anime/anime-vibes/): 27 stickers, GH₵60
+- [Cartoons stickers](https://shop.baidencreatives.org/stickers/cartoons/): Chibi superheroes and classic cartoons, from Marvel minis to SpongeBob and Looney Tunes style chaos.
+  - [Heroes & Cartoons I](https://shop.baidencreatives.org/stickers/cartoons/c1-marvel-chibis/): 32 stickers, GH₵60
+  - [Heroes & Cartoons Ii](https://shop.baidencreatives.org/stickers/cartoons/c2-cartoon-chaos/): 32 stickers, GH₵60
+- [Streetwear stickers](https://shop.baidencreatives.org/stickers/streetwear/): Hip-hop, skate and 90s street culture: graffiti, sneakers, fast cars and attitude.
+  - [Street Legends](https://shop.baidencreatives.org/stickers/streetwear/s3-street-legends/): 27 stickers, GH₵60
+  - [Retro Tape](https://shop.baidencreatives.org/stickers/streetwear/s4-retro-tape/): 5 stickers, GH₵60
+  - [Street Culture](https://shop.baidencreatives.org/stickers/streetwear/s1-street-culture/): 28 stickers, GH₵60
+  - [Cars & Culture](https://shop.baidencreatives.org/stickers/streetwear/s2-cars-and-culture/): 28 stickers, GH₵60
+- [Quotes & Vibes stickers](https://shop.baidencreatives.org/stickers/quotes/): Short quotes and good-vibes lettering for laptops, journals and water bottles.
+  - [Gen Z Ghana](https://shop.baidencreatives.org/stickers/quotes/q2-gen-z-ghana/): 29 stickers, GH₵60
+  - [Nasa & Space](https://shop.baidencreatives.org/stickers/quotes/q3-nasa-space/): 12 stickers, GH₵60
+  - [Quotes & Vibes](https://shop.baidencreatives.org/stickers/quotes/q1-quotes-and-vibes/): 25 stickers, GH₵60
+- [Girly & Cute stickers](https://shop.baidencreatives.org/stickers/girly/): Soft, cute and pretty stickers: drippy smileys, cherries, bows, Y2K icons, emoji moods and Gen Z quotes.
+  - [Boss Girl](https://shop.baidencreatives.org/stickers/girly/gr5-boss-girl/): 26 stickers, GH₵60
+  - [Soft Life](https://shop.baidencreatives.org/stickers/girly/gr6-soft-life/): 22 stickers, GH₵60
+  - [Good Vibes Doodles](https://shop.baidencreatives.org/stickers/girly/good-vibes-doodles/): 22 stickers, GH₵60
+  - [Y2K Dreamgirl](https://shop.baidencreatives.org/stickers/girly/y2k-dreamgirl/): 20 stickers, GH₵60
+  - [Emoji Mood](https://shop.baidencreatives.org/stickers/girly/emoji-mood/): 19 stickers, GH₵60
+  - [Gen Z Girlies](https://shop.baidencreatives.org/stickers/girly/gen-z-girlies/): 27 stickers, GH₵60
+- [Marvel & Heroes stickers](https://shop.baidencreatives.org/stickers/marvel/): Avengers and Spider-Man stickers: Iron Man, Thor, Captain America, Venom and the whole Spider-Verse.
+  - [Spider-man](https://shop.baidencreatives.org/stickers/marvel/m3-spider-man/): 14 stickers, GH₵60
+  - [Spidey Pop](https://shop.baidencreatives.org/stickers/marvel/m4-spidey-pop/): 10 stickers, GH₵60
+  - [Marvel Avengers](https://shop.baidencreatives.org/stickers/marvel/m1-marvel-avengers/): 29 stickers, GH₵60
+  - [Spider-verse](https://shop.baidencreatives.org/stickers/marvel/m2-spider-verse/): 31 stickers, GH₵60
+- [Sneakers & Hype stickers](https://shop.baidencreatives.org/stickers/sneakers/): For sneakerheads: Jordans, Air Force 1s, Dunks, swooshes and limited-drop energy.
+  - [Nba Classics](https://shop.baidencreatives.org/stickers/sneakers/k3-nba-classics/): 12 stickers, GH₵60
+  - [Sneakerhead I](https://shop.baidencreatives.org/stickers/sneakers/k1-sneakerhead-1/): 25 stickers, GH₵60
+  - [Sneakerhead Ii](https://shop.baidencreatives.org/stickers/sneakers/k1-sneakerhead-2/): 25 stickers, GH₵60
+- [Cars & JDM stickers](https://shop.baidencreatives.org/stickers/cars/): Car badges and JDM and Euro icons: BMW M, AMG, Supra, Skyline R34, Mustang, Golf GTI and more.
+  - [Motors & Moto](https://shop.baidencreatives.org/stickers/cars/v3-motors-and-moto/): 18 stickers, GH₵60
+  - [Bmw Real](https://shop.baidencreatives.org/stickers/cars/v4-bmw-real/): 10 stickers, GH₵60
+  - [Bmw M](https://shop.baidencreatives.org/stickers/cars/v5-bmw-m/): 25 stickers, GH₵60
+  - [Car Badges](https://shop.baidencreatives.org/stickers/cars/v1-car-badges/): 25 stickers, GH₵60
+  - [Jdm & Euro](https://shop.baidencreatives.org/stickers/cars/v2-jdm-and-euro/): 31 stickers, GH₵60
+- [Moto & Bike Life stickers](https://shop.baidencreatives.org/stickers/moto/): Motocross and bike-life stickers: helmets, wheelies, racing brands and ride-or-die lettering.
+  - [Ride Or Die](https://shop.baidencreatives.org/stickers/moto/b2-ride-or-die/): 21 stickers, GH₵60
+  - [Moto & Bike Life I](https://shop.baidencreatives.org/stickers/moto/b1-moto-bike-life-1/): 21 stickers, GH₵60
+  - [Moto & Bike Life Ii](https://shop.baidencreatives.org/stickers/moto/b1-moto-bike-life-2/): 21 stickers, GH₵60
+- [Dark Street Art stickers](https://shop.baidencreatives.org/stickers/dark/): Black-and-white street art: skulls, graffiti, Thug Life, Bad Boys and no-rules designs.
+  - [Dark Street Art I](https://shop.baidencreatives.org/stickers/dark/d1-dark-street-art-1/): 21 stickers, GH₵60
+  - [Dark Street Art Ii](https://shop.baidencreatives.org/stickers/dark/d1-dark-street-art-2/): 21 stickers, GH₵60
 
 ## FAQ
 **How much are the sticker packs?** Every pack comes in two sizes: a small A5 sheet for GH₵30 and a big A4 sheet with all the stickers for GH₵60. The A3 pick & mix sheets, about 84 stickers from a whole group of categories, are GH₵100. Single stickers you pick yourself cost GH₵3 each. Custom stickers made from your own picture, name or logo start at GH₵15.
