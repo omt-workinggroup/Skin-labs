@@ -18,6 +18,14 @@ function addDrops(cat) { if (!cat || !Array.isArray(cat.packs)) return 0; let n 
   return n; }
 const sh = (id, dir) => { if (String(id).startsWith('skin:')) return `skins/${String(id).slice(5)}-s.${IX}`; const p = PK[String(id).replace(/-a5$/, '')]; return p && p.drop ? p.sheet : `${dir}/${id}.${IX}`; };
 try { addDrops(JSON.parse(localStorage.getItem('sl-drops') || 'null')); } catch (e) {}
+// ---------- free sticker with every order (one per order) ----------
+let FREE = []; let freePick = (() => { try { return JSON.parse(localStorage.getItem('sl-free')) || ''; } catch (e) { return ''; } })();
+function addFree(f) { if (!f || !Array.isArray(f.stickers) || PK['free-stickers']) return;
+  const items = f.stickers.map(x => [x.code, 0, 0, x.w, x.h, `free/${x.code}-s.webp`, `free/${x.code}.webp`]);
+  const p = { id: 'free-stickers', cat: '', name: 'FREE STICKERS', nice: 'Free sticker', tag: 'one free with every order', bg: '#0a0a0a', fg: '#5ef2e6', aw: 1, ah: 1, items, drop: 1, free: 1, price: 0 };
+  PK[p.id] = p; items.forEach(it => { CODE[it[0]] = { p, it }; }); FREE = f.stickers; if (freePick && !CODE[freePick]) freePick = ''; }
+const isFree = c => String(c).startsWith('XQV-');
+try { addFree(JSON.parse(localStorage.getItem('sl-free-cat') || 'null')); } catch (e) {}
 const total = Object.keys(CODE).length;
 const light = hex => { const n = parseInt(hex.slice(1), 16); return ((n >> 16) * 299 + ((n >> 8) & 255) * 587 + (n & 255) * 114) / 1000 > 150; };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -117,7 +125,7 @@ const waLink = t => `https://wa.me/${WA}?text=${encodeURIComponent(t)}`;
 function updBar() {
   const n = count(), np = nPacks(), ns = nSingles();
   $('#bar-n').textContent = n;
-  const sk = Object.entries(packs).reduce((t, [k, q]) => t + (String(k).startsWith('skin~') ? q : 0), 0), nk = dsgSkins() + sk; $('#bar-t').textContent = [np - sk ? `${np - sk} pack${np - sk > 1 ? 's' : ''}` : '', ns ? `${ns} sticker${ns > 1 ? 's' : ''}` : '', curDsg() ? 'your pack' : '', nk ? `${nk} skin${nk > 1 ? 's' : ''}` : ''].filter(Boolean).join(' + ') + ' in your cart';
+  const sk = Object.entries(packs).reduce((t, [k, q]) => t + (String(k).startsWith('skin~') ? q : 0), 0), nk = dsgSkins() + sk; $('#bar-t').textContent = [np - sk ? `${np - sk} pack${np - sk > 1 ? 's' : ''}` : '', ns ? `${ns} sticker${ns > 1 ? 's' : ''}` : '', curDsg() ? 'your pack' : '', (freeCode() || dsgFree()) && count() ? '1 free' : '', nk ? `${nk} skin${nk > 1 ? 's' : ''}` : ''].filter(Boolean).join(' + ') + ' in your cart';
   $('#bar-p').textContent = priceTxt(money(), !!nk);
   $('#bar').classList.toggle('show', n > 0);
   for (const id of ['#t-bd', '#nv-bd']) { $(id).hidden = !n; $(id).textContent = n; }
@@ -135,9 +143,11 @@ const waFmt = t => esc(t).replace(/\*([^*\n]+)\*/g, '<b>$1</b>').replace(/(https
 // ---------- cart + checkout: the order goes straight to the Skin Lab admin (no long WhatsApp text) ----------
 // skins have no price on the site: they are always "price on DM"
 const priceTxt = t => `${CUR}${t}`;
-const dsgPrice = d => d ? Object.values(d.items || {}).flat().length * PRICE + (Object.values(d.skin || {}).some(Boolean) ? SKINP[d.skinSize || 'M'].price : 0) : 0;
+const dsgPrice = d => d ? Object.values(d.items || {}).flat().filter(o => !isFree(o.c)).length * PRICE + (Object.values(d.skin || {}).some(Boolean) ? SKINP[d.skinSize || 'M'].price : 0) : 0;
 // ---------- singles sheet: the single stickers a customer picks, laid out on the Skin Lab template ----------
-const PICK_CM = 5.5;   // long side of each single sticker on the sheet
+const PICK_CM = 5.5;
+const dsgFree = () => { const d = curDsg(); return d ? Object.values(d.items || {}).flat().map(o => o.c).find(isFree) || '' : ''; };
+const freeCode = () => dsgFree() ? '' : (freePick && CODE[freePick] ? freePick : '');   // long side of each single sticker on the sheet
 const stickerSrc = c => (CODE[c] && CODE[c].it[6]) || `hd/${c}.avif`;
 const pickImg = c => new Promise(ok => { const i = new Image(); if (/^https?:/.test(stickerSrc(c))) i.crossOrigin = 'anonymous'; i.onload = () => ok({ im: i, sx: 0, sy: 0, sw: i.width, sh: i.height });
   i.onerror = () => { const { p, it } = CODE[c], a = new Image(); a.onload = () => ok({ im: a, sx: it[1], sy: it[2], sw: it[3], sh: it[4] }); a.onerror = () => ok(null); a.src = `atlas/${p.id}.${IX}`; }; i.src = stickerSrc(c); });
@@ -150,7 +160,7 @@ function packSingles(list) {   // list [{c,w,h}] mm -> smallest sheet (A5, A4, A
   for (let k = .95; k > .2; k -= .05) { const r = fit(297, 420, k); if (r) return { size: 'A3', W: 297, H: 420, items: r, scaled: true }; } return null; }
 let picksCache = { key: '', res: null };
 async function singlesSheet(name) {
-  const entries = Object.entries(cart).filter(([c]) => CODE[c]), key = JSON.stringify(entries) + '|' + name + '|' + IX; if (!entries.length) return null;
+  const fc = freeCode(), entries = [...Object.entries(cart).filter(([c]) => CODE[c]), ...(fc ? [[fc, 1]] : [])], key = JSON.stringify(entries) + '|' + name + '|' + IX; if (!entries.length) return null;
   if (picksCache.key === key) return picksCache.res;
   const codes = entries.flatMap(([c, q]) => Array(Math.min(q, 30)).fill(c)), ims = {};
   await Promise.all([...new Set(codes)].map(c => pickImg(c).then(r => ims[c] = r)));
@@ -168,7 +178,9 @@ async function singlesSheet(name) {
   let cx = tx; g.font = `700 ${hd * .07}px Geist, Arial, sans-serif`;
   for (const c of [`${codes.length} STICKERS`, `${lay.size} SHEET`, 'PEEL • STICK • FLEX']) { const w = g.measureText(c).width + hd * .14; g.strokeStyle = '#fff'; g.lineWidth = 2; g.beginPath(); g.roundRect(cx, hd * .63, w, hd * .13, hd * .065); g.stroke(); g.fillStyle = '#fff'; g.fillText(c, cx + hd * .07, hd * .698); cx += w + hd * .05; }
   g.imageSmoothingQuality = 'high';
-  for (const o of lay.items) { const r = ims[o.c]; if (r) g.drawImage(r.im, r.sx, r.sy, r.sw, r.sh, o.x * k, o.y * k, o.w * k, o.h * k); }
+  for (const o of lay.items) { const r = ims[o.c]; if (r) g.drawImage(r.im, r.sx, r.sy, r.sw, r.sh, o.x * k, o.y * k, o.w * k, o.h * k);
+    if (isFree(o.c)) { const tw = W * .07, th = W * .028, bx = o.x * k + o.w * k - tw * .9, by = o.y * k - th * .2; g.fillStyle = '#5ef2e6'; g.beginPath(); g.roundRect(bx, by, tw, th, th / 2); g.fill();
+      g.fillStyle = '#0a0a0a'; g.font = `800 ${th * .62}px Geist, Arial, sans-serif`; g.textAlign = 'center'; g.fillText('FREE', bx + tw / 2, by + th * .54); g.textAlign = 'left'; } }
   g.fillStyle = '#111'; g.font = `700 ${W * .014}px Geist, Arial, sans-serif`; g.fillText('SKIN LAB', m, H - W * .022); g.textAlign = 'right'; g.fillStyle = '#555'; g.font = `500 ${W * .011}px Geist, Arial, sans-serif`;
   g.fillText(`${lay.size} · ${lay.scaled ? 'scaled to fit A3' : 'real size'} · printed in Accra`, W - m, H - W * .022); g.textAlign = 'left';
   let img; try { img = cv.toDataURL('image/jpeg', .86); } catch (e) { img = null; }
@@ -188,10 +200,11 @@ function openCart(focus) {
         <span class="dl"><a href="/design/" id="c-edit">Edit</a><button type="button" class="lnk" id="c-rmd">Remove</button></span></div></div>` : ''}
     ${pk.length ? `<div class="rows">${pk.map(([k, q]) => `<div class="row"><div class="th"><img src="${sh(pkOf(k).img, 'sheets-sm')}" alt="" loading="lazy" style="height:54px;width:auto;border-radius:3px"></div><div class="nm"><b style="font-family:var(--body)">${esc(pkOf(k).p.nice)}</b><span>${pkOf(k).skin ? `${SZ[pkOf(k).size]} · ${pkOf(k).fit}` : `${SZ[pkOf(k).size]} · ${pkOf(k).n} stickers`} · ${CUR}${pkOf(k).price}</span></div>
       <div class="qty"><button type="button" data-p="${k}" data-d="-1" aria-label="One less ${esc(pkOf(k).label)}">−</button><span>${q}</span><button type="button" data-p="${k}" data-d="1" aria-label="One more ${esc(pkOf(k).label)}">+</button></div></div>`).join('')}</div>` : ''}
-    ${items.length ? `<div class="mypk" id="c-picks"><button type="button" class="mys" id="c-psheet" aria-label="See your sheet bigger"><span class="lbl" style="display:grid;place-items:center;aspect-ratio:1/1.41;color:#888">Laying out…</span></button>
+    ${items.length || freeCode() ? `<div class="mypk" id="c-picks"><button type="button" class="mys" id="c-psheet" aria-label="See your sheet bigger"><span class="lbl" style="display:grid;place-items:center;aspect-ratio:1/1.41;color:#888">Laying out…</span></button>
       <div class="myt"><span class="lbl">Your singles sheet</span><b>${esc(who.name ? who.name.split(' ')[0] + "'s picks" : 'My picks')}</b><span id="c-pinfo">${nSingles()} sticker${nSingles() === 1 ? '' : 's'} · ${PICK_CM} cm each</span><span class="pr">${CUR}${nSingles() * PRICE}</span></div></div>
       <div class="grp">Single stickers · ${CUR}${PRICE} each</div><div class="rows">${items.map(([c, q]) => `<div class="row"><div class="th">${spr(CODE[c].p, CODE[c].it, 50)}</div><div class="nm"><b>${c}</b><span>${esc(CODE[c].p.nice)}</span></div>
       <div class="qty"><button type="button" data-q="${c}" data-d="-1" aria-label="One less ${c}">−</button><span>${q}</span><button type="button" data-q="${c}" data-d="1" aria-label="One more ${c}">+</button></div></div>`).join('')}</div>` : ''}
+    ${FREE.length ? `<div class="grp">Your free sticker · pick 1</div>${dsgFree() ? `<p class="small" style="margin:4px 0 10px">Your free sticker is already on your laptop design.</p>` : `<div class="fl fl2">${FREE.map(x => `<button type="button" class="fc ${x.code === freePick ? 'on' : ''}" data-free="${x.code}" aria-label="${esc(x.name)}, free"><img src="free/${x.code}-s.webp" alt="" loading="lazy"><i>FREE</i></button>`).join('')}</div>`}` : ''}
     <div class="sum"><div class="big" style="border:0;padding:0;margin:0"><span>Total</span><span>${priceTxt(money(), dsgSkins())}</span></div><div class="small"><span>Pay with MoMo when we confirm · delivery agreed with you</span></div></div>
     <form class="ck" id="ck" novalidate>
       <div class="grp">Your details</div>
@@ -204,13 +217,13 @@ function openCart(focus) {
     <button class="btn o" type="button" id="c-clear">Empty cart</button>`;
   const keep = () => { who = { ...who, name: $('#c-name').value.trim(), phone: $('#c-phone').value.trim(), loc: $('#c-loc').value.trim() }; store.set('sl-who', who); };
   ['#c-name', '#c-phone', '#c-loc'].forEach(s => $(s).addEventListener('input', () => { keep(); $(s).closest('.fld').classList.remove('err'); }));
-  b.onclick = e => { const k = e.target.closest('[data-q],[data-p]'); if (!k) return;
+  b.onclick = e => { const fr = e.target.closest('[data-free]'); if (fr) { pickFree(fr.dataset.free, true); picksCache.key = ''; return openCart(); } const k = e.target.closest('[data-q],[data-p]'); if (!k) return;
     if (k.dataset.q) setQty(k.dataset.q, (cart[k.dataset.q] || 0) + +k.dataset.d); else setPack(k.dataset.p, (packs[k.dataset.p] || 0) + +k.dataset.d); openCart(); };
   $('#ck').onsubmit = e => { e.preventDefault(); keep(); placeOrder(); };
   $('#c-clear').onclick = () => { cart = {}; packs = {}; store.set('sl-dsg', null); saveCart(); updBar(); openCart(); };
   if (dg) { $('#c-rmd').onclick = () => { store.set('sl-dsg', null); updBar(); openCart(); toast('Your pack was removed from the cart'); };
     if ($('#c-sheet')) $('#c-sheet').onclick = () => { $('#lb-img').src = dg.sheet; $('#lb').hidden = false; }; }
-  if (items.length) singlesSheet(who.name).then(r => { const b = $('#c-psheet'); if (!b) return; if (!r) { $('#c-picks').hidden = true; return; }
+  if (items.length || freeCode()) singlesSheet(who.name).then(r => { const b = $('#c-psheet'); if (!b) return; if (!r) { $('#c-picks').hidden = true; return; }
     b.innerHTML = `<img src="${r.img}" alt="Your singles sheet">`; $('#c-pinfo').textContent = `${r.size} sheet · ${r.n} stickers${r.scaled ? ' · scaled to fit' : ' · real size'}`;
     b.onclick = () => { $('#lb-img').src = r.img; $('#lb').hidden = false; }; });
   $('#cart').hidden = false;
@@ -220,13 +233,15 @@ const phoneOk = p => { const d = p.replace(/\D/g, ''); return d.length >= 9 && d
 const phoneIntl = p => { let d = p.replace(/\D/g, ''); if (d.startsWith('0')) d = '233' + d.slice(1); else if (d.length === 9) d = '233' + d; return d; };
 async function placeOrder() {
   const dg = curDsg(), pk = Object.entries(packs), items = Object.entries(cart);
+  if (!pk.length && !items.length && !dg) return toast('Add a sheet, a sticker or a skin. The free sticker comes with it.');
   if (!who.name) { $('#f-name').classList.add('err'); $('#c-name').focus(); return toast('Add your name'); }
   if (!phoneOk(who.phone || '')) { $('#f-phone').classList.add('err'); $('#c-phone').focus(); return toast('Add your WhatsApp number'); }
   const btn = $('#c-send'); btn.disabled = true; btn.textContent = 'Sending your order…';
   const body = { name: who.name, phone: phoneIntl(who.phone), loc: who.loc, total: money(),
     packs: pk.map(([k, q]) => { const o = pkOf(k); return { key: k, label: o.skin ? `${o.label} (${o.fit})` : `${o.p.nice} · ${SZ[o.size]}`, size: o.size, n: o.n, q, price: o.price }; }),
     singles: items.map(([c, q]) => ({ code: c, q, pack: CODE[c].p.nice, img: new URL(stickerSrc(c), location.href).href })),
-    picks: items.length ? await singlesSheet(who.name).then(r => r && { sheet: r.img, size: r.size, n: r.n, scaled: r.scaled, layout: r.layout }).catch(() => null) : null,
+    free: (() => { const c = dsgFree() || freeCode(), x = FREE.find(f => f.code === c); return x ? { code: c, name: x.name, img: new URL(`free/${c}.webp`, location.href).href, onDesign: !!dsgFree() } : null; })(),
+    picks: items.length || freeCode() ? await singlesSheet(who.name).then(r => r && { sheet: r.img, size: r.size, n: r.n, scaled: r.scaled, layout: r.layout }).catch(() => null) : null,
     design: dg ? { line: dsgLine(dg), laptop: dg.laptop || dg.name, packName: dg.packName, size: dg.sheetSize || '', n: Object.values(dg.items).flat().length, skins: Object.values(dg.skin || {}).filter(Boolean).map(id => ((SKIN[id] || [])[1] || id)), skinSize: dsgSkins() ? (dg.skinSize || 'M') : '', skinPrice: dsgSkins() ? SKINP[dg.skinSize || 'M'].price : 0,
       layout: dg.layout || [], scaled: !!dg.scaled, sheet: dg.sheet || null, mock: dg.thumb || null, raw: dsgPack(dg) } : null };
   try {
@@ -301,6 +316,12 @@ function lastOrder() {
   return `<button type="button" class="again" id="again"><span class="ic">↻</span><span><b>Order again</b><small>${esc(label)}</small></span><span class="go">Open</span></button>`;
 }
 // newest packs first on the home page, so nobody misses them
+function pickFree(c, quiet) { freePick = freePick === c && !quiet ? '' : c; store.set('sl-free', freePick); buzz(); updBar();
+  document.querySelectorAll('[data-free]').forEach(b => b.classList.toggle('on', b.dataset.free === freePick));
+  if (!quiet) toast(freePick ? 'Free sticker picked. It comes with your order.' : 'Free sticker removed'); }
+function freeStrip() { if (!FREE.length) return '';
+  return `<div class="frees"><div class="fh"><span><b>Free sticker</b> with every order</span><span class="lbl">pick 1 · ${CUR}0</span></div>
+    <div class="fl">${FREE.map(x => `<button type="button" class="fc ${x.code === freePick ? 'on' : ''}" data-free="${x.code}" aria-label="${esc(x.name)}, free"><img src="free/${x.code}-s.webp" alt="" loading="lazy"><i>FREE</i></button>`).join('')}</div></div>`; }
 function newDrops() {
   const TOP = ['an7-my-hero-academia', 'p11-database-backend', 'fc-lamine-yamal', 'fc-barca-crests', 'fc-messi', 'v5-bmw-m', 'an2-itachi', 'fc-hala-madrid', 'gr5-boss-girl', 'g7-pubg', 'an4-monkey-d-luffy', 'm3-spider-man', 'fc-madrid-squad', 'k3-nba-classics', 'q2-gen-z-ghana', 'q3-nasa-space'];
   const ps = [...D.packs.filter(p => p.drop), ...TOP.map(id => PK[id])].filter(Boolean);
@@ -316,6 +337,7 @@ function vHome() {
     ${lastOrder()}
     <div class="kick-row"><span>Laptop skins &amp; stickers · Accra</span><span>From ${CUR}30</span></div>
     <div class="sech hero2"><div><h1 class="h1 hero-h">Your laptop, <em>your story.</em></h1><p class="hsub">Skins and sticker packs, printed in Accra.</p></div>${INS.length > 4 ? `<a class="hcol" href="#inspo" aria-label="See sticker inspiration">${[[0, -5, 0, 4], [3, 4, 34, 0], [12, -2, 56, 14]].map(([k, r, x, y]) => `<img src="inspo/sm/${INS[k].id}.${IX}" alt="" loading="lazy" style="left:${x}%;top:${y}%;transform:rotate(${r}deg)">`).join('')}<span class="lbl">Inspiration →</span></a>` : ''}</div>
+    ${freeStrip()}
     ${newDrops()}
     <div class="seg hseg" id="h-seg"><button type="button" data-h="st">Stickers</button><button type="button" data-h="sk">Skins</button></div>
     <div id="h-grid"></div>
@@ -330,6 +352,7 @@ function vHome() {
     $('#h-grid').innerHTML = k === 'sk' ? skinsGrid() : catGrid(); if (k === 'sk') wireSkins($('#h-grid')); };
   $('#h-seg').onclick = e => { const b = e.target.closest('[data-h]'); if (b) hs(b.dataset.h, 1); }; hs(store.get('sl-home', 'st'));
   $('#x-inspo').onclick = openInspo;
+  app.querySelectorAll('.frees [data-free]').forEach(b => b.onclick = () => pickFree(b.dataset.free));
   if ($('#again')) $('#again').onclick = reorder;
 }
 function vCats() { vHome(); }
@@ -362,6 +385,7 @@ function vPack(p) {
         : `<div class="sizes one"><div class="on"><b>A3</b><span>Pick &amp; mix sheet</span><span>${p.items.length} stickers</span><em>${CUR}${p.price}</em></div></div>`}
         <button class="btn wa" type="button" id="orderpack"><span id="op-t">Order</span></button>
         <button class="btn o" type="button" data-packbtn="${p.id}" id="addpack"></button>
+        ${FREE.length ? `<p class="frl"><i>FREE</i> + 1 free sticker with every order · pick it at checkout</p>` : ''}
       </div>
     </div>
     <div class="sech" style="margin-top:26px"><div><h2 style="font-size:clamp(32px,8vw,48px)">What's <em>inside</em></h2><p class="sub">Only want a few? Tap the ones you like (${CUR}${PRICE} each), then <b>Checkout</b>. Hold one to see it bigger.</p></div></div>
@@ -887,6 +911,7 @@ function render() {
   updBar(); document.documentElement.classList.remove('nh');
 }
 addEventListener('hashchange', render);
+fetch('/free/free.json').then(r => r.ok ? r.json() : null).then(f => { if (!f) return; try { localStorage.setItem('sl-free-cat', JSON.stringify(f)); } catch (e) {} if (!FREE.length) { addFree(f); const y = scrollY; render(); scrollTo(0, y); } }).catch(() => {});
 fetch('/api/catalog/').then(r => r.ok ? r.json() : null).then(c => { if (!c) return; try { localStorage.setItem('sl-drops', JSON.stringify(c)); } catch (e) {}
   if (addDrops(c) && !document.querySelector('.sheet:not([hidden])')) { const y = scrollY; render(); scrollTo(0, y); } }).catch(() => {});
 let rt, lw = innerWidth;

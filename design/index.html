@@ -165,6 +165,12 @@ function addDrops(cat) { if (!cat || !Array.isArray(cat.packs)) return 0; let n 
     const p = { id: d.id, cat: d.cat, name: String(d.name).toUpperCase(), aw: 1, ah: 1, items, drop: 1 }; PK[p.id] = p; D.packs.push(p); items.forEach(it => CODE[it[0]] ||= { p, it }); CAT[d.cat].packs.unshift(p.id); n++; }
   return n; }
 try { addDrops(JSON.parse(localStorage.getItem('sl-drops') || 'null')); } catch (e) {}
+// free sticker (one per order): shown as the first tab in the tray
+function addFree(f) { if (!f || !Array.isArray(f.stickers) || PK['free-stickers']) return 0;
+  const items = f.stickers.map(x => [x.code, 0, 0, x.w, x.h, `/free/${x.code}-s.webp`, `/free/${x.code}.webp`]), p = { id: 'free-stickers', cat: 'free', name: 'FREE · 1 PER ORDER', aw: 1, ah: 1, items, drop: 1, free: 1 };
+  PK[p.id] = p; items.forEach(it => CODE[it[0]] = { p, it }); CAT.free = { id: 'free', name: 'Free ★', packs: [p.id] }; D.cats.unshift(CAT.free); return 1; }
+try { addFree(JSON.parse(localStorage.getItem('sl-free-cat') || 'null')); } catch (e) {}
+const isFree = c => String(c).startsWith('XQV-');
 const hdSrc = c => (CODE[c] && CODE[c].it[6]) || `/hd/${c}.avif`;
 let IX = 'webp'; try { if (localStorage.getItem('sl-ix') === 'avif') IX = 'avif'; } catch (e) {}
 const spr = (p, it, box) => { const s = box / Math.max(it[3], it[4]); if (it[5]) return `<span class="s" style="width:${it[3] * s}px;height:${it[4] * s}px;background:url('${it[5]}') center/contain no-repeat"></span>`; return `<span class="s" style="width:${it[3] * s}px;height:${it[4] * s}px;background:url(/atlas/${p.id}.${IX}) ${-it[1] * s}px ${-it[2] * s}px/${p.aw * s}px ${p.ah * s}px no-repeat"></span>`; };
@@ -566,7 +572,7 @@ const snap = () => { hist.push(JSON.stringify({ items, skin })); if (hist.length
 const mode = '3d', realSet = () => null, phLayout = () => {}, phLid = () => {};
 
 // ---------- step 2: editor ----------
-const C0 = D.cats.find(c => !['xl', 'mix'].includes(c.id)) || D.cats[0];   // open on a full category, not the one-sticker lid centrepieces
+const C0 = CAT.free || D.cats.find(c => !['xl', 'mix'].includes(c.id)) || D.cats[0];   // open on a full category, not the one-sticker lid centrepieces
 let tab = 'stickers', ccat = C0.id, cpack = C0.packs[0];
 async function vEditor() {
   if (!skinSize) skinSize = skinFor(L.scr);
@@ -698,7 +704,10 @@ function pane() {
     $('#packs').onclick = e => { const b = e.target.closest('[data-p]'); if (b) { cpack = b.dataset.p; pane(); } };
     $('#bomb').onclick = () => bomb(pk);
     $('#tray').onclick = e => { const b = e.target.closest('[data-k]'); if (!b) return; snap(); const W = surf === 'kb' ? [.2 + Math.random() * .6, .72 + Math.random() * .18] : [.2 + Math.random() * .6, .2 + Math.random() * .6];
-      const o = { c: b.dataset.k, x: W[0], y: W[1], s: Math.min(.3, 5.5 / L.w), r: Math.round(Math.random() * 16 - 8) }; items[surf].push(o); sel = items[surf].length - 1; refresh(); popIn([o], surf);
+      const o = { c: b.dataset.k, x: W[0], y: W[1], s: Math.min(.3, 5.5 / L.w), r: Math.round(Math.random() * 16 - 8) };
+      if (isFree(o.c)) { let had = false; for (const k in items) { const n = items[k].length; items[k] = items[k].filter(x => !isFree(x.c)); if (items[k].length !== n) { had = true; syncStickers(k); } }   // one free sticker per order
+        o.s = Math.min(.36, 7 / L.w); toast(had ? 'Swapped your free sticker (1 per order)' : 'Free sticker added · 1 per order'); }
+      items[surf].push(o); sel = items[surf].length - 1; refresh(); popIn([o], surf);
       if (toPhotoOrGL()) return; if (!idle && !tween) {} else go(surf); };
   } else if (tab === 'skins') {
     p.innerHTML = `<div class="skins" id="sk"><button class="sk ${!skin[surf] ? 'on' : ''}" data-x=""><span style="display:grid;place-items:center;color:#777">∅</span><span class="lbl">No skin</span></button>
@@ -725,5 +734,6 @@ if (LL) { L = LL; col = L.cols.includes(fromLink.c) ? fromLink.c : L.cols[0]; fo
   Object.assign(skin, { lid: '', kb: '', bot: '', ...(fromLink.k || {}) }); vEditor(); toast('Design from an order'); } else if (st && LAPS[st.i] && location.hash !== '#pick') { L = LAPS[st.i]; col = L.cols.includes(st.col) ? st.col : L.cols[0];
   for (const k in items) items[k] = (st.items && st.items[k] || []).filter(o => CODE[o.c]); Object.assign(skin, st.skin || {}); vEditor(); } else { vPick(); warmGL(); } warmGL();
 addEventListener('hashchange', () => { if (location.hash === '#pick') vPick(); });
+fetch('/free/free.json').then(r => r.ok ? r.json() : null).then(f => { if (!f) return; try { localStorage.setItem('sl-free-cat', JSON.stringify(f)); } catch (e) {} if (addFree(f) && $('#tray')) { ccat = 'free'; cpack = 'free-stickers'; pane(); } }).catch(() => {});
 fetch('/api/catalog/').then(r => r.ok ? r.json() : null).then(c => { if (!c) return; try { localStorage.setItem('sl-drops', JSON.stringify(c)); } catch (e) {} if (addDrops(c) && $('#tray')) pane(); }).catch(() => {});
 </script></body></html>

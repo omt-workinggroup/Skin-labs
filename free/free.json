@@ -1,0 +1,69 @@
+{
+ "brand": "Xqivo",
+ "url": "https://xqivo.com",
+ "stickers": [
+  {
+   "code": "XQV-001",
+   "name": "Receipt Skull",
+   "art": "xq-skull-receipt",
+   "w": 1280,
+   "h": 1228
+  },
+  {
+   "code": "XQV-002",
+   "name": "Money Skull",
+   "art": "xq-skull-logo-eyes",
+   "w": 1280,
+   "h": 1228
+  },
+  {
+   "code": "XQV-003",
+   "name": "Invoice Cloud",
+   "art": "xq-cloud-docs",
+   "w": 1280,
+   "h": 1272
+  },
+  {
+   "code": "XQV-004",
+   "name": "Generate That Invoice",
+   "art": "xq-generate-invoice",
+   "w": 1249,
+   "h": 1280
+  },
+  {
+   "code": "XQV-005",
+   "name": "Invoice Runner",
+   "art": "xq-mascot",
+   "w": 1122,
+   "h": 1280
+  },
+  {
+   "code": "XQV-006",
+   "name": "Receipt Skull (white)",
+   "art": "xq-skull-white-receipt",
+   "w": 1280,
+   "h": 1258
+  },
+  {
+   "code": "XQV-007",
+   "name": "Money Skull (white)",
+   "art": "xq-skull-white-logo",
+   "w": 1280,
+   "h": 1258
+  },
+  {
+   "code": "XQV-008",
+   "name": "Xqivo Cloud",
+   "art": "xq-cloud-name",
+   "w": 1126,
+   "h": 1280
+  },
+  {
+   "code": "XQV-009",
+   "name": "<div>a",
+   "art": "xq-div-a",
+   "w": 1280,
+   "h": 359
+  }
+ ]
+}

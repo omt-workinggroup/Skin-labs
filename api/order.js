@@ -22,14 +22,15 @@ export default async function handler(req, res) {
     if (sh) design.sheet = (await put(`${dir}/sheet.jpg`, sh, { access: 'public', addRandomSuffix: false, contentType: 'image/jpeg' })).url;
     if (mk) design.mock = (await put(`${dir}/mock.jpg`, mk, { access: 'public', addRandomSuffix: false, contentType: 'image/jpeg' })).url;
   }
+  const fr = b.free && typeof b.free === 'object' && /^XQV-\d{3}$/.test(b.free.code || '') ? { code: b.free.code, name: str(b.free.name, 40), img: /^https:\/\//.test(b.free.img || '') ? str(b.free.img, 300) : '', onDesign: !!b.free.onDesign } : null;
   let picks = null;   // the singles laid out on the Skin Lab sheet
   if (b.picks && typeof b.picks === 'object') { const sh = img(b.picks.sheet, 3e6);
     picks = { size: str(b.picks.size, 4), n: +b.picks.n || 0, scaled: !!b.picks.scaled, layout: Array.isArray(b.picks.layout) ? b.picks.layout.slice(0, 300) : [] };
     if (sh) picks.sheet = (await put(`${dir}/picks.jpg`, sh, { access: 'public', addRandomSuffix: false, contentType: 'image/jpeg' })).url; }
   const total = Math.max(0, Math.round(+b.total || 0));
-  const order = { id, at: Date.now(), status: 'new', history: [{ s: 'new', at: Date.now() }], name, phone, loc, note, packs, singles, picks, design, total, skinOnDM: false };
+  const order = { id, at: Date.now(), status: 'new', history: [{ s: 'new', at: Date.now() }], name, phone, loc, note, packs, singles, picks, free: fr, design, total, skinOnDM: false };
   await saveOrder(dir, order);
-  const what = [packs.length ? `${packs.reduce((a, p) => a + p.q, 0)} sheet(s)` : '', singles.length ? `${singles.reduce((a, s) => a + s.q, 0)} single sticker(s)` : '', design ? `custom ${design.size} pack (${design.n} stickers)` : ''].filter(Boolean).join(' + ');
+  const what = [packs.length ? `${packs.reduce((a, p) => a + p.q, 0)} sheet(s)` : '', singles.length ? `${singles.reduce((a, s) => a + s.q, 0)} single sticker(s)` : '', design ? `custom ${design.size} pack (${design.n} stickers)` : '', fr ? `free ${fr.code}` : ''].filter(Boolean).join(' + ');
   const ping = pushAll({ title: `New order ${id} · ${order.skinOnDM ? (total ? `GH₵${total} + skin` : 'skin · price on DM') : `GH₵${total}`}`, body: `${name}${loc ? ' · ' + loc : ''}\n${what}`, url: `/admin/#${id}`, tag: id, image: (design && (design.sheet || design.mock)) || (picks && picks.sheet) || undefined }).catch(() => 'failed');
   const alert = await notifyOwner(`🛒 New Skin Lab order ${id}\n${name} · +${phone.replace(/^\+/, '')}${loc ? ' · ' + loc : ''}\n${what}\n${order.skinOnDM ? 'Skin: send the price · ' : ''}Total GH₵${total}${order.skinOnDM ? ' + skin' : ''}\n${SITE}/admin/#${id}`);
   return json(res, 200, { id, url: `${SITE}/o/${id}/`, alert, push: await ping });
