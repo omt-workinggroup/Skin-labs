@@ -4,8 +4,22 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>De Car Guide</title>
-<meta name="description" content="De Car Guide helps you buy the right car without the guesswork. Inspections, sourcing and paperwork, done by people who actually look under the bonnet.">
+<meta name="description" content="De Car Guide helps you buy the right car in Ghana without the guesswork. Inspections, sourcing, paperwork, and a price guide in cedis.">
 <meta name="theme-color" content="#0b0b0b">
+<link rel="icon" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="De Car Guide">
+<meta property="og:title" content="De Car Guide: buy the car, not the story">
+<meta property="og:description" content="Honest car buying help in Ghana. Inspections, sourcing and paperwork, plus a price guide in cedis for the cars people actually buy.">
+<meta property="og:image" content="/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="De Car Guide: buy the car, not the story.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="De Car Guide: buy the car, not the story">
+<meta name="twitter:description" content="Honest car buying help in Ghana, with a price guide in cedis.">
+<meta name="twitter:image" content="/og.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
@@ -179,6 +193,45 @@
   footer { padding: 36px 0 44px; font-size: 14px; color: var(--mute); }
   footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 
+  /* cars */
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 40px; }
+  .chip {
+    font: 500 14px/1 var(--sans); padding: 10px 16px; border-radius: 999px;
+    border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer;
+    transition: border-color .15s, background .15s, color .15s;
+  }
+  .chip:hover { border-color: var(--ink); }
+  .chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .cars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 48px 28px; list-style: none; }
+  .car { display: flex; flex-direction: column; }
+  .car .ph { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: #e7e5df; }
+  .car img {
+    width: 100%; height: 100%; object-fit: cover;
+    filter: grayscale(1) contrast(1.05);
+    transition: filter .5s ease, transform .8s ease;
+  }
+  .car:hover img { filter: grayscale(0); transform: scale(1.03); }
+  @media (hover: none) { .car img { filter: grayscale(.15); } }
+  .car .yr {
+    position: absolute; left: 12px; top: 12px;
+    background: var(--paper); color: var(--ink);
+    font: 400 12px/1 var(--mono); padding: 7px 9px;
+  }
+  .car .meta { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding-top: 16px; border-bottom: 1px solid var(--line); padding-bottom: 14px; }
+  .car h3 { font: 400 26px/1.1 var(--serif); letter-spacing: -.01em; }
+  .car .cond { font: 400 12px/1.2 var(--mono); color: var(--mute); text-transform: uppercase; letter-spacing: .06em; white-space: nowrap; }
+  .car .price { display: flex; justify-content: space-between; align-items: center; padding-top: 14px; gap: 12px; }
+  .car .gh { font: 500 18px/1.2 var(--sans); letter-spacing: -.01em; }
+  .car .gh small { display: block; font: 400 12px/1.4 var(--mono); color: var(--mute); letter-spacing: .04em; text-transform: uppercase; margin-bottom: 2px; }
+  .car .ask { font-size: 14px; color: var(--mute); text-decoration: underline; text-underline-offset: 4px; white-space: nowrap; }
+  .car .ask:hover { color: var(--ink); }
+  .car[hidden] { display: none; }
+  .price-note { margin-top: 56px; display: grid; grid-template-columns: 220px 1fr; gap: 32px; color: var(--mute); font-size: 15px; }
+  .price-note p { max-width: 70ch; }
+  .credits { font-size: 12px; color: var(--mute); line-height: 1.7; }
+  .credits a { color: var(--mute); }
+  .credits summary { cursor: pointer; margin-bottom: 8px; }
+
   /* reveal */
   .r { opacity: 0; transform: translateY(14px); transition: opacity .7s ease, transform .7s ease; }
   .r.in { opacity: 1; transform: none; }
@@ -198,6 +251,8 @@
     .steps { grid-template-columns: 1fr 1fr; }
     .step { border-right: 0; margin-right: 0; padding-right: 16px; }
     .check { columns: 2; }
+    .cars { grid-template-columns: 1fr 1fr; gap: 40px 20px; }
+    .price-note { grid-template-columns: 1fr; gap: 8px; }
     .honest { grid-template-columns: 1fr; }
     .honest > div + div { border-left: 0; border-top: 1px solid var(--ink); }
   }
@@ -208,6 +263,7 @@
     .steps { grid-template-columns: 1fr; }
     .step .num { font-size: 56px; margin-bottom: 14px; }
     .check { columns: 1; }
+    .cars { grid-template-columns: 1fr; gap: 40px; }
     .honest > div { padding: 32px 22px; }
     .faq summary { font-size: 22px; }
     .services h3 { font-size: 30px; }
@@ -220,6 +276,7 @@
   <div class="wrap nav">
     <a class="brand" href="#">De Car <span>Guide</span></a>
     <ul>
+      <li><a href="#prices">Car prices</a></li>
       <li><a href="#services">What we do</a></li>
       <li><a href="#how">How it works</a></li>
       <li><a href="#checklist">The checklist</a></li>
@@ -245,10 +302,40 @@
       </div>
       <div class="hero-cta r">
         <a class="btn" href="#contact" data-wa>Get a car checked</a>
-        <a class="btn ghost" href="#how">See how it works</a>
+        <a class="btn ghost" href="#prices">See car prices</a>
       </div>
     </div>
   </div>
+
+  <div class="road" aria-hidden="true"></div>
+
+  <section id="prices">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="label r">Price guide &middot; Ghana, 2026</p>
+        <h2 class="r">What the cars people buy <em>actually</em> cost.</h2>
+      </div>
+      <div class="filters r" role="group" aria-label="Filter cars">
+        <button class="chip" aria-pressed="true" data-f="all">All</button>
+        <button class="chip" aria-pressed="false" data-f="small">Small cars</button>
+        <button class="chip" aria-pressed="false" data-f="saloon">Saloons</button>
+        <button class="chip" aria-pressed="false" data-f="suv">SUVs</button>
+        <button class="chip" aria-pressed="false" data-f="4x4">4x4 &amp; pickups</button>
+        <button class="chip" aria-pressed="false" data-f="luxury">Luxury</button>
+      </div>
+      <ul class="cars" id="cars"></ul>
+      <div class="price-note">
+        <p class="label">Read this first</p>
+        <div>
+          <p>These are rough asking-price ranges for 2026, pulled from Ghanaian listings and price guides. Real prices move with the cedi, duty, mileage and condition, and two cars with the same name can be worth very different money. Tell us about a specific car and we'll tell you what it's really worth.</p>
+          <details class="credits" style="margin-top:20px">
+            <summary>Photo credits</summary>
+            <div id="credits"></div>
+          </details>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <div class="road" aria-hidden="true"></div>
 
@@ -471,6 +558,32 @@
   document.querySelectorAll("[data-mail]").forEach(a => {
     if (CONTACT.email) a.href = "mailto:" + CONTACT.email; else a.remove();
   });
+
+
+  /* ---- Price guide ---- */
+  const CARS = /*CARS*/[];
+  const fmt = n => "GH\u20B5 " + n.toLocaleString("en-GB");
+  const carList = document.getElementById("cars");
+  CARS.forEach(c => {
+    const li = document.createElement("li");
+    li.className = "car r"; li.dataset.cat = c.cat;
+    const price = c.hi ? fmt(c.lo) + " \u2013 " + fmt(c.hi).replace("GH\u20B5 ", "") : "around " + fmt(c.lo);
+    const wa = "https://wa.me/" + (CONTACT.whatsapp || "") + "?text=" + encodeURIComponent("Hi De Car Guide, I'm looking for a " + c.name + " (" + c.years + "). Can you help?");
+    li.innerHTML =
+      '<div class="ph"><img loading="lazy" decoding="async" width="900" height="675" src="cars/' + c.id + '.jpg" alt="' + c.name + '"><span class="yr">' + c.years + '</span></div>' +
+      '<div class="meta"><h3>' + c.name + '</h3><span class="cond">' + c.cond + '</span></div>' +
+      '<div class="price"><span class="gh"><small>Typical price</small>' + price + '</span>' +
+      '<a class="ask" href="' + (CONTACT.whatsapp ? wa : "#contact") + '"' + (CONTACT.whatsapp ? ' target="_blank" rel="noopener"' : '') + '>Find me one</a></div>';
+    carList.appendChild(li);
+  });
+  document.getElementById("credits").innerHTML = CARS.map(c =>
+    c.name + ': <a href="' + c.src + '" target="_blank" rel="noopener">photo</a> by ' + c.by + ', ' + c.lic).join("<br>");
+  const chips = document.querySelectorAll(".chip");
+  chips.forEach(b => b.addEventListener("click", () => {
+    chips.forEach(x => x.setAttribute("aria-pressed", x === b));
+    const f = b.dataset.f;
+    carList.querySelectorAll(".car").forEach(li => li.hidden = f !== "all" && li.dataset.cat !== f);
+  }));
 
   document.getElementById("y").textContent = new Date().getFullYear();
 
