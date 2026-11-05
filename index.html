@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>De Car Guide</title>
+<meta name="description" content="De Car Guide helps you buy the right car in Ghana without the guesswork. Inspections, sourcing, paperwork, and a price guide in cedis.">
+<meta name="theme-color" content="#0b0b0b">
+<link rel="icon" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://de-car-guide.vercel.app/">
+<link rel="canonical" href="https://de-car-guide.vercel.app/">
+<meta property="og:site_name" content="De Car Guide">
+<meta property="og:title" content="De Car Guide: buy the car, not the story">
+<meta property="og:description" content="Honest car buying help in Ghana. Inspections, sourcing and paperwork, plus a price guide in cedis for the cars people actually buy.">
+<meta property="og:image" content="https://de-car-guide.vercel.app/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="De Car Guide: buy the car, not the story.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="De Car Guide: buy the car, not the story">
+<meta name="twitter:description" content="Honest car buying help in Ghana, with a price guide in cedis.">
+<meta name="twitter:image" content="https://de-car-guide.vercel.app/og.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0b0b0b;
+    --paper: #f6f5f1;
+    --mute: #6b6a66;
+    --line: #d9d7d0;
+    --serif: "Instrument Serif", Georgia, serif;
+    --sans: "Inter", system-ui, -apple-system, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+    --w: 1120px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font: 400 17px/1.6 var(--sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+  img, svg { display: block; }
+  .wrap { max-width: var(--w); margin: 0 auto; padding: 0 24px; }
+  .serif { font-family: var(--serif); font-weight: 400; }
+  em { font-family: var(--serif); font-style: italic; font-weight: 400; }
+  .label {
+    font: 400 12px/1 var(--mono);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--mute);
+  }
+
+  /* nav */
+  header.top {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(246,245,241,.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid transparent;
+    transition: border-color .2s;
+  }
+  header.top.scrolled { border-bottom-color: var(--line); }
+  .nav { display: flex; align-items: center; justify-content: space-between; height: 68px; }
+  .brand { font: 400 26px/1 var(--serif); text-decoration: none; letter-spacing: -.01em; }
+  .brand span { font-style: italic; }
+  .nav ul { display: flex; gap: 32px; list-style: none; font-size: 15px; }
+  .nav ul a { text-decoration: none; color: var(--mute); transition: color .15s; }
+  .nav ul a:hover { color: var(--ink); }
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: var(--ink); color: var(--paper);
+    padding: 13px 22px; border-radius: 999px;
+    font: 500 15px/1 var(--sans); text-decoration: none;
+    border: 1px solid var(--ink);
+    transition: background .15s, color .15s;
+  }
+  .btn:hover { background: transparent; color: var(--ink); }
+  .btn.ghost { background: transparent; color: var(--ink); }
+  .btn.ghost:hover { background: var(--ink); color: var(--paper); }
+  .btn.sm { padding: 10px 18px; font-size: 14px; }
+
+  /* hero */
+  .hero { padding: 96px 0 72px; }
+  .hero h1 {
+    font: 400 clamp(52px, 9vw, 128px)/.95 var(--serif);
+    letter-spacing: -.025em;
+    max-width: 11ch;
+  }
+  .hero h1 .u { position: relative; display: inline-block; font-style: italic; }
+  .hero h1 .u svg { position: absolute; left: -2%; bottom: -.08em; width: 104%; height: .22em; overflow: visible; }
+  .hero-foot {
+    display: grid; grid-template-columns: 1.1fr 1fr; gap: 48px;
+    margin-top: 56px; align-items: end;
+  }
+  .hero-foot p { font-size: 20px; line-height: 1.5; max-width: 34ch; }
+  .hero-cta { display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
+  .note {
+    font: italic 400 20px/1.3 var(--serif);
+    color: var(--mute);
+    display: flex; gap: 10px; align-items: flex-start;
+    margin-top: 18px;
+  }
+
+  /* road line */
+  .road { border-top: 1px solid var(--ink); position: relative; height: 0; }
+  .road::after {
+    content: ""; position: absolute; left: 0; right: 0; top: 14px; height: 2px;
+    background: repeating-linear-gradient(90deg, var(--ink) 0 28px, transparent 28px 52px);
+    opacity: .9;
+  }
+
+  section { padding: 112px 0; }
+  .sec-head { display: grid; grid-template-columns: 220px 1fr; gap: 32px; margin-bottom: 64px; }
+  .sec-head h2 { font: 400 clamp(36px, 5vw, 60px)/1.02 var(--serif); letter-spacing: -.02em; max-width: 18ch; }
+
+  /* intro */
+  .intro { display: grid; grid-template-columns: 220px 1fr; gap: 32px; }
+  .intro p.big { font: 400 clamp(26px, 3.2vw, 38px)/1.3 var(--serif); letter-spacing: -.01em; max-width: 30ch; }
+  .intro p.big em { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 6px; }
+  .intro .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 48px; color: #2b2b29; max-width: 760px; }
+
+  /* services */
+  .services { list-style: none; border-top: 1px solid var(--ink); }
+  .services li {
+    display: grid; grid-template-columns: 220px 1fr 1.1fr; gap: 32px;
+    padding: 36px 0; border-bottom: 1px solid var(--line);
+    align-items: baseline;
+  }
+  .services .n { font: 400 13px var(--mono); color: var(--mute); }
+  .services h3 { font: 400 34px/1.1 var(--serif); letter-spacing: -.01em; }
+  .services p { color: #2b2b29; }
+  .services .tag { display: block; margin-top: 12px; font: 400 13px var(--mono); color: var(--mute); }
+
+  /* inverted block */
+  .dark { background: var(--ink); color: var(--paper); }
+  .dark .label { color: #9a9993; }
+  .dark .sec-head h2 em { color: #fff; }
+  .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border-top: 1px solid #333; }
+  .step { padding: 32px 28px 8px 0; border-right: 1px solid #333; margin-right: 28px; }
+  .step:last-child { border-right: 0; margin-right: 0; }
+  .step .num { font: 400 72px/1 var(--serif); font-style: italic; margin-bottom: 24px; }
+  .step h4 { font: 500 17px/1.3 var(--sans); margin-bottom: 10px; }
+  .step p { color: #b9b8b2; font-size: 15px; }
+
+  /* checklist */
+  .check-wrap { display: grid; grid-template-columns: 220px 1fr; gap: 32px; }
+  .check {
+    columns: 3; column-gap: 40px;
+    list-style: none;
+    font: 400 14px/1.5 var(--mono);
+  }
+  .check li { break-inside: avoid; padding: 9px 0; border-bottom: 1px dashed var(--line); display: flex; gap: 12px; }
+  .check li::before { content: "□"; color: var(--mute); }
+  .check li.done::before { content: "■"; color: var(--ink); }
+  .check-note { margin-top: 28px; color: var(--mute); font-size: 15px; max-width: 60ch; }
+
+  /* honest */
+  .honest { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--ink); }
+  .honest > div { padding: 44px 40px; }
+  .honest > div + div { border-left: 1px solid var(--ink); }
+  .honest h3 { font: 400 30px/1.1 var(--serif); margin-bottom: 22px; }
+  .honest ul { list-style: none; }
+  .honest li { padding: 12px 0; border-top: 1px solid var(--line); }
+  .honest li:first-child { border-top: 0; }
+  .honest .no li { color: var(--mute); text-decoration: line-through; text-decoration-color: rgba(0,0,0,.35); }
+
+  /* faq */
+  .faq { border-top: 1px solid var(--ink); }
+  .faq details { border-bottom: 1px solid var(--line); }
+  .faq summary {
+    list-style: none; cursor: pointer;
+    display: flex; justify-content: space-between; gap: 24px;
+    padding: 26px 0; font: 400 26px/1.25 var(--serif);
+  }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: "+"; font: 300 28px/1 var(--sans); transition: transform .2s; }
+  .faq details[open] summary::after { transform: rotate(45deg); }
+  .faq details p { padding: 0 0 28px; max-width: 64ch; color: #2b2b29; }
+
+  /* contact */
+  .contact { text-align: left; }
+  .contact h2 { font: 400 clamp(48px, 8vw, 112px)/.95 var(--serif); letter-spacing: -.025em; max-width: 12ch; }
+  .contact .row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 48px; }
+  .contact .dark-btn { background: var(--paper); color: var(--ink); border-color: var(--paper); }
+  .contact .dark-btn:hover { background: transparent; color: var(--paper); }
+  .contact .ghost-d { background: transparent; color: var(--paper); border-color: #555; }
+  .contact .ghost-d:hover { border-color: var(--paper); }
+  .contact .small { margin-top: 28px; color: #9a9993; font-size: 15px; max-width: 48ch; }
+
+  footer { padding: 36px 0 44px; font-size: 14px; color: var(--mute); }
+  footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+  /* cars */
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 40px; }
+  .chip {
+    font: 500 14px/1 var(--sans); padding: 10px 16px; border-radius: 999px;
+    border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer;
+    transition: border-color .15s, background .15s, color .15s;
+  }
+  .chip:hover { border-color: var(--ink); }
+  .chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .cars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 48px 28px; list-style: none; }
+  .car { display: flex; flex-direction: column; }
+  .car .ph { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: #e7e5df; }
+  .car img {
+    width: 100%; height: 100%; object-fit: cover;
+    filter: grayscale(1) contrast(1.05);
+    transition: filter .5s ease, transform .8s ease;
+  }
+  .car:hover img { filter: grayscale(0); transform: scale(1.03); }
+  @media (hover: none) { .car img { filter: grayscale(.15); } }
+  .car .yr {
+    position: absolute; left: 12px; top: 12px;
+    background: var(--paper); color: var(--ink);
+    font: 400 12px/1 var(--mono); padding: 7px 9px;
+  }
+  .car .meta { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding-top: 16px; border-bottom: 1px solid var(--line); padding-bottom: 14px; }
+  .car h3 { font: 400 26px/1.1 var(--serif); letter-spacing: -.01em; }
+  .car .cond { font: 400 12px/1.2 var(--mono); color: var(--mute); text-transform: uppercase; letter-spacing: .06em; white-space: nowrap; }
+  .car .price { display: flex; justify-content: space-between; align-items: center; padding-top: 14px; gap: 12px; }
+  .car .gh { font: 500 18px/1.2 var(--sans); letter-spacing: -.01em; }
+  .car .gh small { display: block; font: 400 12px/1.4 var(--mono); color: var(--mute); letter-spacing: .04em; text-transform: uppercase; margin-bottom: 2px; }
+  .car .ask { font-size: 14px; color: var(--mute); text-decoration: underline; text-underline-offset: 4px; white-space: nowrap; }
+  .car .ask:hover { color: var(--ink); }
+  .car[hidden] { display: none; }
+  .price-note { margin-top: 56px; display: grid; grid-template-columns: 220px 1fr; gap: 32px; color: var(--mute); font-size: 15px; }
+  .price-note p { max-width: 70ch; }
+  .credits { font-size: 12px; color: var(--mute); line-height: 1.7; }
+  .credits a { color: var(--mute); }
+  .credits summary { cursor: pointer; margin-bottom: 8px; }
+
+  /* reveal */
+  .r { opacity: 0; transform: translateY(14px); transition: opacity .7s ease, transform .7s ease; }
+  .r.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) { .r { opacity: 1; transform: none; transition: none; } html { scroll-behavior: auto; } }
+
+  /* responsive */
+  @media (max-width: 900px) {
+    .nav ul { display: none; }
+    .hero { padding: 64px 0 56px; }
+    .hero-foot { grid-template-columns: 1fr; gap: 28px; }
+    .hero-cta { justify-content: flex-start; }
+    section { padding: 80px 0; }
+    .sec-head, .intro, .check-wrap { grid-template-columns: 1fr; gap: 16px; }
+    .sec-head { margin-bottom: 40px; }
+    .intro .cols { grid-template-columns: 1fr; gap: 20px; }
+    .services li { grid-template-columns: 1fr; gap: 10px; padding: 28px 0; }
+    .steps { grid-template-columns: 1fr 1fr; }
+    .step { border-right: 0; margin-right: 0; padding-right: 16px; }
+    .check { columns: 2; }
+    .cars { grid-template-columns: 1fr 1fr; gap: 40px 20px; }
+    .price-note { grid-template-columns: 1fr; gap: 8px; }
+    .honest { grid-template-columns: 1fr; }
+    .honest > div + div { border-left: 0; border-top: 1px solid var(--ink); }
+  }
+  @media (max-width: 560px) {
+    .wrap { padding: 0 16px; }
+    body { font-size: 16px; }
+    .hero-foot p { font-size: 18px; }
+    .steps { grid-template-columns: 1fr; }
+    .step .num { font-size: 56px; margin-bottom: 14px; }
+    .check { columns: 1; }
+    .cars { grid-template-columns: 1fr; gap: 40px; }
+    .honest > div { padding: 32px 22px; }
+    .faq summary { font-size: 22px; }
+    .services h3 { font-size: 30px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top" id="top">
+  <div class="wrap nav">
+    <a class="brand" href="#">De Car <span>Guide</span></a>
+    <ul>
+      <li><a href="#prices">Car prices</a></li>
+      <li><a href="#services">What we do</a></li>
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#checklist">The checklist</a></li>
+      <li><a href="#faq">Questions</a></li>
+    </ul>
+    <a class="btn sm" href="#contact" data-wa>Talk to us</a>
+  </div>
+</header>
+
+<main>
+  <div class="wrap hero">
+    <p class="label r">Independent car buying help</p>
+    <h1 class="r" style="margin-top:24px">Buy the car, not the
+      <span class="u">story.<svg viewBox="0 0 200 20" preserveAspectRatio="none" aria-hidden="true"><path d="M2 14 C 40 6, 90 4, 130 9 S 185 15, 198 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></span>
+    </h1>
+    <div class="hero-foot">
+      <div class="r">
+        <p>Every seller has a story. Low mileage, one careful owner, "just serviced." We check what's actually there, tell you plainly, and help you walk away from the bad ones.</p>
+        <p class="note">
+          <svg width="34" height="22" viewBox="0 0 34 22" aria-hidden="true"><path d="M2 4 C 10 18, 22 18, 31 9 M24 7 L31 9 L29 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          no commission from sellers. ever.
+        </p>
+      </div>
+      <div class="hero-cta r">
+        <a class="btn" href="#contact" data-wa>Get a car checked</a>
+        <a class="btn ghost" href="#prices">See car prices</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="road" aria-hidden="true"></div>
+
+  <section id="prices">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="label r">Price guide &middot; Ghana, 2026</p>
+        <h2 class="r">What the cars people buy <em>actually</em> cost.</h2>
+      </div>
+      <div class="filters r" role="group" aria-label="Filter cars">
+        <button class="chip" aria-pressed="true" data-f="all">All</button>
+        <button class="chip" aria-pressed="false" data-f="small">Small cars</button>
+        <button class="chip" aria-pressed="false" data-f="saloon">Saloons</button>
+        <button class="chip" aria-pressed="false" data-f="suv">SUVs</button>
+        <button class="chip" aria-pressed="false" data-f="4x4">4x4 &amp; pickups</button>
+        <button class="chip" aria-pressed="false" data-f="luxury">Luxury</button>
+      </div>
+      <ul class="cars" id="cars"></ul>
+      <div class="price-note">
+        <p class="label">Read this first</p>
+        <div>
+          <p>These are rough asking-price ranges for 2026, pulled from Ghanaian listings and price guides. Real prices move with the cedi, duty, mileage and condition, and two cars with the same name can be worth very different money. Tell us about a specific car and we'll tell you what it's really worth.</p>
+          <details class="credits" style="margin-top:20px">
+            <summary>Photo credits</summary>
+            <div id="credits"></div>
+          </details>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="road" aria-hidden="true"></div>
+
+  <section>
+    <div class="wrap intro">
+      <p class="label r">Why we exist</p>
+      <div>
+        <p class="big r">Most people buy a car once every few years. The person selling it does it <em>every week.</em> That's not a fair fight, so we sit on your side of the table.</p>
+        <div class="cols r">
+          <p>We started De Car Guide after watching friends and family lose money on cars that looked perfect on the day and fell apart within a month. Rolled-back mileage. Flood damage under fresh carpet. Engines warmed up before you arrived so you'd never hear the cold start.</p>
+          <p>None of it is hard to spot if you know where to look and you're not in a hurry. So that's what we do: we look, we take our time, and we write down what we find in plain words. If the car's good, great. If it isn't, you hear it from us first.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="services" style="padding-top:0">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="label r">What we do</p>
+        <h2 class="r">Four things, done <em>properly.</em></h2>
+      </div>
+      <ul class="services">
+        <li class="r">
+          <span class="n">01</span>
+          <h3>Pre-purchase inspection</h3>
+          <p>You've found a car. We go and see it, inside and out, engine cold. You get a written report with photos and a straight answer: buy it, negotiate, or leave it.<span class="tag">Same or next day, in most cases</span></p>
+        </li>
+        <li class="r">
+          <span class="n">02</span>
+          <h3>Car sourcing</h3>
+          <p>Tell us your budget and how you'll use it. We shortlist cars that fit, check them before you waste a trip, and only show you the ones worth your time.<span class="tag">For when you don't know where to start</span></p>
+        </li>
+        <li class="r">
+          <span class="n">03</span>
+          <h3>Paperwork &amp; transfer</h3>
+          <p>Ownership, registration, customs papers, insurance. We check the documents match the car and walk you through the transfer so nothing comes back to bite you.<span class="tag">The boring bit, handled</span></p>
+        </li>
+        <li class="r">
+          <span class="n">04</span>
+          <h3>Second opinion</h3>
+          <p>Already bought it, or a mechanic quoted you something that sounds off? Send us the details. We'll tell you honestly if it's fair.<span class="tag">Quick call or WhatsApp</span></p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="dark" id="how">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="label r">How it works</p>
+        <h2 class="r">No forms. No call centre. <em>Just a conversation.</em></h2>
+      </div>
+      <div class="steps">
+        <div class="step r">
+          <div class="num">1.</div>
+          <h4>Send us the car</h4>
+          <p>A link, a photo of the listing, or just the make, model and where it is. That's enough to start.</p>
+        </div>
+        <div class="step r">
+          <div class="num">2.</div>
+          <h4>We go and look</h4>
+          <p>We book a time with the seller and inspect it in person. You can come along or stay home.</p>
+        </div>
+        <div class="step r">
+          <div class="num">3.</div>
+          <h4>You get the truth</h4>
+          <p>A clear report with photos, the problems we found, rough repair costs, and what we'd pay for it.</p>
+        </div>
+        <div class="step r">
+          <div class="num">4.</div>
+          <h4>You decide</h4>
+          <p>Buy it, haggle, or walk. If you buy, we help with the papers. If you walk, we help you find the next one.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="checklist">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="label r">The checklist</p>
+        <h2 class="r">What we actually look at, <em>every time.</em></h2>
+      </div>
+      <div class="check-wrap">
+        <div></div>
+        <div>
+          <ul class="check r">
+            <li class="done">Cold start &amp; idle</li>
+            <li class="done">Engine noise under load</li>
+            <li class="done">Oil level &amp; condition</li>
+            <li class="done">Coolant &amp; leaks</li>
+            <li class="done">Exhaust smoke colour</li>
+            <li class="done">Gearbox &amp; clutch feel</li>
+            <li class="done">Diagnostic scan (OBD)</li>
+            <li class="done">Warning lights history</li>
+            <li class="done">Brakes &amp; discs</li>
+            <li class="done">Suspension &amp; bushes</li>
+            <li class="done">Steering play</li>
+            <li class="done">Tyres: wear, age, match</li>
+            <li class="done">Paint depth, panel by panel</li>
+            <li class="done">Panel gaps &amp; respray signs</li>
+            <li class="done">Chassis &amp; underbody rust</li>
+            <li class="done">Signs of accident repair</li>
+            <li class="done">Flood &amp; water damage</li>
+            <li class="done">Airbags &amp; seatbelts</li>
+            <li class="done">AC, windows, electrics</li>
+            <li class="done">Mileage vs. wear</li>
+            <li class="done">Service history</li>
+            <li class="done">VIN / chassis number match</li>
+            <li class="done">Ownership documents</li>
+            <li class="done">Test drive, our route</li>
+          </ul>
+          <p class="check-note r">This isn't a list we print to look busy. It's what we go through on every car, and you'll see each point in your report, with photos where it matters.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="label r">Straight talk</p>
+        <h2 class="r">What you can expect from us. And what you <em>won't</em> get.</h2>
+      </div>
+      <div class="honest r">
+        <div>
+          <h3>You will get</h3>
+          <ul>
+            <li>An honest opinion, even when it's not what you hoped</li>
+            <li>A price before we start, no surprises after</li>
+            <li>Photos of anything we flag</li>
+            <li>Someone who picks up the phone</li>
+            <li>Help negotiating if the car's worth it</li>
+          </ul>
+        </div>
+        <div class="no">
+          <h3 style="text-decoration:none;color:var(--ink)">You won't get</h3>
+          <ul>
+            <li>Kickbacks from dealers or sellers</li>
+            <li>Pressure to buy anything</li>
+            <li>A "looks fine" after five minutes</li>
+            <li>Jargon you need a mechanic to translate</li>
+            <li>Hidden fees</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" style="padding-top:0">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="label r">Questions</p>
+        <h2 class="r">Things people <em>usually</em> ask.</h2>
+      </div>
+      <div class="faq r">
+        <details>
+          <summary>Do I need to be there for the inspection?</summary>
+          <p>No. Plenty of our clients are at work or in another city. We'll call you from the car if something needs talking through, and the full report comes to you on WhatsApp or email the same day.</p>
+        </details>
+        <details>
+          <summary>What if the seller won't let you inspect it?</summary>
+          <p>Then that tells you something. A seller with a good car has nothing to hide. We'd treat it as a red flag and suggest you move on.</p>
+        </details>
+        <details>
+          <summary>Can you check cars at a dealership too?</summary>
+          <p>Yes. Dealers, private sellers, cars just cleared from the port. Anywhere we can get proper access to the car.</p>
+        </details>
+        <details>
+          <summary>How much does it cost?</summary>
+          <p>It depends on the service and the distance to the car. Send us the details and we'll give you a fixed price before we do anything. Compared to buying the wrong car, it's very small money.</p>
+        </details>
+        <details>
+          <summary>Do you sell cars?</summary>
+          <p>No, and that's on purpose. We don't sell cars and we don't take commission from people who do. The only person paying us is you, so the only person we work for is you.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="dark" id="contact">
+    <div class="wrap contact">
+      <p class="label r">Get in touch</p>
+      <h2 class="r" style="margin-top:24px">Found a car? <em>Send it over.</em></h2>
+      <div class="row r">
+        <a class="btn dark-btn" href="#" data-wa>Message us on WhatsApp</a>
+        <a class="btn ghost-d" href="#" data-call>Call us</a>
+        <a class="btn ghost-d" href="#" data-mail>Email</a>
+      </div>
+      <p class="small r">A link to the listing is perfect. We usually reply within the hour during the day.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>&copy; <span id="y"></span> De Car Guide</span>
+    <span>Honest help buying a car.</span>
+    <a href="#top">Back to top &uarr;</a>
+  </div>
+</footer>
+
+<script>
+  /* ---- Fill in the real contact details here ---- */
+  const CONTACT = {
+    whatsapp: "",   // digits only, with country code, e.g. "233201234567"
+    phone: "",      // e.g. "+233 20 123 4567"
+    email: ""       // e.g. "hello@example.com"
+  };
+
+  const waMsg = encodeURIComponent("Hi De Car Guide, I've found a car I'd like you to check: ");
+  document.querySelectorAll("[data-wa]").forEach(a => {
+    if (CONTACT.whatsapp) { a.href = "https://wa.me/" + CONTACT.whatsapp + "?text=" + waMsg; a.target = "_blank"; a.rel = "noopener"; }
+    else if (a.getAttribute("href") === "#") a.href = "#contact";
+  });
+  document.querySelectorAll("[data-call]").forEach(a => {
+    if (CONTACT.phone) a.href = "tel:" + CONTACT.phone.replace(/\s/g, ""); else a.remove();
+  });
+  document.querySelectorAll("[data-mail]").forEach(a => {
+    if (CONTACT.email) a.href = "mailto:" + CONTACT.email; else a.remove();
+  });
+
+
+  /* ---- Price guide ---- */
+  const CARS = /*CARS*/[{"id": "vitz", "name": "Toyota Vitz", "years": "2010s", "cond": "Used", "cat": "small", "lo": 70000, "hi": 110000, "src": "https://commons.wikimedia.org/wiki/File:Toyota_Vitz_1.3F_(XP130)_front.JPG", "by": "Tokumeigakarinoaoshima", "lic": "CC0"}, {"id": "morning", "name": "Kia Picanto / Morning", "years": "2008–2012", "cond": "Home-used", "cat": "small", "lo": 30000, "hi": 70000, "src": "https://commons.wikimedia.org/wiki/File:2016_Kia_Picanto_Front.jpg", "by": "Areaseven", "lic": "CC BY-SA 4.0"}, {"id": "accent", "name": "Hyundai Accent", "years": "2015", "cond": "Foreign-used", "cat": "saloon", "lo": 118000, "hi": 168000, "src": "https://commons.wikimedia.org/wiki/File:2016_Hyundai_Accent_SE_sedan_in_Ultra_Black_Pearl,_front_left,_05-16-2026.jpg", "by": "Cutlass", "lic": "CC0"}, {"id": "elantra", "name": "Hyundai Elantra", "years": "2015–2017", "cond": "Foreign-used", "cat": "saloon", "lo": 135000, "hi": 165000, "src": "https://commons.wikimedia.org/wiki/File:2015_Hyundai_Elantra_Limited_Sedan_in_Sandy_Bronze,_front_right,_2024-10-12.jpg", "by": "Elise240SX", "lic": "CC BY-SA 4.0"}, {"id": "corolla", "name": "Toyota Corolla", "years": "2016–2020", "cond": "Foreign-used", "cat": "saloon", "lo": 180000, "hi": 320000, "src": "https://commons.wikimedia.org/wiki/File:2020_Toyota_Corolla_Altis_petrol_version_front.jpg", "by": "LuvsMG481", "lic": "CC BY-SA 4.0"}, {"id": "civic", "name": "Honda Civic", "years": "2020", "cond": "Used", "cat": "saloon", "lo": 145000, "hi": 195000, "src": "https://commons.wikimedia.org/wiki/File:2019_Honda_Civic_LX,_Front_Left,_11-03-2020.jpg", "by": "SsmIntrigue", "lic": "CC BY-SA 4.0"}, {"id": "c300", "name": "Mercedes-Benz C300", "years": "2016–2017", "cond": "Used", "cat": "luxury", "lo": 260000, "hi": 360000, "src": "https://commons.wikimedia.org/wiki/File:Mercedes-Benz_C_180_Exclusive_(W_205)_%E2%80%93_Frontansicht,_24._Oktober_2015,_M%C3%BCnster.jpg", "by": "M 93", "lic": "CC BY-SA 3.0 de"}, {"id": "qashqai", "name": "Nissan Qashqai", "years": "2018–2021", "cond": "Used", "cat": "suv", "lo": 110000, "hi": 165000, "src": "https://commons.wikimedia.org/wiki/File:Nissan_Qashqai_2017.jpg", "by": "Kārlis Dambrāns", "lic": "CC BY 2.0"}, {"id": "xtrail", "name": "Nissan X-Trail", "years": "2018–2021", "cond": "Landed", "cat": "suv", "lo": 145000, "hi": 215000, "src": "https://commons.wikimedia.org/wiki/File:Nissan_X-TRAIL_20X_2WD_(DBA-T32)_front.jpg", "by": "Tokumeigakarinoaoshima", "lic": "CC BY-SA 4.0"}, {"id": "rav4", "name": "Toyota RAV4", "years": "2006–2010", "cond": "Used", "cat": "suv", "lo": 90000, "hi": 150000, "src": "https://commons.wikimedia.org/wiki/File:2011_Toyota_RAV4_Limited,_front_right,_05-27-2024.jpg", "by": "MercurySable99", "lic": "CC BY-SA 4.0"}, {"id": "sportage", "name": "Kia Sportage", "years": "2017–2018", "cond": "Foreign-used", "cat": "suv", "lo": 240000, "hi": 280000, "src": "https://commons.wikimedia.org/wiki/File:Kia_Sportage_(QL)_Front_(cropped).jpg", "by": "Milhouse35", "lic": "CC BY-SA 4.0"}, {"id": "fortuner", "name": "Toyota Fortuner", "years": "2019–2023", "cond": "Used", "cat": "4x4", "lo": 435000, "hi": 500000, "src": "https://commons.wikimedia.org/wiki/File:2018_Toyota_Fortuner_2.4_VRZ_4x2_wagon_(GUN165R;_02-18-2019),_South_Tangerang.jpg", "by": "Wilzz99", "lic": "CC BY-SA 4.0"}, {"id": "hilux", "name": "Toyota Hilux", "years": "2022–2025", "cond": "Used", "cat": "4x4", "lo": 450000, "hi": 495000, "src": "https://commons.wikimedia.org/wiki/File:2024_Toyota_Hilux_2.4_V_4x4_Crew_Cab_(Indonesia)_front_view.jpg", "by": "Andra Febrian", "lic": "CC BY-SA 4.0"}, {"id": "prado", "name": "Toyota Land Cruiser Prado", "years": "2015–2022", "cond": "Used", "cat": "4x4", "lo": 470000, "hi": 670000, "src": "https://commons.wikimedia.org/wiki/File:2018_Toyota_Land_Cruiser_Prado_(GDJ150R)_GXL_wagon_(2018-08-06)_01.jpg", "by": "EurovisionNim", "lic": "CC BY-SA 4.0"}, {"id": "rangerover", "name": "Range Rover Vogue", "years": "2018", "cond": "Used", "cat": "luxury", "lo": 850000, "hi": 0, "src": "https://commons.wikimedia.org/wiki/File:2019_Land_Rover_Range_Rover_Autobiography_SDV8_Automatic_4.4_Front.jpg", "by": "Vauxford", "lic": "CC BY-SA 4.0"}];
+  const fmt = n => "GH\u20B5 " + n.toLocaleString("en-GB");
+  const carList = document.getElementById("cars");
+  CARS.forEach(c => {
+    const li = document.createElement("li");
+    li.className = "car r"; li.dataset.cat = c.cat;
+    const price = c.hi ? fmt(c.lo) + " \u2013 " + fmt(c.hi).replace("GH\u20B5 ", "") : "around " + fmt(c.lo);
+    const wa = "https://wa.me/" + (CONTACT.whatsapp || "") + "?text=" + encodeURIComponent("Hi De Car Guide, I'm looking for a " + c.name + " (" + c.years + "). Can you help?");
+    li.innerHTML =
+      '<div class="ph"><img loading="lazy" decoding="async" width="900" height="675" src="cars/' + c.id + '.jpg" alt="' + c.name + '"><span class="yr">' + c.years + '</span></div>' +
+      '<div class="meta"><h3>' + c.name + '</h3><span class="cond">' + c.cond + '</span></div>' +
+      '<div class="price"><span class="gh"><small>Typical price</small>' + price + '</span>' +
+      '<a class="ask" href="' + (CONTACT.whatsapp ? wa : "#contact") + '"' + (CONTACT.whatsapp ? ' target="_blank" rel="noopener"' : '') + '>Find me one</a></div>';
+    carList.appendChild(li);
+  });
+  document.getElementById("credits").innerHTML = CARS.map(c =>
+    c.name + ': <a href="' + c.src + '" target="_blank" rel="noopener">photo</a> by ' + c.by + ', ' + c.lic).join("<br>");
+  const chips = document.querySelectorAll(".chip");
+  chips.forEach(b => b.addEventListener("click", () => {
+    chips.forEach(x => x.setAttribute("aria-pressed", x === b));
+    const f = b.dataset.f;
+    carList.querySelectorAll(".car").forEach(li => li.hidden = f !== "all" && li.dataset.cat !== f);
+  }));
+
+  document.getElementById("y").textContent = new Date().getFullYear();
+
+  const bar = document.getElementById("top");
+  addEventListener("scroll", () => bar.classList.toggle("scrolled", scrollY > 10), { passive: true });
+
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+  }), { rootMargin: "0px 0px -8% 0px" });
+  document.querySelectorAll(".r").forEach(el => io.observe(el));
+</script>
+</body>
+</html>
