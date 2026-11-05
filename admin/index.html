@@ -1,215 +1,382 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#000000">
+<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#09090b">
 <title>Orders · Skin Lab admin</title><link rel="manifest" href="/admin/manifest.webmanifest"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="SL Orders"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="icon" href="/favicon.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap">
 <style>
-:root{--fg:#fff;--mute:#8c8c8c;--line:rgba(255,255,255,.12);--line2:rgba(255,255,255,.28);--g:#1faa53;--gut:max(16px,env(safe-area-inset-left,0px));--serif:'Instrument Serif',Georgia,serif;--mono:'Geist Mono',ui-monospace,monospace}
-*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}[hidden]{display:none!important}
-html,body{background:#000;color:#fff;font:15px/1.45 Geist,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
-button,input{font:inherit;color:inherit}button{background:none;border:0;cursor:pointer;padding:0}a{color:inherit}
-.lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
-.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:10px;height:58px;padding:0 var(--gut);background:rgba(0,0,0,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
-.top b{font-weight:700;font-size:19px;letter-spacing:-.045em}.top .r{display:flex;gap:6px;align-items:center}
-.ib{height:36px;padding:0 12px;border:1px solid var(--line2);font-size:13px}
-.w{max-width:980px;margin:0 auto;padding:16px var(--gut) 80px}
-h1{font-family:var(--serif);font-weight:400;font-size:clamp(40px,10vw,64px);line-height:.95;margin:10px 0 4px}h1 em{font-style:italic}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin:18px 0 14px}
-.stats div{background:#000;padding:12px}.stats b{display:block;font-size:24px;font-weight:600;letter-spacing:-.02em}
-.tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 calc(-1*var(--gut));padding:0 var(--gut)}.tabs::-webkit-scrollbar{display:none}
-.tabs button{flex:none;height:36px;padding:0 14px;border:1px solid var(--line);font-size:13px;color:#ccc}.tabs .on{background:#fff;color:#000;border-color:#fff}
-.tabs i{font-style:normal;font-family:var(--mono);font-size:10px;opacity:.6;margin-left:5px}
-.srch{width:100%;height:46px;background:none;border:1px solid var(--line2);padding:0 14px;margin:10px 0 6px;outline:none;font-size:16px}
-.alert{border:1px solid var(--line2);padding:12px 14px;margin:14px 0 0;font-size:13.5px;color:#ccc}.alert:empty{display:none}.alert .btn{width:100%;margin-top:10px}.alert b{color:#fff}
-.list{display:grid;gap:10px;margin-top:12px}
-.card{display:grid;grid-template-columns:84px minmax(0,1fr);gap:12px;text-align:left;border:1px solid var(--line);padding:10px;width:100%;position:relative}
-.card.new{border-color:#fff}.card .pic{width:84px;height:110px;background:#151515 center/cover;display:grid;place-items:center;font-family:var(--mono);font-size:10px;color:#666}
-.card b{font-size:16px;font-weight:600}.card .meta{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
-.card p{color:#aaa;font-size:13px;margin-top:2px}.card .tot{font-weight:600;font-size:16px;margin-top:6px}
-.pill{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 7px;border:1px solid var(--line2);white-space:nowrap}
-.pill.new{background:#fff;color:#000;border-color:#fff}.pill.confirmed{border-color:#4cc2ff;color:#4cc2ff}.pill.printing{border-color:#ffd21f;color:#ffd21f}.pill.on-the-way{border-color:#ff9f43;color:#ff9f43}.pill.delivered{border-color:var(--g);color:var(--g)}.pill.cancelled{color:#777}
-.empty{border:1px dashed var(--line2);padding:30px 16px;text-align:center;color:#aaa}
-/* detail */
-.dv{position:fixed;inset:0;z-index:50;background:#000;overflow:auto;padding:0 0 60px}
-.dv .w{padding-top:0}.dhead{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;height:58px;padding:0 var(--gut);background:rgba(0,0,0,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
-.pics{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:16px 0}.pics a{display:block;background:#151515}.pics img{width:100%;display:block}
-.pics small{display:block;padding:6px 8px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#aaa}
-.cust{display:grid;gap:4px;border:1px solid var(--line);padding:14px}.cust b{font-size:20px}.cust a{font-size:16px}
-.sec{margin-top:18px}.sec h3{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);font-weight:400;margin-bottom:8px}
-.rows{border-top:1px solid var(--line)}.rows div{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}.rows small{color:#999;font-family:var(--mono);font-size:11px}
-.st{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.st button{height:44px;border:1px solid var(--line2);font-size:13px}.st button.on{background:#fff;color:#000;border-color:#fff}
-.wa{display:flex;align-items:center;justify-content:center;gap:10px;height:52px;background:var(--g);color:#fff;font-weight:600;text-decoration:none;margin-top:10px}
-.btn{display:flex;align-items:center;justify-content:center;height:46px;border:1px solid var(--line2);text-decoration:none;font-size:14px;margin-top:8px}
-.msg{width:100%;min-height:96px;background:#0d0d0d;border:1px solid var(--line2);padding:12px;font:14px/1.45 Geist,sans-serif;color:#fff;resize:vertical}
-.login{max-width:420px;margin:12vh auto 0;padding:0 var(--gut);display:grid;gap:12px}.login input{height:54px;background:none;border:1px solid var(--line2);padding:0 16px;font-size:17px;outline:none}
-.login button{height:54px;background:#fff;color:#000;font-weight:600}.err{color:#ff6b6b;font-size:14px}
-.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#fff;color:#000;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:9px 14px;z-index:90}
-@media (min-width:760px){.list{grid-template-columns:1fr 1fr}}
-.pay{border:1px solid var(--line);padding:14px;margin-bottom:10px}.pay .ph{display:flex;justify-content:space-between;align-items:center}.pay .ph b{font-size:24px;font-weight:600}.pay p{margin:4px 0;font-size:14px}.pit{margin-top:10px;padding-top:10px;border-top:1px solid #1c1c1c;font-size:14px}.pit ul{margin:6px 0 0;padding-left:18px;color:#ccc}.pact{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.pact .ib,.pbar .ib{height:38px;padding:0 14px;border:1px solid var(--line);background:#000;color:#fff;width:auto}.pact .warn{border-color:#ffd400;color:#ffd400}.pbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 12px}.pbar label{display:flex;gap:6px;align-items:center}.pd{color:#1faa53;font-weight:700}.pd.short{color:#ff8a7a}.sales{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);margin:0 0 14px}.sales>div{background:#000;padding:12px}.sales b{display:block;font-size:22px;font-weight:600}.sales small{color:#999;font-size:12px}
-.sales .top{grid-column:1/-1}.sales .top p{display:flex;justify-content:space-between;font-size:14px;padding:4px 0;border-bottom:1px solid #161616}.sales .ib{grid-column:1/-1;height:44px;background:#000;border:0}
-.sgl{display:flex;gap:12px;align-items:center}.sgl img{width:56px;height:56px;object-fit:contain;background:#1a1a1a;padding:3px;display:block}
-.sw{display:flex;align-items:center;justify-content:space-between;gap:14px}.sw b{display:block;color:#fff;font-size:15px}.sw small{display:block;color:#999;font-size:12.5px;margin-top:2px}
-.tg{flex:none;width:58px;height:34px;border-radius:17px;background:#333;position:relative;transition:background .2s}.tg i{position:absolute;top:3px;left:3px;width:28px;height:28px;border-radius:50%;background:#fff;transition:transform .2s}
-.tg.on{background:#1faa53}.tg.on i{transform:translateX(24px)}.lnk2{margin-top:10px;font-size:13px;color:#bbb;text-decoration:underline}
-.nav{display:flex;border:1px solid var(--line2)}.nav button{height:36px;padding:0 12px;font-size:13px;color:#bbb;position:relative}.nav button.on{background:#fff;color:#000}.nav i{font-style:normal;font-size:10px;background:#1faa53;color:#fff;border-radius:9px;padding:1px 6px;margin-left:6px}
-.add{border:1px solid var(--line2);padding:16px;display:grid;gap:12px;margin-top:16px}.ah{font-weight:600;display:flex;gap:10px;align-items:center}.ah b{width:24px;height:24px;border-radius:50%;background:#fff;color:#000;display:grid;place-items:center;font-size:13px}
-.pick{display:grid;gap:4px;place-items:center;text-align:center;border:1px dashed var(--line2);padding:22px 12px;cursor:pointer}.pick input{display:none}.pick span{font-weight:600}
-.ck{display:flex;gap:10px;align-items:center;font-size:14px;color:#ddd}.ck input[type=checkbox]{width:20px;height:20px}
+/* ---------- Skin Lab admin · dark, calm, nothing overlaps: every row wraps, every text can shrink ---------- */
+:root{--bg:#09090b;--s1:#111114;--s2:#17171b;--s3:#1f1f25;--fg:#f4f4f5;--mute:#9a9aa3;--dim:#6b6b74;--line:rgba(255,255,255,.08);--line2:rgba(255,255,255,.16);
+  --g:#22c55e;--gbg:rgba(34,197,94,.12);--y:#facc15;--ybg:rgba(250,204,21,.12);--b:#38bdf8;--bbg:rgba(56,189,248,.12);--o:#fb923c;--obg:rgba(251,146,60,.12);--r:#f87171;--rbg:rgba(248,113,113,.12);--p:#c084fc;--pbg:rgba(192,132,252,.12);
+  --rad:14px;--rad2:10px;--gut:max(16px,env(safe-area-inset-left,0px));--serif:'Instrument Serif',Georgia,serif;--mono:'Geist Mono',ui-monospace,monospace}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent;min-width:0}[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--fg);font:15px/1.5 Geist,system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-wrap:anywhere}
+button,input,select,textarea{font:inherit;color:inherit}button{background:none;border:0;cursor:pointer;padding:0}a{color:inherit}
+:focus-visible{outline:2px solid var(--y);outline-offset:2px}@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.lbl{font-family:var(--mono);font-size:10.5px;line-height:1.4;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+/* top bar: brand + tabs on their own scrolling row, so nothing ever squeezes */
+.top{position:sticky;top:0;z-index:20;background:rgba(9,9,11,.86);backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px);border-bottom:1px solid var(--line)}
+.top .row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:56px;padding:0 var(--gut);max-width:1180px;margin:0 auto}
+.top b.brand{font-weight:700;font-size:19px;letter-spacing:-.045em;white-space:nowrap}.top b.brand span{color:var(--mute);font-weight:500;font-size:13px;letter-spacing:0;margin-left:8px}
+.me{display:flex;gap:8px;align-items:center}.me .who{font-size:12.5px;color:var(--mute);max-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding:0 var(--gut) 10px;max-width:1180px;margin:0 auto}.nav::-webkit-scrollbar{display:none}
+.nav button{flex:none;display:flex;align-items:center;gap:7px;height:36px;padding:0 14px;border-radius:999px;font-size:13.5px;color:#c9c9cf;border:1px solid transparent}
+.nav button:hover{background:var(--s2)}.nav button.on{background:var(--fg);color:#000}
+.nav i{font-style:normal;font-family:var(--mono);font-size:10.5px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--g);color:#000;display:inline-grid;place-items:center}
+.nav button.on i{background:#000;color:#fff}
+.ib{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:38px;padding:0 14px;border:1px solid var(--line2);border-radius:var(--rad2);font-size:13px;white-space:nowrap;background:var(--s1)}
+.ib:hover{border-color:rgba(255,255,255,.3)}.ib:disabled{opacity:.5}.ib.warn{border-color:rgba(250,204,21,.5);color:var(--y)}.ib.bad{border-color:rgba(248,113,113,.45);color:var(--r)}.ib.solid{background:var(--fg);color:#000;border-color:var(--fg)}
+.w{max-width:1180px;margin:0 auto;padding:18px var(--gut) 90px}
+h1{font-family:var(--serif);font-weight:400;font-size:clamp(38px,8vw,58px);line-height:1;margin:6px 0 2px;letter-spacing:-.01em}h1 em{font-style:italic;color:#d4d4d8}
+h2{font-size:15px;font-weight:600;margin:0 0 10px}
+/* dashboard */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:18px 0 12px}
+.kpi{background:var(--s1);border:1px solid var(--line);border-radius:var(--rad);padding:14px;display:grid;gap:4px;align-content:start}
+.kpi b{font-size:24px;font-weight:600;letter-spacing:-.02em;line-height:1.15}.kpi small{color:var(--mute);font-size:12px;line-height:1.35}
+.kpi.g b{color:var(--g)}.kpi.y b{color:var(--y)}.kpi.b b{color:var(--b)}.kpi.o b{color:var(--o)}.kpi.r b{color:var(--r)}
+.panel{background:var(--s1);border:1px solid var(--line);border-radius:var(--rad);padding:16px;margin-top:12px}
+.two{display:grid;grid-template-columns:1fr;gap:12px}@media(min-width:820px){.two{grid-template-columns:1fr 1fr}}
+.bars p{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}.bars p:last-child{border:0}.bars p span{flex:1}.bars p b{flex:none}
+/* filters */
+.tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:16px calc(-1*var(--gut)) 0;padding:2px var(--gut)}.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:none;display:flex;align-items:center;gap:6px;height:36px;padding:0 13px;border:1px solid var(--line2);border-radius:999px;font-size:13px;color:#d4d4d8}
+.tabs button.on{background:var(--fg);color:#000;border-color:var(--fg)}.tabs i{font-style:normal;font-family:var(--mono);font-size:10.5px;opacity:.65}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 4px}.tools .srch{flex:1 1 220px}
+.srch,.inp,select,textarea.msg{width:100%;min-height:44px;background:var(--s1);border:1px solid var(--line2);border-radius:var(--rad2);padding:10px 14px;outline:none;font-size:15px}
+.srch:focus,.inp:focus,select:focus,textarea.msg:focus{border-color:rgba(255,255,255,.4)}
+select{appearance:none;padding-right:34px;background-image:linear-gradient(45deg,transparent 50%,#888 50%),linear-gradient(135deg,#888 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%;background-size:5px 5px;background-repeat:no-repeat}
+.alert{border:1px solid var(--line2);border-radius:var(--rad);padding:14px;margin:14px 0 0;font-size:13.5px;color:#d4d4d8;background:var(--s1)}.alert:empty{display:none}.alert b{color:#fff}
+/* order cards */
+.list{display:grid;gap:10px;margin-top:12px}@media(min-width:760px){.list{grid-template-columns:repeat(auto-fill,minmax(340px,1fr))}}
+.card{display:grid;grid-template-columns:76px minmax(0,1fr);gap:12px;text-align:left;background:var(--s1);border:1px solid var(--line);border-radius:var(--rad);padding:10px;width:100%;transition:border-color .15s,background .15s}
+.card:hover{border-color:var(--line2);background:var(--s2)}.card.new{border-color:rgba(250,204,21,.55)}
+.card .pic{width:76px;height:100px;border-radius:var(--rad2);background:var(--s3) center/cover;display:grid;place-items:center;font-family:var(--mono);font-size:9.5px;color:var(--dim)}
+.card .body{display:grid;gap:3px;align-content:start}.card .meta{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;flex-wrap:wrap}
+.card b.nm{font-size:16px;font-weight:600;line-height:1.25}.card p{color:var(--mute);font-size:13px;line-height:1.4}
+.card .what{color:#d4d4d8;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card .foot{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px}.card .tot{font-weight:600;font-size:16px}
+.pills{display:flex;gap:5px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;height:22px;font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;padding:0 8px;border-radius:999px;white-space:nowrap;background:var(--s3);color:#d4d4d8}
+.pill.new{background:var(--ybg);color:var(--y)}.pill.confirmed,.pill.artwork{background:var(--bbg);color:var(--b)}.pill.printing,.pill.qc{background:var(--pbg);color:var(--p)}.pill.ready,.pill.on-the-way{background:var(--obg);color:var(--o)}
+.pill.delivered,.pill.paid,.pill.success,.pill.approved,.pill.resolved{background:var(--gbg);color:var(--g)}.pill.cancelled,.pill.refunded,.pill.hidden{background:var(--s3);color:var(--dim)}
+.pill.clarify,.pill.hold,.pill.failed-delivery,.pill.refund-review,.pill.unpaid,.pill.open,.pill.pending,.pill.abandoned{background:var(--rbg);color:var(--r)}.pill.in-progress,.pill.waiting{background:var(--bbg);color:var(--b)}
+.empty{border:1px dashed var(--line2);border-radius:var(--rad);padding:34px 16px;text-align:center;color:var(--mute)}
+/* order detail */
+.dv{position:fixed;inset:0;z-index:50;background:var(--bg);overflow:auto;overscroll-behavior:contain}
+.dhead{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:58px;padding:8px var(--gut);background:rgba(9,9,11,.9);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.dgrid{display:grid;gap:12px;margin-top:14px}@media(min-width:900px){.dgrid{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);align-items:start}}
+.cust{display:grid;gap:4px}.cust b{font-size:19px}.cust a{font-size:15px}.cust .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.pics{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}.pics a{display:block;background:var(--s2);border-radius:var(--rad2);overflow:hidden}.pics img{width:100%;display:block}
+.pics small{display:block;padding:7px 10px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.rows{display:grid}.rows>div{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}.rows>div:last-child{border:0}
+.rows>div>span{flex:1}.rows>div>b{flex:none;text-align:right}.rows small{color:var(--mute);font-family:var(--mono);font-size:10.5px}
+.sgl{display:flex;gap:10px;align-items:center}.sgl img{width:52px;height:52px;object-fit:contain;background:var(--s3);border-radius:8px;padding:3px;display:block;flex:none}
+.flow{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:6px}.flow button{min-height:44px;padding:6px 10px;border:1px solid var(--line2);border-radius:var(--rad2);font-size:13px;line-height:1.25;text-align:left;background:var(--s1)}
+.flow button.on{background:var(--fg);color:#000;border-color:var(--fg)}.flow button.done{border-color:rgba(34,197,94,.45);color:#bbf7d0}.flow.exc button{border-style:dashed}.flow.exc button.on{background:var(--r);border-color:var(--r);color:#000}
+.hist{display:grid;gap:0;font-size:13.5px}.hist div{display:grid;grid-template-columns:14px 1fr;gap:10px;padding:0 0 12px;position:relative}.hist div:before{content:'';width:9px;height:9px;border-radius:50%;background:var(--line2);margin-top:6px}
+.hist div:not(:last-child):after{content:'';position:absolute;left:4px;top:16px;bottom:0;width:1px;background:var(--line)}.hist small{display:block;color:var(--mute)}
+.payst{display:flex;gap:12px;align-items:flex-start}.payst .big{font-size:26px;font-weight:600;letter-spacing:-.02em}
+.wa{display:flex;align-items:center;justify-content:center;gap:10px;min-height:50px;border-radius:var(--rad2);background:var(--g);color:#000;font-weight:600;text-decoration:none;margin-top:10px}
+.btn{display:flex;align-items:center;justify-content:center;min-height:46px;border:1px solid var(--line2);border-radius:var(--rad2);text-decoration:none;font-size:14px;margin-top:8px;padding:0 14px;background:var(--s1)}
+textarea.msg{min-height:96px;font:14px/1.5 Geist,sans-serif;resize:vertical}
+.note{background:var(--s2);border-radius:var(--rad2);padding:10px 12px;margin-top:8px;font-size:14px}.note small{display:block;color:var(--mute);margin-top:4px}
+.stars{color:var(--y);letter-spacing:2px}
+/* login */
+.login{max-width:420px;margin:12vh auto 0;padding:0 var(--gut);display:grid;gap:12px}.login input{min-height:54px;background:var(--s1);border:1px solid var(--line2);border-radius:var(--rad2);padding:0 16px;font-size:17px;outline:none}
+.login button{min-height:54px;background:var(--fg);color:#000;font-weight:600;border-radius:var(--rad2)}.err{color:var(--r);font-size:14px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--fg);color:#000;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:10px 16px;border-radius:999px;z-index:90;max-width:calc(100% - 32px);text-align:center}
+/* payments + reviews + support cards */
+.pay{background:var(--s1);border:1px solid var(--line);border-radius:var(--rad);padding:14px;display:grid;gap:6px}.pay .ph{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.pay .ph b{font-size:22px;font-weight:600}
+.pay p{font-size:14px;color:#d4d4d8}.pit{margin-top:6px;padding-top:10px;border-top:1px solid var(--line);font-size:14px}.pit ul{margin:6px 0 0;padding-left:18px;color:#c9c9cf}
+.pact{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.pbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0}.pbar label{display:flex;gap:6px;align-items:center}
+.rvph{width:100%;max-height:260px;object-fit:cover;border-radius:var(--rad2);display:block}
+/* notifications switch */
+.sw{display:flex;align-items:center;justify-content:space-between;gap:14px}.sw b{display:block;color:#fff;font-size:15px}.sw small{display:block;color:var(--mute);font-size:12.5px;margin-top:2px}
+.tg{flex:none;width:52px;height:30px;border-radius:15px;background:#3f3f46;position:relative;transition:background .2s}.tg i{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:transform .2s}
+.tg.on{background:var(--g)}.tg.on i{transform:translateX(22px)}.lnk2{margin-top:10px;font-size:13px;color:#bbb;text-decoration:underline}
+/* stickers tab (kept) */
+.add{background:var(--s1);border:1px solid var(--line2);border-radius:var(--rad);padding:16px;display:grid;gap:12px;margin-top:16px}.ah{font-weight:600;display:flex;gap:10px;align-items:center}.ah b{width:24px;height:24px;flex:none;border-radius:50%;background:#fff;color:#000;display:grid;place-items:center;font-size:13px}
+.pick{display:grid;gap:4px;place-items:center;text-align:center;border:1px dashed var(--line2);border-radius:var(--rad2);padding:22px 12px;cursor:pointer}.pick input{display:none}.pick span{font-weight:600}
+.ck{display:flex;gap:10px;align-items:center;font-size:14px;color:#ddd}.ck input[type=checkbox]{width:20px;height:20px;flex:none}
 .stg,.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px}.stg:empty{display:none}
-.sti{position:relative;background:#1a1a1a;aspect-ratio:1;display:grid;place-items:center;padding:6px}.sti img{max-width:100%;max-height:100%;display:block}.sti button{position:absolute;top:2px;right:2px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.75);font-size:11px}
-.sti small{position:absolute;left:4px;bottom:2px;font-family:var(--mono);font-size:9px;color:#888}
-select,.np input{height:48px;background:#000;border:1px solid var(--line2);color:#fff;padding:0 12px;font-size:15px;width:100%}.np{display:grid;gap:8px}.np input[type=color]{width:48px;height:32px;padding:0;border:0}
-.go{height:52px;background:#fff;color:#000;font-weight:600}.go:disabled{opacity:.4}
-.pkx{border:1px solid var(--line);padding:12px;margin-bottom:12px;display:grid;gap:10px}.pkh{display:grid;grid-template-columns:90px 1fr;gap:12px;align-items:start}.pkh img{width:90px;display:block}.pkh b{display:block;font-size:17px}.row2{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.sti{position:relative;background:var(--s3);border-radius:var(--rad2);aspect-ratio:1;display:grid;place-items:center;padding:6px}.sti img{max-width:100%;max-height:100%;display:block}.sti button{position:absolute;top:3px;right:3px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.75);font-size:11px}
+.sti small{position:absolute;left:5px;bottom:3px;font-family:var(--mono);font-size:9px;color:#888}
+.np{display:grid;gap:8px}.np input{min-height:46px;background:var(--s1);border:1px solid var(--line2);border-radius:var(--rad2);color:#fff;padding:0 12px;font-size:15px;width:100%}.np input[type=color]{width:48px;min-height:32px;height:32px;padding:0;border:0}
+.go{min-height:52px;background:var(--fg);color:#000;font-weight:600;border-radius:var(--rad2)}.go:disabled{opacity:.4}
+.pkx{background:var(--s1);border:1px solid var(--line);border-radius:var(--rad);padding:12px;margin-bottom:12px;display:grid;gap:10px}.pkh{display:grid;grid-template-columns:90px minmax(0,1fr);gap:12px;align-items:start}.pkh img{width:90px;display:block;border-radius:8px}.pkh b{display:block;font-size:17px}.row2{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
 </style></head><body>
-<div id="app"></div><div class="toast" id="toast" hidden></div>
+<div id="app"></div><div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 <script>
 const $ = s => document.querySelector(s), app = $('#app');
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-const toast = m => { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 1800); };
-const KEY = () => { try { return localStorage.getItem('sl-admin') || ''; } catch (e) { return ''; } };
-const ST = { new: 'New', confirmed: 'Confirmed', printing: 'Printing', 'on-the-way': 'On the way', delivered: 'Delivered', cancelled: 'Cancelled' };
-const ACTIVE = ['confirmed', 'printing', 'on-the-way'];
-let view = 'orders', orders = [], filter = 'new', q = '', alerts = 'off', seen = new Set(JSON.parse(localStorage.getItem('sl-admin-seen') || '[]')), timer = 0;
+const toast = m => { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 2200); };
+const ls = (k, v) => { try { if (v === undefined) return localStorage.getItem(k) || ''; if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { return ''; } };
+const KEY = () => ls('sl-admin'), ME = () => ls('sl-admin-name') || 'Admin';
+// order lifecycle (same list as the server)
+const FLOW = ['new', 'confirmed', 'artwork', 'printing', 'qc', 'ready', 'on-the-way', 'delivered'];
+const EXC = ['clarify', 'hold', 'failed-delivery', 'cancelled', 'refund-review', 'refunded'];
+const ST = { new: 'New', confirmed: 'Confirmed', artwork: 'Artwork', printing: 'Printing', qc: 'Quality check', ready: 'Ready', 'on-the-way': 'Out for delivery', delivered: 'Delivered',
+  clarify: 'Needs clarification', hold: 'On hold', 'failed-delivery': 'Delivery failed', cancelled: 'Cancelled', 'refund-review': 'Refund in progress', refunded: 'Refunded',
+  paid: 'Paid (Paystack)', 'payment-mismatch': 'Payment mismatch', 'customer-note': 'Customer note updated', 'refund-failed': 'Refund failed' };
+const STAGE = { todo: ['new'], prod: ['confirmed', 'artwork', 'printing', 'qc'], ship: ['ready', 'on-the-way'], done: ['delivered'], issues: ['clarify', 'hold', 'failed-delivery', 'refund-review'], closed: ['cancelled', 'refunded'] };
+let view = 'orders', orders = [], filter = 'todo', payFilter = '', q = '', PAYON = false, seen = new Set(JSON.parse(ls('sl-admin-seen') || '[]')), timer = 0, tickets = null, reviews = null;
 const ago = t => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : new Date(t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }); };
-const moneyTxt = o => (o.skinOnDM ? (o.total > 0 ? `₵${o.total} + skin (price on DM)` : 'Skin · price on DM') : `₵${o.total}`) + (o.paid ? ` · <span class="pd ${o.paid.short ? 'short' : ''}">${o.paid.short ? `⚠ paid ₵${o.paid.amount}` : '✓ PAID'}</span>` : '');
+const when = t => new Date(t).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+const cedi = n => '₵' + (Math.round((n || 0) * 100) / 100).toLocaleString('en-GB');
 const first = n => (n || '').split(' ')[0];
+const kind = k => /^skin~/.test(k) ? 'laptop skin' : /^kb~/.test(k) ? 'keyboard skin' : /^ms~/.test(k) ? 'mouse skin' : /^dc~/.test(k) ? 'vinyl decal' : 'sticker sheet';
 const what = o => [o.design ? `${o.design.packName || 'Custom pack'} (${o.design.size || '–'}, ${o.design.n} stickers)` : '', ...(o.packs || []).map(p => `${p.q}× ${p.label}`), (o.singles || []).length ? `${o.singles.reduce((a, s) => a + s.q, 0)} singles` : ''].filter(Boolean).join(' · ');
-async function api(path, opt = {}) { const r = await fetch(path, { ...opt, headers: { 'Content-Type': 'application/json', 'x-admin-key': KEY(), ...(opt.headers || {}) } }); if (r.status === 401) throw Object.assign(new Error('Wrong password'), { code: 401 }); const j = await r.json(); if (!r.ok) throw new Error(j.error || 'Error'); return j; }
+const payPill = o => o.paid ? `<span class="pill paid">✓ Paid</span>` : o.payIssue ? `<span class="pill unpaid">⚠ Check payment</span>` : PAYON && !['cancelled', 'refunded'].includes(o.status) ? `<span class="pill unpaid">Unpaid</span>` : '';
+async function api(path, opt = {}) {
+  const r = await fetch(path, { ...opt, headers: { 'Content-Type': 'application/json', 'x-admin-key': KEY(), 'x-admin-name': ME(), ...(opt.headers || {}) } });
+  if (r.status === 401) throw Object.assign(new Error('Wrong password'), { code: 401 });
+  const j = await r.json().catch(() => ({})); if (!r.ok) throw Object.assign(new Error(j.error || 'Something went wrong'), { j, status: r.status }); return j; }
+const post = (a, body) => api('/api/admin/', { method: 'POST', body: JSON.stringify({ a, ...body }) });
 
 function login(msg) {
   clearInterval(timer);
   app.innerHTML = `<div class="login"><span class="lbl">Skin Lab · admin</span><h1>Your <em>orders.</em></h1>
-    <input id="pw" type="password" placeholder="Password" autocomplete="current-password"><button id="go">Open</button><p class="err" id="er">${esc(msg || '')}</p></div>`;
-  const go = async () => { try { localStorage.setItem('sl-admin', $('#pw').value.trim()); } catch (e) {} $('#go').textContent = 'Opening…'; await load(true); };
+    <input id="pw" type="password" placeholder="Password" autocomplete="current-password" aria-label="Password">
+    <input id="nm" placeholder="Your name (shown in order history)" autocomplete="name" aria-label="Your name" value="${esc(ls('sl-admin-name'))}">
+    <button id="go">Open</button><p class="err" id="er" role="alert">${esc(msg || '')}</p></div>`;
+  const go = async () => { ls('sl-admin', $('#pw').value.trim()); if ($('#nm').value.trim()) ls('sl-admin-name', $('#nm').value.trim().slice(0, 30)); $('#go').textContent = 'Opening…'; await load(true); counts(); };
   $('#go').onclick = go; $('#pw').onkeydown = e => { if (e.key === 'Enter') go(); }; $('#pw').focus();
 }
-async function load(first) {
-  try { const j = await api('/api/orders/'); const before = new Set(orders.map(o => o.id)); orders = j.orders; alerts = j.alerts;
-    const fresh = orders.filter(o => o.status === 'new' && !before.has(o.id) && before.size);
+async function load(isFirst) {
+  try { const j = await api('/api/admin/?a=orders'); const before = new Set(orders.map(o => o.id)); orders = j.orders; PAYON = !!j.pay;
+    const fresh = orders.filter(o => !before.has(o.id) && before.size);
     if (fresh.length) { ding(); toast(`${fresh.length} new order${fresh.length > 1 ? 's' : ''}`); }
-    if (first) { const h = decodeURIComponent(location.hash.slice(1)); if (h === 'stickers') stickers(); else if (h === 'payments') payments(); else list(); clearInterval(timer); timer = setInterval(() => load(), 20000); if (h && h !== 'stickers' && h !== 'payments') open(h); } else if (view === 'orders' && !$('.dv')) list(); else badge();
-  } catch (e) { if (e.code === 401) { try { localStorage.removeItem('sl-admin'); } catch (x) {} login('Wrong password'); } else if (first) login(e.message); }
+    if (isFirst) { const h = decodeURIComponent(location.hash.slice(1)); route(h); clearInterval(timer); timer = setInterval(() => load(), 25000); }
+    else if (view === 'orders' && !$('.dv')) list(); else badge();
+  } catch (e) { if (e.code === 401) { ls('sl-admin', null); login('Wrong password'); } else if (isFirst) login(e.message); }
 }
+function route(h) { if (h === 'stickers') stickers(); else if (h === 'payments') payments(); else if (h === 'support') support(true); else if (h === 'reviews') reviewsView(true); else { list(); if (/^SL-/.test(h)) open(h); } }
 function ding() { try { const c = new (window.AudioContext || window.webkitAudioContext)(), o = c.createOscillator(), g = c.createGain(); o.frequency.value = 880; o.connect(g); g.connect(c.destination); g.gain.setValueAtTime(.2, c.currentTime); g.gain.exponentialRampToValueAtTime(.001, c.currentTime + .6); o.start(); o.stop(c.currentTime + .6); } catch (e) {} try { navigator.vibrate && navigator.vibrate([80, 60, 80]); } catch (e) {} }
 function badge() { const n = orders.filter(o => o.status === 'new').length; document.title = (n ? `(${n}) ` : '') + 'Orders · Skin Lab admin'; }
+
+// ---------- top bar ----------
+const topbar = v => { const nNew = orders.filter(o => o.status === 'new').length, nOpen = tickets ? tickets.filter(t => t.status !== 'resolved').length : 0, nRev = reviews ? reviews.filter(r => r.status === 'pending').length : 0;
+  return `<header class="top"><div class="row"><b class="brand">Skin Lab<span>admin</span></b><div class="me"><span class="who" title="Changes are recorded under this name">${esc(ME())}</span><button class="ib" id="lo" aria-label="Log out">Log out</button></div></div>
+  <nav class="nav" aria-label="Sections">${[['orders', 'Orders', nNew], ['payments', 'Payments', 0], ['support', 'Support', nOpen], ['reviews', 'Reviews', nRev], ['stickers', 'Stickers', 0]].map(([k, n, c]) => `<button class="${v === k ? 'on' : ''}" data-v="${k}">${n}${c ? `<i>${c}</i>` : ''}</button>`).join('')}</nav></header>`; };
+function wireTop() {
+  app.querySelector('.nav').onclick = e => { const b = e.target.closest('[data-v]'); if (!b) return; history.replaceState(null, '', b.dataset.v === 'orders' ? location.pathname : '#' + b.dataset.v); route(b.dataset.v); };
+  $('#lo').onclick = () => { if (!confirm('Log out of the admin?')) return; ls('sl-admin', null); login(); };
+}
+
+// ---------- orders dashboard ----------
+function metrics() {
+  const live = orders.filter(o => !['cancelled'].includes(o.status)), paid = orders.filter(o => o.paid && o.status !== 'refunded'), mo = new Date();
+  const month = paid.filter(o => { const d = new Date(o.paid.at || o.at); return d.getMonth() === mo.getMonth() && d.getFullYear() === mo.getFullYear(); });
+  const fulfil = orders.filter(o => o.paid && o.status === 'delivered').map(o => { const d = (o.history || []).find(h => h.s === 'delivered'); return d ? d.at - (o.paid.at || o.at) : null; }).filter(x => x > 0);
+  const avgH = fulfil.length ? fulfil.reduce((a, b) => a + b, 0) / fulfil.length / 36e5 : 0;
+  return { revenue: paid.reduce((a, o) => a + o.paid.amount, 0), month: month.reduce((a, o) => a + o.paid.amount, 0), monthN: month.length,
+    awaiting: PAYON ? live.filter(o => !o.paid && !['refunded', 'refund-review', 'delivered'].includes(o.status)).length : 0, issues: orders.filter(o => o.payIssue || STAGE.issues.includes(o.status)).length,
+    queue: orders.filter(o => STAGE.prod.includes(o.status)).length, ship: orders.filter(o => STAGE.ship.includes(o.status)).length, done: orders.filter(o => o.status === 'delivered').length,
+    refunds: orders.filter(o => o.refund && o.refund.status === 'processed').reduce((a, o) => a + (o.refund.amount || 0), 0), avg: avgH ? (avgH < 48 ? Math.round(avgH) + ' h' : (avgH / 24).toFixed(1) + ' days') : '–' };
+}
+function inStage(o, f) { return f === 'all' || (f === 'unpaid' ? PAYON && !o.paid && !STAGE.closed.includes(o.status) : f === 'issues' ? (o.payIssue || STAGE.issues.includes(o.status)) : (STAGE[f] || []).includes(o.status)); }
 function list() {
-  badge(); const cnt = { new: 0, active: 0, done: 0, all: orders.length }; orders.forEach(o => { if (o.status === 'new') cnt.new++; else if (ACTIVE.includes(o.status)) cnt.active++; else cnt.done++; });
-  const today = orders.filter(o => Date.now() - o.at < 864e5), money = orders.filter(o => o.status !== 'cancelled').reduce((a, o) => a + (o.total || 0), 0);
-  const show = orders.filter(o => (filter === 'all' || (filter === 'new' ? o.status === 'new' : filter === 'active' ? ACTIVE.includes(o.status) : !ACTIVE.includes(o.status) && o.status !== 'new'))
-    && (!q || `${o.id} ${o.name} ${o.phone} ${o.loc}`.toLowerCase().includes(q.toLowerCase())));
-  view = 'orders'; app.innerHTML = `${topbar('orders')}
+  badge(); view = 'orders'; const m = metrics(), tabs = [['todo', 'New'], ['unpaid', 'Unpaid'], ['prod', 'In production'], ['ship', 'Ready & out'], ['done', 'Delivered'], ['issues', 'Issues'], ['closed', 'Closed'], ['all', 'All']].filter(([k]) => k !== 'unpaid' || PAYON);
+  const show = orders.filter(o => inStage(o, filter) && (!payFilter || (payFilter === 'paid' ? !!o.paid : !o.paid)) && (!q || `${o.id} ${o.name} ${o.phone} ${o.loc} ${what(o)}`.toLowerCase().includes(q.toLowerCase())));
+  const ok = orders.filter(o => o.status !== 'cancelled'), cnt = {};
+  ok.forEach(o => { (o.packs || []).forEach(p => { const k = p.label.split(' · ')[0].split(' (')[0]; cnt[k] = (cnt[k] || 0) + p.q; }); if (o.design) cnt['Custom laptop packs'] = (cnt['Custom laptop packs'] || 0) + 1; const s = (o.singles || []).reduce((a, x) => a + x.q, 0); if (s) cnt['Single stickers'] = (cnt['Single stickers'] || 0) + s; });
+  const top = Object.entries(cnt).sort((a, b) => b[1] - a[1]).slice(0, 6), wk = ok.filter(o => Date.now() - o.at < 7 * 864e5);
+  app.innerHTML = `${topbar('orders')}
   <div class="w"><span class="lbl">${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}</span><h1>Orders<em>.</em></h1>
     <div class="alert" id="nt"></div>
-    <div class="stats"><div><b>${cnt.new}</b><span class="lbl">New</span></div><div><b>${cnt.active}</b><span class="lbl">In progress</span></div><div><b>${today.length}</b><span class="lbl">Today</span></div><div><b>₵${money}</b><span class="lbl">All time</span></div></div>
-    ${(() => { const ok = orders.filter(o => o.status !== 'cancelled'), wk = ok.filter(o => Date.now() - o.at < 7 * 864e5), mo = ok.filter(o => new Date(o.at).getMonth() === new Date().getMonth() && new Date(o.at).getFullYear() === new Date().getFullYear());
-      const cnt = {}; ok.forEach(o => { (o.packs || []).forEach(p => cnt[p.label.split(' · ')[0]] = (cnt[p.label.split(' · ')[0]] || 0) + p.q); if (o.design) cnt['Custom laptop packs'] = (cnt['Custom laptop packs'] || 0) + 1; const s = (o.singles || []).reduce((a, x) => a + x.q, 0); if (s) cnt['Single stickers'] = (cnt['Single stickers'] || 0) + s; });
-      const top = Object.entries(cnt).sort((a, b) => b[1] - a[1]).slice(0, 5);
-      return `<div class="sales"><div><span class="lbl">This week</span><b>₵${wk.reduce((a, o) => a + o.total, 0)}</b><small>${wk.length} orders</small></div><div><span class="lbl">This month</span><b>₵${mo.reduce((a, o) => a + o.total, 0)}</b><small>${mo.length} orders</small></div>
-        <div class="top"><span class="lbl">Best sellers</span>${top.length ? top.map(([n, q]) => `<p><span>${esc(n)}</span><b>${q}</b></p>`).join('') : '<p><span>No sales yet</span></p>'}</div><button class="ib" id="csv">Download orders (CSV)</button></div>`; })()}
-    <div class="tabs" id="tabs">${[['new', 'New', cnt.new], ['active', 'In progress', cnt.active], ['done', 'Done', cnt.done], ['all', 'All', cnt.all]].map(([k, n, c]) => `<button class="${k === filter ? 'on' : ''}" data-f="${k}">${n}<i>${c}</i></button>`).join('')}</div>
-    <input class="srch" id="q" placeholder="Search name, number, order…" value="${esc(q)}">
+    <div class="kpis">
+      <div class="kpi g"><span class="lbl">Verified revenue</span><b>${cedi(m.month)}</b><small>this month · ${m.monthN} paid · ${cedi(m.revenue)} all time</small></div>
+      ${PAYON ? `<div class="kpi y"><span class="lbl">Awaiting payment</span><b>${m.awaiting}</b><small>orders not paid yet</small></div>` : ''}
+      <div class="kpi b"><span class="lbl">Printing queue</span><b>${m.queue}</b><small>confirmed → quality check</small></div>
+      <div class="kpi o"><span class="lbl">Ready & out</span><b>${m.ship}</b><small>to dispatch or on the way</small></div>
+      <div class="kpi"><span class="lbl">Delivered</span><b>${m.done}</b><small>${m.avg === '–' ? 'no delivery times yet' : `on average ${m.avg} after payment`}</small></div>
+      <div class="kpi r"><span class="lbl">Issues</span><b>${m.issues}</b><small>on hold, unclear, refunds${m.refunds ? ` · ${cedi(m.refunds)} refunded` : ''}</small></div>
+    </div>
+    <div class="two"><div class="panel"><h2>Sales</h2><div class="bars"><p><span>Last 7 days</span><b>${cedi(wk.reduce((a, o) => a + (o.paid ? o.paid.amount : 0), 0))} paid · ${wk.length} orders</b></p><p><span>This month (paid)</span><b>${cedi(m.month)}</b></p><p><span>All orders placed</span><b>${orders.length}</b></p></div>
+      <button class="ib" id="csv" style="margin-top:10px">Download orders (CSV)</button></div>
+      <div class="panel"><h2>Best sellers</h2><div class="bars">${top.length ? top.map(([n, c]) => `<p><span>${esc(n)}</span><b>${c}</b></p>`).join('') : '<p><span>No sales yet</span></p>'}</div></div></div>
+    <div class="tabs" id="tabs" role="tablist">${tabs.map(([k, n]) => `<button role="tab" aria-selected="${k === filter}" class="${k === filter ? 'on' : ''}" data-f="${k}">${n}<i>${orders.filter(o => inStage(o, k)).length}</i></button>`).join('')}</div>
+    <div class="tools"><input class="srch" id="q" placeholder="Search name, number, order, product…" value="${esc(q)}" aria-label="Search orders">
+      ${PAYON ? `<select id="pf" aria-label="Payment" style="flex:0 0 150px"><option value="">Paid & unpaid</option><option value="paid" ${payFilter === 'paid' ? 'selected' : ''}>Paid only</option><option value="unpaid" ${payFilter === 'unpaid' ? 'selected' : ''}>Unpaid only</option></select>` : ''}</div>
     <div class="list">${show.length ? show.map(o => { const pic = o.design && (o.design.sheet || o.design.mock);
-      const pp = !pic && !(o.picks && o.picks.sheet) && (o.packs || [])[0], img = pic || (o.picks && o.picks.sheet) || (pp ? `/sheets-xs/${pp.key.replace('~5', '-a5')}.webp` : '');
-      return `<button class="card ${o.status === 'new' ? 'new' : ''}" data-id="${o.id}"><span class="pic" ${img ? `style="background-image:url('${esc(img)}')"` : ''}>${img ? '' : 'SINGLES'}</span>
-        <span><span class="meta"><span><b>${esc(o.name)}</b><p>${esc(o.id)} · ${ago(o.at)}</p></span><span class="pill ${o.status}">${ST[o.status]}</span></span>
-        <p>${esc(what(o))}</p><p>${esc(o.loc || '')}</p><div class="tot">${moneyTxt(o)}</div></span></button>`; }).join('')
-      : `<div class="empty">${orders.length ? 'Nothing here.' : 'No orders yet. They land here the moment a customer taps “Place order”.'}</div>`}</div>
+      const pp = !pic && !(o.picks && o.picks.sheet) && (o.packs || [])[0], img = pic || (o.picks && o.picks.sheet) || (pp ? (/^dc~/.test(pp.key) ? `/decals/${pp.key.slice(3)}-s.webp` : /^(skin|kb|ms)~/.test(pp.key) ? `/skins/${pp.key.split('~')[1]}-s.webp` : `/sheets-xs/${pp.key.replace('~5', '-a5')}.webp`) : '');
+      return `<button class="card ${o.status === 'new' && !seen.has(o.id) ? 'new' : ''}" data-id="${o.id}"><span class="pic" ${img ? `style="background-image:url('${esc(img)}')"` : ''}>${img ? '' : 'SINGLES'}</span>
+        <span class="body"><span class="meta"><b class="nm">${esc(o.name)}</b><span class="pills"><span class="pill ${o.status}">${ST[o.status] || o.status}</span></span></span>
+        <p>${esc(o.id)} · ${ago(o.at)}${o.loc ? ' · ' + esc(o.loc) : ''}</p><p class="what">${esc(what(o))}</p>
+        <span class="foot"><span class="tot">${cedi(o.total)}</span><span class="pills">${payPill(o)}</span></span></span></button>`; }).join('')
+      : `<div class="empty">${orders.length ? 'Nothing here right now.' : 'No orders yet. They land here the moment a customer orders.'}</div>`}</div>
   </div>`;
-  notifCard();
-  $('#csv').onclick = () => { const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`, rows = [['Order', 'Date', 'Status', 'Name', 'WhatsApp', 'Location', 'Items', 'Free sticker', 'Total GHS', 'Paid GHS', 'Paystack ref']];
-    orders.forEach(o => rows.push([o.id, new Date(o.at).toISOString().slice(0, 16).replace('T', ' '), ST[o.status], o.name, '+' + o.phone, o.loc, what(o), o.free ? o.free.code : '', o.total, o.paid ? o.paid.amount : '', o.paid ? o.paid.ref : '']));
-    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\ufeff' + rows.map(r => r.map(q).join(',')).join('\n')], { type: 'text/csv' })); a.download = `skin-lab-orders-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); toast('Downloaded'); };
+  notifCard(); wireTop();
+  $('#csv').onclick = () => { const qq = v => `"${String(v ?? '').replace(/"/g, '""')}"`, rows = [['Order', 'Date', 'Status', 'Name', 'WhatsApp', 'Location', 'Items', 'Free sticker', 'Total GHS', 'Paid GHS', 'Paystack ref', 'Paid at']];
+    orders.forEach(o => rows.push([o.id, new Date(o.at).toISOString().slice(0, 16).replace('T', ' '), ST[o.status], o.name, '+' + o.phone, o.loc, what(o), o.free ? o.free.code : '', o.total, o.paid ? o.paid.amount : '', o.paid ? o.paid.ref : '', o.paid ? new Date(o.paid.at).toISOString().slice(0, 16).replace('T', ' ') : '']));
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + rows.map(r => r.map(qq).join(',')).join('\n')], { type: 'text/csv' })); a.download = `skin-lab-orders-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); toast('Downloaded'); };
   $('#tabs').onclick = e => { const b = e.target.closest('[data-f]'); if (b) { filter = b.dataset.f; list(); } };
+  if ($('#pf')) $('#pf').onchange = e => { payFilter = e.target.value; list(); };
   $('#q').oninput = e => { q = e.target.value; const p = e.target.selectionStart; list(); const i = $('#q'); i.focus(); i.setSelectionRange(p, p); };
-  wireTop();
   app.querySelectorAll('.card').forEach(c => c.onclick = () => open(c.dataset.id));
 }
-let PAYON = false; fetch('/api/pay/').then(r => r.json()).then(j => { PAYON = !!j.enabled; }).catch(() => {});
+
+// ---------- WhatsApp messages for each step ----------
 const MSG = {
-  confirmed: o => `Hi ${first(o.name)}, it's Skin Lab 👋\nYour order ${o.id} is confirmed: ${what(o)}.\n${o.paid ? `Payment of GH₵${o.paid.amount} received ✓ We're printing it next.` : `Total: GH₵${o.total}.\n${PAYON ? `Pay here (MoMo or card): ${location.origin}/o/${o.id}/ , then we start printing.` : 'Please pay with MoMo and send the screenshot here, then we start printing.'}`}`,
-  printing: o => `Hi ${first(o.name)}, your Skin Lab order ${o.id} is printing now 🖨️ We'll tell you when it's on the way.`,
-  'on-the-way': o => `Hi ${first(o.name)}, your Skin Lab order ${o.id} is on the way 🚚 We'll call you when we're close${o.loc ? ' to ' + o.loc : ''}.`,
-  delivered: o => `Hi ${first(o.name)}, enjoy your stickers! 🙌 Show us your laptop: tag @baidencreatives on Instagram. Thanks for ordering from Skin Lab.`,
+  new: o => `Hi ${first(o.name)}, thanks for your Skin Lab order ${o.id}! ${!o.paid && PAYON ? `You can pay here (MoMo or card): ${location.origin}/o/${o.id}/` : ''}`,
+  confirmed: o => `Hi ${first(o.name)}, it's Skin Lab 👋 Your order ${o.id} is confirmed: ${what(o)}.\n${o.paid ? `Payment of GH₵${o.paid.amount} received ✓` : `Total GH₵${o.total}. ${PAYON ? `Pay here (MoMo or card): ${location.origin}/o/${o.id}/` : 'Please pay with MoMo and send the screenshot here.'}`}\nFollow it here: ${location.origin}/o/${o.id}/`,
+  artwork: o => `Hi ${first(o.name)}, we're preparing the artwork for your Skin Lab order ${o.id} 🎨`,
+  printing: o => `Hi ${first(o.name)}, your stickers are being printed now 🖨️ (order ${o.id})`,
+  qc: o => `Hi ${first(o.name)}, your order ${o.id} is printed and in quality check ✅`,
+  ready: o => `Hi ${first(o.name)}, your Skin Lab order ${o.id} is ready! 📦 Where and when should we deliver${o.loc ? ` in ${o.loc}` : ''}?`,
+  'on-the-way': o => `Hi ${first(o.name)}, your Skin Lab order ${o.id} is out for delivery 🚚 We'll call when we're close.`,
+  delivered: o => `Hi ${first(o.name)}, your order has been delivered 🙌 Enjoy! Care tips: ${location.origin}/care/ . If you have a minute, a quick review on your order page means a lot: ${location.origin}/o/${o.id}/`,
+  clarify: o => `Hi ${first(o.name)}, a quick question about your Skin Lab order ${o.id}: `,
+  hold: o => `Hi ${first(o.name)}, your Skin Lab order ${o.id} is on hold for now: `,
+  'failed-delivery': o => `Hi ${first(o.name)}, we couldn't deliver your order ${o.id} today. When is a good time to try again?`,
   cancelled: o => `Hi ${first(o.name)}, about your Skin Lab order ${o.id}: `,
-  new: o => `Hi ${first(o.name)}, thanks for your Skin Lab order ${o.id}! `,
+  'refund-review': o => `Hi ${first(o.name)}, we've sent your refund for order ${o.id} to Paystack. It usually reaches you in a few working days.`,
+  refunded: o => `Hi ${first(o.name)}, Paystack has processed the refund for your order ${o.id}.`,
 };
+// ---------- one order ----------
 function open(id) {
   const o = orders.find(x => x.id === id); if (!o) return; history.replaceState(null, '', '#' + id);
-  if (!seen.has(id)) { seen.add(id); try { localStorage.setItem('sl-admin-seen', JSON.stringify([...seen].slice(-500))); } catch (e) {} }
-  const d = o.design, next = { new: 'confirmed', confirmed: 'printing', printing: 'on-the-way', 'on-the-way': 'delivered' }[o.status] || o.status;
+  if (!seen.has(id)) { seen.add(id); ls('sl-admin-seen', JSON.stringify([...seen].slice(-800))); }
+  const d = o.design, nextS = FLOW[FLOW.indexOf(o.status) + 1] || o.status, at = FLOW.indexOf(o.status);
   const printList = [...(d ? (d.layout || []) : []), ...(o.picks ? (o.picks.layout || []) : [])].map(l => `${l.c}  ${(Math.max(l.w, l.h) / 10).toFixed(1)} cm`).join('\n');
-  const v = document.createElement('div'); v.className = 'dv';
-  v.innerHTML = `<div class="dhead"><button class="ib" id="bk">← Orders</button><span class="pill ${o.status}">${ST[o.status]}</span></div><div class="w">
-    <span class="lbl">${esc(o.id)} · ${new Date(o.at).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
-    <h1>${esc(first(o.name))}<em>’s order.</em></h1>
-    <div class="cust"><b>${esc(o.name)}</b><a href="tel:+${esc(o.phone)}">+${esc(o.phone)}</a><span class="lbl">${esc(o.loc || 'No location given')}</span></div>
-    ${o.picks && o.picks.sheet ? `<div class="pics"><a href="${esc(o.picks.sheet)}" target="_blank" rel="noopener"><img src="${esc(o.picks.sheet)}" alt=""><small>Singles sheet · ${esc(o.picks.size)} · ${o.picks.n} stickers${o.picks.scaled ? ' · scaled to fit' : ''} · tap for full size</small></a></div>` : ''}
-    ${d ? `<div class="pics">${d.sheet ? `<a href="${esc(d.sheet)}" target="_blank" rel="noopener"><img src="${esc(d.sheet)}" alt=""><small>${esc(d.packName || 'Custom pack')} · ${esc(d.size)} sheet${d.scaled ? ' · scaled to fit' : ''} · tap for full size</small></a>` : ''}${d.mock ? `<a href="${esc(d.mock)}" target="_blank" rel="noopener"><img src="${esc(d.mock)}" alt=""><small>${esc(d.laptop)}</small></a>` : ''}</div>` : ''}
-    <div class="sec"><h3>What they ordered</h3><div class="rows">
-      ${d ? `<div><span>${esc(d.packName || 'Custom pack')}<br><small>${d.n ? `${esc(d.size)} sheet · ${d.n} stickers` : 'no stickers'}</small></span><b>₵${d.n * 3}</b></div>${d.skins && d.skins.length ? `<div><span>${esc(d.skins.join(', '))} skin<br><small>${({ S: 'Small', M: 'Medium', L: 'Large', C: 'Custom' }[d.skinSize] || '')} · ${esc(d.laptop)}</small></span><b>${d.skinPrice ? '₵' + d.skinPrice : 'price on DM'}</b></div>` : ''}` : ''}
-      ${(o.packs || []).map(p => `<div><span>${esc(p.label)}<br><small>${String(p.key).startsWith('skin~') ? 'laptop skin' : p.n + ' stickers'}</small></span><b>${p.q} × ₵${p.price}</b></div>`).join('')}
-      ${o.free ? `<div><span class="sgl"><img src="${esc(o.free.img || `/free/${o.free.code}.webp`)}" alt=""><span>${esc(o.free.code)} · ${esc(o.free.name)}<br><small>free sticker${o.free.onDesign ? ' · on their laptop design' : ' · on the singles sheet'}</small></span></span><b>FREE</b></div>` : ''}
-      ${(o.singles || []).map(s => ({ ...s, img: s.img || (/^[A-Z]{3}-\d{3}$/.test(s.code) ? `/hd/${s.code}.avif` : '') })).map(s => `<div><span class="sgl">${s.img ? `<a href="${esc(s.img)}" target="_blank" rel="noopener"><img src="${esc(s.img)}" alt=""></a>` : ''}<span>${esc(s.code)}<br><small>${esc(s.pack)}</small></span></span><b>× ${s.q}</b></div>`).join('')}
-      <div><b>Total</b><b>${moneyTxt(o)}</b></div></div></div>
-    ${printList ? `<div class="sec"><h3>Print list (sticker · size)</h3><textarea class="msg" readonly style="min-height:120px;font-family:var(--mono);font-size:12px">${esc(printList)}</textarea><button class="btn" id="cpl">Copy print list</button></div>` : ''}
-    <div class="sec"><h3>Status</h3><div class="st" id="st">${Object.entries(ST).map(([k, n]) => `<button data-s="${k}" class="${k === o.status ? 'on' : ''}">${n}</button>`).join('')}</div></div>
-    <div class="sec"><h3>Message ${esc(first(o.name))} on WhatsApp</h3><textarea class="msg" id="msg">${esc((MSG[next] || MSG.new)(o))}</textarea>
-      <a class="wa" id="wa" target="_blank" rel="noopener">Send on WhatsApp</a>
-      <a class="btn" href="/o/${esc(o.id)}/" target="_blank" rel="noopener">The customer's order page</a>
-      <button class="btn" id="del" style="width:100%;color:#ff6b6b;border-color:rgba(255,107,107,.4);margin-top:28px">Delete this order</button></div></div>`;
-  document.body.appendChild(v); document.body.style.overflow = 'hidden';
+  const pay = o.paid ? `<div class="payst"><span class="pill paid">✓ Paid</span><div><div class="big">${cedi(o.paid.amount)}</div><p class="lbl">${o.paid.channel === 'mobile_money' ? 'Mobile Money' : esc(o.paid.channel || 'Paystack')} · ${when(o.paid.verifiedAt || o.paid.at)} · verified with Paystack</p><p class="lbl">${esc(o.paid.ref)}${o.paid.fees ? ` · fee ${cedi(o.paid.fees)}` : ''}</p></div></div>
+      ${o.refund ? `<p class="note">Refund ${esc(o.refund.status)} · ${cedi(o.refund.amount)} · by ${esc(o.refund.by || '')} ${when(o.refund.at)}${o.refund.reason ? `<small>${esc(o.refund.reason)}</small>` : ''}</p>` : `<button class="ib bad" id="rf" style="margin-top:10px">Refund via Paystack…</button>`}`
+    : `<div class="payst"><span class="pill unpaid">${o.payIssue ? '⚠ Payment mismatch' : 'Not paid'}</span><div><div class="big">${cedi(o.total)}</div><p class="lbl">${PAYON ? 'Only a verified Paystack payment marks this paid' : 'Payments are off'}</p></div></div>
+      ${o.payIssue ? `<p class="note">Paystack reported ${esc(o.payIssue.currency)} ${o.payIssue.amount} for ${esc(o.payIssue.ref)}, order total ${cedi(o.payIssue.expected)}. Not marked paid.</p>` : ''}
+      ${(o.attempts || []).length ? `<div class="rows" style="margin-top:8px">${o.attempts.slice().reverse().map(a => `<div><span>${esc(a.ref)}<br><small>${when(a.at)}${a.msg ? ' · ' + esc(a.msg) : ''}</small></span><span class="pill ${a.status === 'success' ? 'paid' : a.status}">${esc(a.status)}</span></div>`).join('')}</div>` : ''}`;
+  const v = document.createElement('div'); v.className = 'dv'; v.setAttribute('role', 'dialog'); v.setAttribute('aria-label', `Order ${o.id}`);
+  v.innerHTML = `<div class="dhead"><button class="ib" id="bk">← Orders</button><span class="pills"><span class="pill ${o.status}">${ST[o.status]}</span>${payPill(o)}</span></div><div class="w">
+    <span class="lbl">${esc(o.id)} · placed ${when(o.at)}</span><h1>${esc(first(o.name))}<em>’s order.</em></h1>
+    <div class="dgrid"><div>
+      ${o.picks && o.picks.sheet || d ? `<div class="panel"><div class="pics">${o.picks && o.picks.sheet ? `<a href="${esc(o.picks.sheet)}" target="_blank" rel="noopener"><img src="${esc(o.picks.sheet)}" alt=""><small>Singles sheet · ${esc(o.picks.size)} · ${o.picks.n} stickers${o.picks.scaled ? ' · scaled' : ''}</small></a>` : ''}
+        ${d && d.sheet ? `<a href="${esc(d.sheet)}" target="_blank" rel="noopener"><img src="${esc(d.sheet)}" alt=""><small>${esc(d.packName || 'Custom pack')} · ${esc(d.size)} sheet${d.scaled ? ' · scaled' : ''}</small></a>` : ''}${d && d.mock ? `<a href="${esc(d.mock)}" target="_blank" rel="noopener"><img src="${esc(d.mock)}" alt=""><small>${esc(d.laptop)}</small></a>` : ''}</div></div>` : ''}
+      <div class="panel"><h2>What they ordered</h2><div class="rows">
+        ${d ? `<div><span>${esc(d.packName || 'Custom pack')}<br><small>${d.n ? `${esc(d.size)} sheet · ${d.n} stickers` : 'no stickers'}</small></span><b>${cedi(d.n * 3)}</b></div>${d.skins && d.skins.length ? `<div><span>${esc(d.skins.join(', '))} skin<br><small>${({ S: 'Small', M: 'Medium', L: 'Large', C: 'Custom' }[d.skinSize] || '')} · ${esc(d.laptop)}</small></span><b>${d.skinPrice ? cedi(d.skinPrice) : '–'}</b></div>` : ''}` : ''}
+        ${(o.packs || []).map(p => `<div><span class="sgl">${/^dc~/.test(p.key) ? `<img src="/decals/${esc(p.key.slice(3))}-s.webp" alt="">` : /^(skin|kb|ms)~/.test(p.key) ? `<img src="/skins/${esc(p.key.split('~')[1])}-s.webp" alt="">` : ''}<span>${esc(p.label)}<br><small>${kind(p.key)}${p.n ? ' · ' + p.n + ' stickers' : ''}</small></span></span><b>${p.q} × ${cedi(p.price)}</b></div>`).join('')}
+        ${o.free ? `<div><span class="sgl"><img src="${esc(o.free.img || `/free/${o.free.code}.webp`)}" alt=""><span>${esc(o.free.code)} · ${esc(o.free.name)}<br><small>free sticker${o.free.onDesign ? ' · on their laptop design' : ''}</small></span></span><b>FREE</b></div>` : ''}
+        ${(o.singles || []).map(s => ({ ...s, img: s.img || (/^[A-Z]{3}-\d{3}$/.test(s.code) ? `/hd/${s.code}.avif` : '') })).map(s => `<div><span class="sgl">${s.img ? `<a href="${esc(s.img)}" target="_blank" rel="noopener"><img src="${esc(s.img)}" alt=""></a>` : ''}<span>${esc(s.code)}<br><small>${esc(s.pack)}</small></span></span><b>× ${s.q}</b></div>`).join('')}
+        <div><b>Total</b><b>${cedi(o.total)}${o.clientTotal !== undefined ? `<br><small>browser said ${cedi(o.clientTotal)}</small>` : ''}</b></div></div>
+        ${printList ? `<textarea class="msg" readonly style="min-height:110px;margin-top:10px;font-family:var(--mono);font-size:12px" aria-label="Print list">${esc(printList)}</textarea><button class="btn" id="cpl">Copy print list</button>` : ''}</div>
+      <div class="panel"><h2>Production</h2><div class="flow" id="st">${FLOW.map((s, i) => `<button data-s="${s}" class="${s === o.status ? 'on' : i < at ? 'done' : ''}">${i < at ? '✓ ' : ''}${ST[s]}</button>`).join('')}</div>
+        <p class="lbl" style="margin:12px 0 6px">Exceptions</p><div class="flow exc" id="st2">${EXC.filter(s => s !== 'refunded' || !o.paid).map(s => `<button data-s="${s}" class="${s === o.status ? 'on' : ''}">${ST[s]}</button>`).join('')}</div></div>
+    </div><div>
+      <div class="panel cust"><b>${esc(o.name)}</b><a href="tel:+${esc(o.phone)}">+${esc(o.phone)}</a>${o.email ? `<span class="lbl" style="text-transform:none">${esc(o.email)}</span>` : ''}<span class="lbl">${esc(o.loc || 'No location given')}</span>${o.note ? `<p class="note">${esc(o.note)}</p>` : ''}
+        <div class="acts"><a class="ib" href="/o/${esc(o.id)}/" target="_blank" rel="noopener">Customer's order page ↗</a></div></div>
+      <div class="panel"><h2>Payment</h2>${pay}</div>
+      <div class="panel"><h2>Message ${esc(first(o.name))}</h2><textarea class="msg" id="msg" aria-label="WhatsApp message">${esc((MSG[nextS] || MSG.new)(o))}</textarea><a class="wa" id="wa" target="_blank" rel="noopener">Send on WhatsApp</a></div>
+      <div class="panel"><h2>Note on the customer's order page</h2><textarea class="msg" id="cn" placeholder="e.g. Pickup at Legon, Commonwealth Hall, Friday 4pm" aria-label="Customer note">${esc(o.custNote || '')}</textarea><button class="btn" id="cns">Save note for the customer</button></div>
+      <div class="panel"><h2>Internal notes</h2>${(o.notes || []).map(n => `<div class="note">${esc(n.t)}<small>${esc(n.by)} · ${when(n.at)}</small></div>`).join('') || '<p class="lbl">No notes yet</p>'}
+        <textarea class="msg" id="inn" placeholder="Only the team sees this" style="margin-top:10px;min-height:70px" aria-label="Internal note"></textarea><button class="btn" id="ins">Add note</button></div>
+      <div class="panel"><h2>History</h2><div class="hist">${(o.history || []).slice().reverse().map(h => `<div><span><b>${esc(ST[h.s] || h.s)}</b>${h.note ? ` · ${esc(h.note)}` : ''}<small>${when(h.at)}${h.by ? ' · ' + esc(h.by) : ''}</small></span></div>`).join('')}</div></div>
+      <button class="btn" id="del" style="width:100%;color:var(--r);border-color:rgba(248,113,113,.35);margin-top:20px">Delete this order</button>
+    </div></div></div>`;
+  document.body.appendChild(v); document.body.style.overflow = 'hidden'; $('#bk').focus();
   const wa = () => { $('#wa').href = `https://wa.me/${o.phone}?text=${encodeURIComponent($('#msg').value)}`; }; wa(); $('#msg').oninput = wa;
-  $('#bk').onclick = () => { v.remove(); document.body.style.overflow = ''; history.replaceState(null, '', location.pathname); list(); };
+  const close = () => { v.remove(); document.body.style.overflow = ''; history.replaceState(null, '', location.pathname); list(); };
+  const reopen = j => { Object.assign(o, j.order); v.remove(); document.body.style.overflow = ''; open(o.id); };
+  $('#bk').onclick = close; v.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
   if ($('#cpl')) $('#cpl').onclick = () => { navigator.clipboard.writeText(printList).then(() => toast('Copied')); };
   $('#del').onclick = async () => { if (!confirm(`Delete order ${o.id} from ${o.name}? This can't be undone.`)) return;
-    try { await api('/api/delete/', { method: 'POST', body: JSON.stringify({ id: o.id }) }); orders = orders.filter(x => x.id !== o.id); v.remove(); document.body.style.overflow = ''; history.replaceState(null, '', location.pathname); list(); toast('Deleted'); } catch (x) { toast(x.message); } };
-  $('#st').onclick = async e => { const b = e.target.closest('[data-s]'); if (!b || b.dataset.s === o.status) return; b.textContent = '…';
-    try { const j = await api('/api/status/', { method: 'POST', body: JSON.stringify({ id: o.id, status: b.dataset.s }) }); Object.assign(o, j.order); v.remove(); document.body.style.overflow = ''; open(o.id);
-      $('#msg').value = (MSG[o.status] || MSG.new)(o); wa(); toast(ST[o.status]); } catch (x) { toast(x.message); b.textContent = ST[b.dataset.s]; } };
+    try { await post('delete', { id: o.id }); orders = orders.filter(x => x.id !== o.id); close(); toast('Deleted'); } catch (x) { toast(x.message); } };
+  const setStatus = async (s, force) => { try { const j = await post('status', { id: o.id, status: s, force }); reopen(j); $('#msg').value = (MSG[o.status] || MSG.new)(o); wa(); toast(ST[o.status]); }
+    catch (x) { if (x.j && x.j.needConfirm && confirm(x.message)) return setStatus(s, true); toast(x.message); } };
+  [$('#st'), $('#st2')].forEach(el => el.onclick = e => { const b = e.target.closest('[data-s]'); if (b && b.dataset.s !== o.status) { b.textContent = '…'; setStatus(b.dataset.s); } });
+  $('#cns').onclick = async () => { try { reopen(await post('note', { id: o.id, kind: 'customer', note: $('#cn').value })); toast('Shown on their order page'); } catch (x) { toast(x.message); } };
+  $('#ins').onclick = async () => { const t = $('#inn').value.trim(); if (!t) return; try { reopen(await post('note', { id: o.id, kind: 'internal', note: t })); toast('Note added'); } catch (x) { toast(x.message); } };
+  if ($('#rf')) $('#rf').onclick = async () => { const amt = prompt(`Refund how much? (max ${o.paid.amount})`, o.paid.amount); if (amt === null) return; const reason = prompt('Reason (the customer may see this on Paystack)', 'Order cancelled'); if (reason === null) return;
+    if (!confirm(`Refund GH₵${amt} to ${o.name} through Paystack? It is marked Refunded only when Paystack confirms.`)) return;
+    try { reopen(await post('refund', { id: o.id, amount: +amt, reason })); toast('Refund sent to Paystack'); } catch (x) { toast(x.message); } };
 }
-// ---------- top bar: Orders | Stickers ----------
-const topbar = v => `<header class="top"><b>Skin Lab</b><div class="r"><div class="nav"><button class="${v === 'orders' ? 'on' : ''}" data-v="orders">Orders${orders.filter(o => o.status === 'new').length ? `<i>${orders.filter(o => o.status === 'new').length}</i>` : ''}</button><button class="${v === 'payments' ? 'on' : ''}" data-v="payments">Payments</button><button class="${v === 'stickers' ? 'on' : ''}" data-v="stickers">Stickers</button></div><button class="ib" id="lo" aria-label="Log out">⎋</button></div></header>`;
-function wireTop() { app.querySelector('.nav').onclick = e => { const b = e.target.closest('[data-v]'); if (!b) return; if (b.dataset.v === 'stickers') { history.replaceState(null, '', '#stickers'); stickers(); } else if (b.dataset.v === 'payments') { history.replaceState(null, '', '#payments'); payments(); } else { history.replaceState(null, '', location.pathname); list(); } };
-  $('#lo').onclick = () => { if (!confirm('Log out of the admin?')) return; try { localStorage.removeItem('sl-admin'); } catch (e) {} login(); }; }
 
-// ---------- payments: straight from Paystack, each one with the products that were bought ----------
+// ---------- payments (from Paystack) ----------
 let pays = null, payF = 'success', payAll = false;
 const PST = { success: 'Paid', abandoned: 'Not completed', failed: 'Failed', reversed: 'Refunded', ongoing: 'In progress', pending: 'Pending', processing: 'Processing', queued: 'Queued' };
 const items = o => !o ? [] : [...(o.design ? [`${o.design.packName || 'Custom pack'} · ${o.design.size || ''} · ${o.design.n} stickers${o.design.skinSize ? ` + ${({ S: 'Small', M: 'Medium', L: 'Large', C: 'Custom' })[o.design.skinSize]} skin` : ''}`] : []),
-  ...(o.packs || []).map(p => `${p.q}× ${p.label} · ₵${p.q * p.price}`), ...((o.singles || []).length ? [`${o.singles.reduce((a, x) => a + x.q, 0)} single stickers (${o.singles.map(x => x.code + (x.q > 1 ? '×' + x.q : '')).join(', ')})`] : []), ...(o.free ? [`FREE ${o.free.name} (${o.free.code})`] : [])];
+  ...(o.packs || []).map(p => `${p.q}× ${p.label} · ${cedi(p.q * p.price)}`), ...((o.singles || []).length ? [`${o.singles.reduce((a, x) => a + x.q, 0)} single stickers (${o.singles.map(x => x.code + (x.q > 1 ? '×' + x.q : '')).join(', ')})`] : []), ...(o.free ? [`FREE ${o.free.name} (${o.free.code})`] : [])];
 const how = t => t.channel === 'mobile_money' ? `${t.bank ? t.bank.toUpperCase() + ' ' : ''}MoMo${t.mobile ? ' · ' + t.mobile : ''}` : t.channel === 'card' ? `${(t.card || 'Card').trim()}${t.last4 ? ' ••' + t.last4 : ''}${t.bank ? ' · ' + t.bank : ''}` : t.channel || '';
 async function payments(refresh) {
   view = 'payments';
-  if (!pays || refresh) { app.innerHTML = `${topbar('payments')}<div class="w"><span class="lbl">From Paystack</span><h1>Payments<em>.</em></h1><p class="lbl" style="margin-top:20px">Loading payments from Paystack…</p></div>`; wireTop();
-    try { const j = await api('/api/payments/' + (payAll ? '?all=1' : '')); if (!j.enabled) { app.querySelector('.w p').textContent = 'Online payments are off: the Paystack key is not set.'; return; } pays = j.payments; }
-    catch (e) { app.querySelector('.w p').textContent = e.message; return; } }
+  if (!pays || refresh) { app.innerHTML = `${topbar('payments')}<div class="w"><span class="lbl">From Paystack</span><h1>Payments<em>.</em></h1><p class="lbl" style="margin-top:20px" id="pl">Loading payments from Paystack…</p></div>`; wireTop();
+    try { const j = await api('/api/admin/?a=payments' + (payAll ? '&all=1' : '')); if (!j.enabled) { $('#pl').textContent = 'Online payments are off: the Paystack key is not set.'; return; } pays = j.payments; }
+    catch (e) { $('#pl').textContent = e.message; return; } }
   const ok = pays.filter(t => t.status === 'success'), now = Date.now(), sum = a => a.reduce((x, t) => x + t.amount, 0), fee = a => a.reduce((x, t) => x + t.fees, 0);
   const td = ok.filter(t => new Date(t.at).toDateString() === new Date().toDateString()), wk = ok.filter(t => now - new Date(t.at) < 7 * 864e5), mo = ok.filter(t => new Date(t.at).getMonth() === new Date().getMonth() && new Date(t.at).getFullYear() === new Date().getFullYear());
   const byId = Object.fromEntries(orders.map(o => [o.id, o])), cnt = { success: ok.length, other: pays.length - ok.length, all: pays.length };
   const show = pays.filter(t => payF === 'all' || (payF === 'success' ? t.status === 'success' : t.status !== 'success'));
-  const money = n => '₵' + (Math.round(n * 100) / 100).toLocaleString('en-GB');
   app.innerHTML = `${topbar('payments')}<div class="w"><span class="lbl">From Paystack · ${payAll ? 'all projects' : 'Skin Lab only'}</span><h1>Payments<em>.</em></h1>
-    <div class="stats"><div><b>${money(sum(td))}</b><span class="lbl">Today</span></div><div><b>${money(sum(wk))}</b><span class="lbl">7 days</span></div><div><b>${money(sum(mo))}</b><span class="lbl">This month</span></div><div><b>${money(sum(ok))}</b><span class="lbl">All paid</span></div></div>
-    <p class="lbl" style="margin:-4px 0 14px">${ok.length} paid · Paystack fees ${money(fee(ok))} · you keep ${money(sum(ok) - fee(ok))}</p>
+    <div class="kpis"><div class="kpi g"><span class="lbl">Today</span><b>${cedi(sum(td))}</b></div><div class="kpi"><span class="lbl">7 days</span><b>${cedi(sum(wk))}</b></div><div class="kpi"><span class="lbl">This month</span><b>${cedi(sum(mo))}</b></div><div class="kpi"><span class="lbl">All paid</span><b>${cedi(sum(ok))}</b><small>${ok.length} payments · fees ${cedi(fee(ok))} · you keep ${cedi(sum(ok) - fee(ok))}</small></div></div>
     <div class="tabs" id="ptabs">${[['success', 'Paid', cnt.success], ['other', 'Not completed', cnt.other], ['all', 'All', cnt.all]].map(([k, n, c]) => `<button class="${k === payF ? 'on' : ''}" data-f="${k}">${n}<i>${c}</i></button>`).join('')}</div>
     <div class="pbar"><button class="ib" id="prf">↻ Refresh</button><button class="ib" id="pcsv">Download (CSV)</button><label class="lbl"><input type="checkbox" id="pall" ${payAll ? 'checked' : ''}> Show my other projects</label></div>
     <div class="list">${show.length ? show.map(t => { const o = byId[t.order], marked = o && o.paid && o.paid.ref === t.ref, it = items(o);
-      return `<div class="pay"><div class="ph"><b>${money(t.amount)}</b><span class="pill ${t.status === 'success' ? 'delivered' : t.status === 'abandoned' ? '' : 'cancelled'}">${PST[t.status] || t.status}</span></div>
-        <p>${esc(how(t))}${t.email ? ' · ' + esc(t.email) : ''}</p><p class="lbl">${new Date(t.at).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} · ${esc(t.ref)}${t.fees ? ' · fee ' + money(t.fees) : ''}</p>
+      return `<div class="pay"><div class="ph"><b>${cedi(t.amount)}</b><span class="pill ${t.status}">${PST[t.status] || t.status}</span></div>
+        <p>${esc(how(t))}${t.email ? ' · ' + esc(t.email) : ''}</p><p class="lbl">${when(t.at)} · ${esc(t.ref)}${t.fees ? ' · fee ' + cedi(t.fees) : ''}</p>
         ${o ? `<div class="pit"><b>${esc(o.name)}</b> · +${esc(o.phone)}${o.loc ? ' · ' + esc(o.loc) : ''}<ul>${it.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : t.order ? `<p class="lbl">Order ${esc(t.order)} was deleted</p>` : '<p class="lbl">Not a Skin Lab order</p>'}
         <div class="pact">${o ? `<button class="ib" data-open="${o.id}">Open order ${o.id}</button>` : ''}${t.status === 'success' && o && !marked ? `<button class="ib warn" data-sync="${esc(t.ref)}">Mark order paid</button>` : ''}</div></div>`; }).join('')
       : `<div class="empty">${pays.length ? 'Nothing here.' : 'No payments yet. They appear here the moment a customer pays.'}</div>`}</div></div>`;
   wireTop();
   $('#ptabs').onclick = e => { const b = e.target.closest('[data-f]'); if (b) { payF = b.dataset.f; payments(); } };
   $('#prf').onclick = () => payments(true); $('#pall').onchange = e => { payAll = e.target.checked; payments(true); };
-  $('#pcsv').onclick = () => { const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`, rows = [['Date', 'Reference', 'Order', 'Status', 'Amount GHS', 'Paystack fee', 'You keep', 'Paid with', 'Customer', 'WhatsApp', 'Products']];
+  $('#pcsv').onclick = () => { const qq = v => `"${String(v ?? '').replace(/"/g, '""')}"`, rows = [['Date', 'Reference', 'Order', 'Status', 'Amount GHS', 'Paystack fee', 'You keep', 'Paid with', 'Customer', 'WhatsApp', 'Products']];
     show.forEach(t => { const o = byId[t.order]; rows.push([new Date(t.at).toISOString().slice(0, 16).replace('T', ' '), t.ref, t.order, PST[t.status] || t.status, t.amount, t.fees, t.amount - t.fees, how(t), o ? o.name : '', o ? '+' + o.phone : '', items(o).join(' | ')]); });
-    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + rows.map(r => r.map(q).join(',')).join('\n')], { type: 'text/csv' })); a.download = `skin-lab-payments-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); toast('Downloaded'); };
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + rows.map(r => r.map(qq).join(',')).join('\n')], { type: 'text/csv' })); a.download = `skin-lab-payments-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); toast('Downloaded'); };
   app.querySelectorAll('[data-open]').forEach(b => b.onclick = () => open(b.dataset.open));
   app.querySelectorAll('[data-sync]').forEach(b => b.onclick = async () => { b.disabled = true; b.textContent = 'Checking with Paystack…';
-    try { await api('/api/payments/', { method: 'POST', body: JSON.stringify({ ref: b.dataset.sync }) }); toast('Order marked paid'); await load(); payments(); } catch (e) { toast(e.message); b.disabled = false; b.textContent = 'Mark order paid'; } });
+    try { await post('sync', { ref: b.dataset.sync }); toast('Order marked paid'); await load(); payments(); } catch (e) { toast(e.message); b.disabled = false; b.textContent = 'Mark order paid'; } });
+}
+
+// ---------- support tickets ----------
+let supF = 'open';
+const TOPIC = { order: 'Order issue', payment: 'Payment', delivery: 'Delivery', damaged: 'Damaged product', design: 'Customisation', other: 'General' };
+async function support(refresh) {
+  view = 'support';
+  if (!tickets || refresh) { app.innerHTML = `${topbar('support')}<div class="w"><span class="lbl">Customer help</span><h1>Support<em>.</em></h1><p class="lbl" style="margin-top:20px" id="pl">Loading…</p></div>`; wireTop();
+    try { tickets = (await api('/api/admin/?a=tickets')).tickets; } catch (e) { $('#pl').textContent = e.message; return; } }
+  const F = { open: t => t.status === 'open', active: t => ['in-progress', 'waiting'].includes(t.status), resolved: t => t.status === 'resolved', all: () => true };
+  const show = tickets.filter(F[supF]);
+  app.innerHTML = `${topbar('support')}<div class="w"><span class="lbl">Customer help</span><h1>Support<em>.</em></h1>
+    <div class="tabs" id="stabs">${[['open', 'Open'], ['active', 'Working on it'], ['resolved', 'Resolved'], ['all', 'All']].map(([k, n]) => `<button class="${k === supF ? 'on' : ''}" data-f="${k}">${n}<i>${tickets.filter(F[k]).length}</i></button>`).join('')}</div>
+    <div class="pbar"><button class="ib" id="srf">↻ Refresh</button></div>
+    <div class="list">${show.length ? show.map(t => `<div class="pay" data-t="${t.id}"><div class="ph"><b style="font-size:17px">${esc(TOPIC[t.topic] || t.topic)}</b><span class="pill ${t.status}">${esc(t.status)}</span></div>
+      <p class="lbl">${esc(t.id)} · ${when(t.at)}${t.order ? ` · <a href="#${esc(t.order)}" data-open="${esc(t.order)}">${esc(t.order)}</a>` : ''}${t.assigned ? ' · ' + esc(t.assigned) : ''}</p>
+      <p><b>${esc(t.name)}</b> · <a href="tel:+${esc(t.phone)}">+${esc(t.phone)}</a></p><p style="white-space:pre-wrap">${esc(t.msg)}</p>
+      ${(t.log || []).filter(l => l.note).map(l => `<div class="note">${esc(l.note)}<small>${esc(l.by)} · ${when(l.at)}</small></div>`).join('')}
+      <div class="pact"><a class="ib" style="background:var(--g);color:#000;border-color:var(--g)" target="_blank" rel="noopener" href="https://wa.me/${esc(t.phone)}?text=${encodeURIComponent(`Hi ${first(t.name)}, it's Skin Lab about your message ${t.id}${t.order ? ' (order ' + t.order + ')' : ''}: `)}">Reply on WhatsApp</a>
+        ${['in-progress', 'waiting', 'resolved', 'open'].filter(s => s !== t.status).map(s => `<button class="ib" data-ts="${s}">${{ 'in-progress': 'Working on it', waiting: 'Waiting on customer', resolved: 'Resolved ✓', open: 'Reopen' }[s]}</button>`).join('')}
+        <button class="ib" data-tn="1">Add note</button><button class="ib" data-ta="1">${t.assigned ? 'Reassign' : 'Assign to me'}</button></div></div>`).join('')
+      : `<div class="empty">${tickets.length ? 'Nothing here.' : 'No support requests yet. Customers send them from the Help page or their order page.'}</div>`}</div></div>`;
+  wireTop();
+  $('#stabs').onclick = e => { const b = e.target.closest('[data-f]'); if (b) { supF = b.dataset.f; support(); } };
+  $('#srf').onclick = () => support(true);
+  app.querySelectorAll('[data-open]').forEach(a => a.onclick = e => { e.preventDefault(); open(a.dataset.open); });
+  app.querySelectorAll('[data-t]').forEach(card => { const id = card.dataset.t, upd = async body => { try { const j = await post('ticket', { id, ...body }); tickets = tickets.map(x => x.id === id ? j.doc : x); support(); toast('Saved'); } catch (x) { toast(x.message); } };
+    card.querySelectorAll('[data-ts]').forEach(b => b.onclick = () => upd({ status: b.dataset.ts }));
+    card.querySelector('[data-tn]').onclick = () => { const n = prompt('Note (only the team sees it)'); if (n) upd({ note: n }); };
+    card.querySelector('[data-ta]').onclick = () => { const n = prompt('Assign to', ME()); if (n !== null) upd({ assign: n }); }; });
+}
+
+// ---------- reviews (moderated; only delivered orders can write one) ----------
+let revF = 'pending';
+async function reviewsView(refresh) {
+  view = 'reviews';
+  if (!reviews || refresh) { app.innerHTML = `${topbar('reviews')}<div class="w"><span class="lbl">Verified purchases</span><h1>Reviews<em>.</em></h1><p class="lbl" style="margin-top:20px" id="pl">Loading…</p></div>`; wireTop();
+    try { reviews = (await api('/api/admin/?a=reviews')).reviews; } catch (e) { $('#pl').textContent = e.message; return; } }
+  const ap = reviews.filter(r => r.status === 'approved'), avg = ap.length ? (ap.reduce((a, r) => a + r.rating, 0) / ap.length).toFixed(1) : '–', show = reviews.filter(r => revF === 'all' || r.status === revF);
+  const fbAvg = k => { const v = reviews.map(r => (r.fb || {})[k]).filter(Boolean); return v.length ? (v.reduce((a, b) => a + b, 0) / v.length).toFixed(1) : '–'; };
+  app.innerHTML = `${topbar('reviews')}<div class="w"><span class="lbl">Verified purchases</span><h1>Reviews<em>.</em></h1>
+    <div class="kpis"><div class="kpi y"><span class="lbl">Average rating</span><b>${avg} ★</b><small>${ap.length} on the shop</small></div><div class="kpi"><span class="lbl">Ordering was easy</span><b>${fbAvg('ease')}</b><small>out of 5</small></div><div class="kpi"><span class="lbl">Paying was clear</span><b>${fbAvg('pay')}</b><small>out of 5</small></div><div class="kpi"><span class="lbl">Product</span><b>${fbAvg('product')}</b><small>out of 5</small></div><div class="kpi"><span class="lbl">Delivery</span><b>${fbAvg('delivery')}</b><small>out of 5</small></div></div>
+    <p class="lbl" style="text-transform:none;letter-spacing:0;font-family:inherit;font-size:13px">Approve real reviews, good or bad. Hide only spam, abuse or private information.</p>
+    <div class="tabs" id="rtabs">${[['pending', 'To check'], ['approved', 'On the shop'], ['hidden', 'Hidden'], ['all', 'All']].map(([k, n]) => `<button class="${k === revF ? 'on' : ''}" data-f="${k}">${n}<i>${reviews.filter(r => k === 'all' || r.status === k).length}</i></button>`).join('')}</div>
+    <div class="list">${show.length ? show.map(r => `<div class="pay" data-r="${r.id}"><div class="ph"><span class="stars" aria-label="${r.rating} stars">${'★'.repeat(r.rating)}<span style="color:#3f3f46">${'★'.repeat(5 - r.rating)}</span></span><span class="pill ${r.status}">${esc(r.status)}</span></div>
+      ${r.photo ? `<img class="rvph" src="${esc(r.photo)}" alt="Customer photo">${r.permit ? '' : '<p class="lbl">Photo not allowed on the shop</p>'}` : ''}
+      <p>${esc(r.text) || '<span class="lbl">No words, just stars</span>'}</p><p class="lbl">${esc(r.first)} · <a href="#${esc(r.id)}" data-open="${esc(r.id)}">${esc(r.id)}</a> · ${when(r.at)}</p><p class="lbl">${esc((r.items || []).join(' · '))}</p>
+      <div class="pact">${r.status !== 'approved' ? '<button class="ib solid" data-rs="approved">Show on shop</button>' : ''}${r.status !== 'hidden' ? '<button class="ib bad" data-rs="hidden">Hide</button>' : ''}</div></div>`).join('')
+      : `<div class="empty">${reviews.length ? 'Nothing here.' : 'No reviews yet. Customers can review from their order page once it is delivered.'}</div>`}</div></div>`;
+  wireTop();
+  $('#rtabs').onclick = e => { const b = e.target.closest('[data-f]'); if (b) { revF = b.dataset.f; reviewsView(); } };
+  app.querySelectorAll('[data-open]').forEach(a => a.onclick = e => { e.preventDefault(); open(a.dataset.open); });
+  app.querySelectorAll('[data-r]').forEach(card => card.querySelectorAll('[data-rs]').forEach(b => b.onclick = async () => {
+    try { const j = await post('review', { id: card.dataset.r, status: b.dataset.rs }); reviews = reviews.map(x => x.id === card.dataset.r ? j.doc : x); reviewsView(); toast(b.dataset.rs === 'approved' ? 'Now on the shop' : 'Hidden'); } catch (x) { toast(x.message); } }));
 }
 
 // ---------- stickers: add your own, they go live in the shop and the designer ----------
@@ -318,13 +485,15 @@ async function notifCard() { const el = $('#nt'); if (!el) return; const st = aw
         if (st === 'on') { const sub = await r.pushManager.getSubscription(); if (sub) { await api('/api/subscribe/', { method: 'DELETE', body: JSON.stringify({ endpoint: sub.endpoint }) }).catch(() => {}); await sub.unsubscribe(); } toast('Notifications off'); }
         else { const p = await Notification.requestPermission(); if (p !== 'granted') return notifCard();
           const { publicKey } = await api('/api/subscribe/'), sub = await r.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64(publicKey) });
-          await api('/api/subscribe/', { method: 'POST', body: JSON.stringify({ sub }) }); toast('Notifications on'); api('/api/push-test/', { method: 'POST', body: '{}' }).catch(() => {}); }
+          await api('/api/subscribe/', { method: 'POST', body: JSON.stringify({ sub }) }); toast('Notifications on'); api('/api/admin/', { method: 'POST', body: JSON.stringify({ a: 'push-test' }) }).catch(() => {}); }
       } catch (e) { toast(e.message || 'Could not change it'); } notifCard(); };
-    if ($('#ntt')) $('#ntt').onclick = async () => { const r = await api('/api/push-test/', { method: 'POST', body: '{}' }).catch(e => ({ result: e.message })); toast('Sent · ' + r.result); };
+    if ($('#ntt')) $('#ntt').onclick = async () => { const r = await api('/api/admin/', { method: 'POST', body: JSON.stringify({ a: 'push-test' }) }).catch(e => ({ result: e.message })); toast('Sent · ' + r.result); };
     return; }
   el.innerHTML = { 'ios-install': '<b>On iPhone, add this page to your Home Screen first:</b> tap Share ⬆︎ then “Add to Home Screen”, open “SL Orders” from your Home Screen, then switch notifications on here.',
     denied: '<b>Notifications are blocked</b> for this site. Allow them in your browser or phone settings for this site, then come back.',
     unsupported: '<b>This browser can’t show notifications.</b> Use Chrome on Android, or Safari on iPhone with the page added to the Home Screen.' }[st];
 }
-if (KEY()) { app.innerHTML = '<div class="login"><span class="lbl">Opening your orders…</span></div>'; load(true); } else login();
+// support + review counts for the tab badges (in the background)
+async function counts() { try { const [t, r] = await Promise.all([api('/api/admin/?a=tickets'), api('/api/admin/?a=reviews')]); tickets = t.tickets; reviews = r.reviews; const n = app.querySelector('.nav'); if (n && !$('.dv')) { const v = view; n.outerHTML = topbar(v).match(/<nav[\s\S]*<\/nav>/)[0]; wireTop(); } } catch (e) {} }
+if (KEY()) { app.innerHTML = '<div class="login"><span class="lbl">Opening your orders…</span></div>'; load(true).then(counts); } else login();
 </script></body></html>

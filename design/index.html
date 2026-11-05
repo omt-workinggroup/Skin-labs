@@ -76,7 +76,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 .skins{display:grid;grid-auto-flow:column;grid-template-rows:repeat(2,auto);grid-auto-columns:92px;gap:8px;overflow-x:auto;scrollbar-width:none}.skins::-webkit-scrollbar{display:none}
 .sk{display:grid;gap:5px;text-align:left}.sk span:first-child{aspect-ratio:3/2;background:#111 center/cover;border:1px solid var(--line)}.sk.on span:first-child{outline:1px solid #fff;outline-offset:2px}.sk .lbl{font-size:8.5px;letter-spacing:.06em}
 .cols{display:flex;gap:12px;flex-wrap:wrap}.cols button{display:grid;justify-items:center;gap:5px;font-size:11px;color:var(--mute)}.cols i{width:38px;height:38px;border-radius:50%;display:block}.cols .on i{outline:1px solid #fff;outline-offset:3px}.cols .on{color:#fff}
-.acts{display:grid;grid-template-columns:1fr 1fr 2.2fr;gap:8px}.btn{height:50px;display:flex;align-items:center;justify-content:center;gap:10px;font-weight:500;border:1px solid var(--line2)}.btn.y{background:#fff;color:#000;border-color:#fff;justify-content:space-between;padding:0 16px}.btn.y:after{content:"→"}
+.acts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.acts .btn{min-width:0;padding:0 4px;font-size:14px}.acts .btn.y{grid-column:1/-1}.btn{height:50px;display:flex;align-items:center;justify-content:center;gap:10px;font-weight:500;border:1px solid var(--line2)}.btn.y{background:#fff;color:#000;border-color:#fff;justify-content:space-between;padding:0 16px}.btn.y:after{content:"→"}
 .s{display:block}
 .tabs{position:fixed;left:0;right:0;bottom:0;z-index:40;height:66px;border-top:1px solid var(--line);background:rgba(0,0,0,.94);display:grid;grid-template-columns:repeat(4,1fr)}
 .tabs a{text-decoration:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;color:#7d7d7d;position:relative}.tabs svg{width:22px;height:22px}.tabs .on{color:#fff}.tabs a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;color:#7d7d7d;position:relative}.tabs .on:after{content:"";position:absolute;bottom:5px;width:14px;height:1px;background:#fff}
@@ -96,7 +96,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
   .wa{padding:8px 10px;font-size:12px}.wa .t{display:none}
   .brand small{display:none}.brand i{display:none}
   .addto{display:grid;grid-template-columns:1fr}.addto .seg{margin-left:0!important;min-width:0}
-  .acts{grid-template-columns:1fr 1fr;}.acts .btn.y{grid-column:1/-1}
+  .acts{grid-template-columns:repeat(4,minmax(0,1fr));}.acts .btn.y{grid-column:1/-1}
   h1{font-size:40px}
   .stage{height:min(40vh,360px);height:min(40svh,360px)}
   .name b{font-size:20px}
@@ -150,7 +150,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>Inspo</a><a href="/#cart">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 7h14l-1.5 13h-11Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>Cart</a></nav>
 <div class="toast" id="toast" hidden></div>
-<script src="/data.5cad8629.js"></script>
+<script src="/data.ddcc7775.js"></script>
 <script type="module">
 let THREE, OrbitControls, RoomEnvironment, glP = null;
 const PT = /[?&]perf/.test(location.search) ? k => console.log('PERF', k, Math.round(performance.now())) : () => {};
@@ -181,7 +181,7 @@ let IX = 'webp'; try { if (localStorage.getItem('sl-ix') === 'avif') IX = 'avif'
 const spr = (p, it, box) => { const s = box / Math.max(it[3], it[4]); if (it[5]) return `<span class="s" style="width:${it[3] * s}px;height:${it[4] * s}px;background:url('${it[5]}') center/contain no-repeat"></span>`; return `<span class="s" style="width:${it[3] * s}px;height:${it[4] * s}px;background:url(/atlas/${p.id}.${IX}) ${-it[1] * s}px ${-it[2] * s}px/${p.aw * s}px ${p.ah * s}px no-repeat"></span>`; };
 const CAT_ = await (await fetch('/laptops3d.json')).json(), LCOL = CAT_.cols;
 const LAPS = CAT_.l.map((l, i) => ({ i, brand: l[0], name: l[1], scr: l[2], w: l[3], d: l[4], t: l[5], style: l[6], tags: l[7], cols: l[8].split(',') }));
-const PHOTO = [['ph-jinx', 'Jinx'], ['ph-tanjiro', 'Demon Slayer'], ['ph-graffiti', 'Red graffiti'], ['ph-starry', 'Starry Night'], ['ph-boondocks', 'Boondocks'], ['ph-joker', 'Joker'], ['ph-marvel', 'Marvel comics'], ['ph-girlpower', 'Girl power'], ['ph-pink', 'Pink waves'], ['ph-rose', 'Rose waves'], ['ph-avengers', 'Avengers'], ['ph-bvs', 'Batman v Superman']];
+const PHOTO = [['ph-jinx', 'Jinx'], ['ph-tanjiro', 'Demon Slayer'], ['ph-graffiti', 'Red graffiti'], ['ph-starry', 'Starry Night'], ['ph-boondocks', 'Boondocks'], ['ph-joker', 'Joker'], ['ph-marvel', 'Marvel comics'], ['ph-girlpower', 'Girl power'], ['ph-pink', 'Pink waves'], ['ph-rose', 'Rose waves'], ['ph-avengers', 'Avengers'], ['ph-bvs', 'Batman v Superman'], ['ph-spidey-collage', 'Spider-Verse collage'], ['ph-porsche93', 'Porsche 93 race'], ['ph-spidey-comics', 'Spider-Man comics'], ['ph-amg-red', 'AMG red grunge'], ['ph-peaky', 'Peaky Blinders'], ['ph-stay-focused', 'Stay focused'], ['ph-kali', 'Kali hacker'], ['ph-reality', 'Wake up to reality'], ['ph-circuit', 'Circuit board'], ['ph-cute-hacker', 'Cute hacker'], ['ph-code-reaper', 'Code reaper'], ['ph-mountains', 'Comic mountains'], ['ph-coder-bomb', 'Coder sticker bomb'], ['ph-miles', 'Miles Morales'], ['ph-spidey-scrapbook', 'Spidey scrapbook'], ['ph-coding', 'Coding doodles'], ['ph-panther', 'Black Panther blueprint'], ['ph-waterfall', 'Blossom waterfall'], ['ph-tech-logos', 'Tech logos'], ['ph-astronaut', 'Astronaut puzzle'], ['ph-wasd', 'WASD splash'], ['ph-batman', 'Dark Knight'], ['ph-spider-logo', 'Spider logo'], ['ph-panda', 'Peeking panda'], ['ph-joker-ink', 'Joker ink'], ['ph-heisenberg', 'Heisenberg blueprint'], ['ph-butterfly', 'Glitter butterfly'], ['ph-heart-pink', 'Finger heart'], ['ph-heart-fluffy', 'Fluffy finger heart'], ['ph-popbomb', 'Pop culture bomb']];
 const SOLID = [['s-black', 'Matte black', '#121213'], ['s-white', 'Gloss white', '#f2f2f0'], ['s-sand', 'Sand', '#d8cbb6'], ['s-red', 'Deep red', '#6e1a1f'], ['s-navy', 'Navy', '#1d2a44']];
 
 // ---------- state ----------
@@ -581,6 +581,8 @@ function tfUp() { if (!TG) return; TG = null; ctl.enabled = true; lastTouch = pe
 function tfAct(a) { const L_ = items[surf]; if (sel < 0) return; snap(); const o = L_[sel];
   if (a === 'dup') { const c = { ...o, x: Math.min(.97, o.x + .05), y: Math.min(.97, o.y + .05) }; L_.push(c); sel = L_.length - 1; popIn([c], surf); }
   else if (a === 'front') { L_.push(L_.splice(sel, 1)[0]); sel = L_.length - 1; }
+  else if (a === 'back') { L_.unshift(L_.splice(sel, 1)[0]); sel = 0; toast('Sent to the back'); }
+  else if (a === 'center') { o.x = .5; o.y = .5; toast('Centred'); }
   else if (a === 'del') { L_.splice(sel, 1); sel = -1; }
   else sel = -1;
   refresh(); schedule(surf); }
@@ -593,7 +595,8 @@ function thumb(w = 420) {   // picture of the side with the design, then the cam
 function thumbOf(w) { const c = document.createElement('canvas'), src = R.domElement; c.width = w; c.height = Math.round(w * src.height / src.width);
   const g = c.getContext('2d'); g.fillStyle = '#f4f4f4'; g.fillRect(0, 0, c.width, c.height); g.drawImage(src, 0, 0, c.width, c.height); return c.toDataURL('image/jpeg', .72); }
 const v3 = () => ({ v: 3, name: `${L.brand} ${L.name}`, li: L.i, col, skin: { ...skin }, skinSize: skinSize || skinFor(L.scr), items: JSON.parse(JSON.stringify(items)) });
-const snap = () => { hist.push(JSON.stringify({ items, skin })); if (hist.length > 60) hist.shift(); };
+let redo = [];
+const snap = () => { hist.push(JSON.stringify({ items, skin })); if (hist.length > 60) hist.shift(); redo = []; };
 
 // one laptop look everywhere: our own 3D model (the photo view was removed to keep the designer fast)
 const mode = '3d', realSet = () => null, phLayout = () => {}, phLid = () => {};
@@ -610,7 +613,7 @@ async function vEditor() {
       <span class="hint" id="hint">Drag to turn · pinch to zoom</span>
       <div class="tf" id="tf" hidden><svg class="tfs"><polygon id="tfp"/><line id="tfl"/></svg><i class="hd" data-h="0"></i><i class="hd" data-h="1"></i><i class="hd" data-h="2"></i><i class="hd" data-h="3"></i>
         <i class="hr" data-h="r"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5"/></svg></i>
-        <div class="tbar" id="tbar"><span id="tsz"></span><button data-a="dup" aria-label="Duplicate"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg></button><button data-a="front" aria-label="Bring to front"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button><button data-a="del" aria-label="Delete"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button><button data-a="ok" class="w">Done</button></div></div>
+        <div class="tbar" id="tbar"><span id="tsz"></span><button data-a="dup" aria-label="Duplicate"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg></button><button data-a="front" aria-label="Bring to front"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button><button data-a="back" aria-label="Send to back"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="10" height="10" rx="1.5"/><rect x="10" y="10" width="10" height="10" rx="1.5" fill="currentColor" opacity=".35"/></svg></button><button data-a="center" aria-label="Centre on this side"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M3 12h18"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg></button><button data-a="del" aria-label="Delete"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button><button data-a="ok" class="w">Done</button></div></div>
 </div>
       <div class="ctrl"><div class="views" id="views"><button data-v="hero">360°</button><button data-v="lid">Lid</button><button data-v="kb">Keys</button><button data-v="bot">Base</button></div>
         <label class="lidc" id="lidrow"><span class="lbl">Open</span><input type="range" id="lida" min="0" max="140" value="${lidA}"></label></div>
@@ -620,7 +623,7 @@ async function vEditor() {
       <div class="addto"><span class="lbl">Adding to</span><div class="seg" id="surf" style="flex:1;margin-left:12px">${Object.entries(SN).map(([k, n]) => `<button data-s="${k}">${n}<i></i></button>`).join('')}</div></div>
       <div class="seg" id="tab"><button data-t="stickers">Stickers</button><button data-t="skins">Skins</button><button data-t="colour">Colour</button></div>
       <div id="pane"></div>
-      <div class="acts"><button class="btn" id="undo">Undo</button><button class="btn" id="shot">Save</button><button class="btn y" id="cart">Add to cart</button></div>
+      <div class="acts"><button class="btn" id="undo" aria-label="Undo">↶ Undo</button><button class="btn" id="redo" aria-label="Redo">↷ Redo</button><button class="btn" id="reset" aria-label="Start again">Reset</button><button class="btn" id="shot">Save</button><button class="btn y" id="cart">Add to cart</button></div>
     </aside></div>`;
   PT('editor-html'); if (!R) initGL($('#stage')); else { $('#stage').appendChild(R.domElement); RO.disconnect(); RO.observe($('#stage')); resize(); }
   PT('initGL'); $('#stage .load').remove(); build(); PT('build'); const [hp, ht] = viewPos('hero'); cam.position.copy(hp); ctl.target.copy(ht); setLid(110); idle = true;
@@ -640,7 +643,11 @@ async function vEditor() {
   $('#sdel').onclick = () => { snap(); items[surf].splice(sel, 1); sel = -1; refresh(); schedule(surf); };
   $('#sup').onclick = () => { snap(); items[surf].push(items[surf].splice(sel, 1)[0]); sel = items[surf].length - 1; schedule(surf); };
   $('#sok').onclick = () => { sel = -1; refresh(); schedule(surf); };
-  $('#undo').onclick = () => { const h = hist.pop(); if (!h) return toast('Nothing to undo'); const o = JSON.parse(h); Object.assign(items, o.items); Object.assign(skin, o.skin); sel = -1; refresh(); ['lid', 'kb', 'bot'].forEach(x => paint(x)); };
+  const restore = h => { const o = JSON.parse(h); Object.assign(items, o.items); Object.assign(skin, o.skin); sel = -1; refresh(); ['lid', 'kb', 'bot'].forEach(x => paint(x)); save3(); };
+  $('#undo').onclick = () => { const h = hist.pop(); if (!h) return toast('Nothing to undo'); redo.push(JSON.stringify({ items, skin })); restore(h); };
+  $('#redo').onclick = () => { const h = redo.pop(); if (!h) return toast('Nothing to redo'); hist.push(JSON.stringify({ items, skin })); restore(h); };
+  $('#reset').onclick = () => { if (!Object.values(items).flat().length && !Object.values(skin).some(Boolean)) return toast('Already empty'); if (!confirm('Take everything off this laptop? (Undo brings it back)')) return;
+    snap(); for (const k in items) items[k] = []; for (const k in skin) skin[k] = ''; sel = -1; refresh(); ['lid', 'kb', 'bot'].forEach(x => paint(x)); save3(); toast('Fresh start'); };
   $('#shot').onclick = () => { const n = Object.values(items).flat().length + Object.values(skin).filter(Boolean).length; if (!n) return toast('Add a sticker or a skin first');
     saveMine(v3()); toast('Saved to Inspo → Mine'); };
   $('#cart').onclick = () => { const n = Object.values(items).flat().length, k = Object.values(skin).filter(Boolean).length; if (!n && !k) return toast('Add a sticker or a skin first'); sel = -1; refresh(); schedule(surf); packSheet(); };

@@ -1,6 +1,6 @@
 # Skin Lab by Baiden Creatives
 
-> Laptop sticker packs and custom vinyl stickers, printed in Accra, Ghana. Orders are placed on WhatsApp (055 836 2423, +233 55 836 2423) and paid with Mobile Money (MoMo).
+> Laptop stickers from GH₵3, sticker packs, laptop skins and vinyl decals, printed in Accra, Ghana. Order on the website and pay with Mobile Money or card (Paystack). Support on WhatsApp (055 836 2423, +233 55 836 2423).
 
 ## Prices
 - Sticker sheets: A5 small sheet GH₵30, A4 big sheet GH₵60, A3 pick & mix (about 84 stickers) GH₵100, XL lid centrepiece (one 18 cm sticker) GH₵25
@@ -10,12 +10,14 @@
 ## How to order
 1. Browse packs at https://shop.baidencreatives.org/ or the category pages below
 2. Add packs or single stickers to the cart, enter name and location
-3. Tap "Send order on WhatsApp"; the order arrives as one message; pay with MoMo; delivery or pickup is arranged
+3. Pay with MoMo or card on Paystack; follow the order on its own tracking page; delivery or pickup is arranged on WhatsApp
 
 ## Details
 - Material: die-cut vinyl, laminated
 - Typical size: 2.5 to 7.5 cm per sticker, thin 0.8 mm white outline
-- Laptop skins: Small (up to 13.3") GH₵70, Medium (14-15.6") GH₵80, Large (16-17.3") GH₵90, Custom (full wrap or own picture) GH₵120
+- Laptop skins: Small (up to 13.3") GH₵70, Medium (14-15.6") GH₵80, Large (16-17.3") GH₵90, Custom (full wrap or own picture) GH₵120; keyboard-area skin GH₵50; mouse skin GH₵30
+- Vinyl decals (one colour, around the trackpad or the lid logo): GH₵30
+- Care guide: https://shop.baidencreatives.org/care/
 - Online designer: pick your laptop model, then place skins and stickers on the lid, keyboard area and bottom at real size: https://shop.baidencreatives.org/#design
 - Inspiration gallery: https://shop.baidencreatives.org/#inspo
 - Instagram: https://www.instagram.com/baidencreatives/
@@ -46,6 +48,7 @@
   - [Dev Life](https://shop.baidencreatives.org/stickers/programmers/p9-dev-life/): 30 stickers, GH₵60
   - [Stack & Logos](https://shop.baidencreatives.org/stickers/programmers/p10-stack-and-logos/): 27 stickers, GH₵60
   - [Database & Backend](https://shop.baidencreatives.org/stickers/programmers/p11-database-backend/): 35 stickers, GH₵60
+  - [Code & Chaos](https://shop.baidencreatives.org/stickers/programmers/p12-code-and-chaos/): 13 stickers, GH₵60
   - [Hacker Mode](https://shop.baidencreatives.org/stickers/programmers/p1-hacker-mode/): 33 stickers, GH₵60
   - [Ai & Vibe Coding](https://shop.baidencreatives.org/stickers/programmers/p2-ai-vibe-coding/): 25 stickers, GH₵60
   - [Code Languages I](https://shop.baidencreatives.org/stickers/programmers/p3-code-languages-1/): 29 stickers, GH₵60
@@ -102,6 +105,7 @@
 - [Girly & Cute stickers](https://shop.baidencreatives.org/stickers/girly/): Soft, cute and pretty stickers: drippy smileys, cherries, bows, Y2K icons, emoji moods and Gen Z quotes.
   - [Boss Girl](https://shop.baidencreatives.org/stickers/girly/gr5-boss-girl/): 26 stickers, GH₵60
   - [Soft Life](https://shop.baidencreatives.org/stickers/girly/gr6-soft-life/): 22 stickers, GH₵60
+  - [Girls Who Code](https://shop.baidencreatives.org/stickers/girly/gz2-girls-who-code/): 13 stickers, GH₵60
   - [Good Vibes Doodles](https://shop.baidencreatives.org/stickers/girly/good-vibes-doodles/): 22 stickers, GH₵60
   - [Y2K Dreamgirl](https://shop.baidencreatives.org/stickers/girly/y2k-dreamgirl/): 20 stickers, GH₵60
   - [Emoji Mood](https://shop.baidencreatives.org/stickers/girly/emoji-mood/): 19 stickers, GH₵60
@@ -131,9 +135,13 @@
 
 ## FAQ
 **How much are the sticker packs?** Every pack comes in two sizes: a small A5 sheet for GH₵30 and a big A4 sheet with all the stickers for GH₵60. The A3 pick & mix sheets, about 84 stickers from a whole group of categories, are GH₵100. Single stickers you pick yourself cost GH₵3 each. Custom stickers made from your own picture, name or logo start at GH₵15.
-**How do I order?** Choose a pack or pick single stickers on the website, add your name and location, and tap "Send order on WhatsApp". Your order arrives as one message on WhatsApp (055 836 2423). We confirm, you pay with MoMo, and we arrange delivery or pickup.
+**How do I order?** Tap Buy now on any pack or skin (or add a few things to your cart), pick your free sticker, add your name, WhatsApp number and location, and pay securely with Mobile Money or card on Paystack. You come straight back to your order page, where you can follow it from printing to delivery.
+**How do I pay?** Online with Paystack: MTN MoMo, Telecel Cash, AirtelTigo Money or a bank card. The payment is confirmed with Paystack before your order goes to print. Delivery is not included in the online price: we agree it with you on WhatsApp.
+**Can I track my order?** Yes. After paying you get your own order page (it is also under Your orders on the shop). It shows each step with the time: payment confirmed, preparing artwork, printing, quality check, ready, out for delivery and delivered.
 **Where are you based and do you deliver?** Skin Lab is run by Baiden Creatives in Accra, Ghana. Delivery or pickup is arranged with you on WhatsApp after you order, including to university campuses.
-**Will the stickers peel off?** They are printed on vinyl and laminated, so they handle bags, sweaty palms and rain. Clean and dry the surface before sticking and press down firmly for a few seconds.
+**Will the stickers peel off?** They are printed on vinyl and laminated, so they handle bags, sweaty palms and rain. Clean and dry the surface before sticking and press down firmly for a few seconds. Our care guide has the steps: shop.baidencreatives.org/care/
+**Do you sell vinyl decals?** Yes. One-colour cut vinyl decals that play with your laptop: around the trackpad, or with the glowing logo on the lid. Each decal is GH₵30.
+**Something is wrong with my order. What do I do?** Open your order page and tap Report a problem, or chat with us on WhatsApp. Your order number is filled in for you. We sort replacements and refunds with you case by case.
 **How big are the stickers?** Most stickers are between 3 and 6 cm, sized for a laptop lid, the area around the keyboard, a mousepad, a phone case or a water bottle.
 **Do you have sticker ideas I can choose from?** Yes. The Inspo page has real sticker setups. Tap any photo you like and send it on WhatsApp, and we design and print stickers in that style. Custom stickers start from GH₵15.
 **Do you make laptop skins?** Yes. Skin Lab prints full vinyl laptop skins as well as stickers. A skin costs GH₵70 for a small laptop (up to 13.3 inch), GH₵80 for 14 to 15.6 inch, GH₵90 for 16 to 17.3 inch, and GH₵120 for a custom skin (full wrap of the lid, keyboard area and bottom, or your own picture). Pick the size when you add it to your cart.

@@ -1,7 +1,40 @@
 // Shared helpers for the Skin Lab order backend (Vercel Functions + Vercel Blob).
 import { list, put, del } from '@vercel/blob';
 
-export const STATUSES = ['new', 'confirmed', 'printing', 'on-the-way', 'delivered', 'cancelled'];
+// Order lifecycle. Payment is never a status staff can set: only a verified Paystack payment marks an order paid.
+export const FLOW = ['new', 'confirmed', 'artwork', 'printing', 'qc', 'ready', 'on-the-way', 'delivered'];
+export const EXCEPT = ['clarify', 'hold', 'failed-delivery', 'cancelled', 'refund-review', 'refunded'];
+export const STATUSES = [...FLOW, ...EXCEPT];
+import PR from './_prices.js';
+// The authoritative price of an order, from the shop's own price list (never from the browser).
+export function priceOrder(b) {
+  let t = 0; const bad = [];
+  for (const p of b.packs || []) {
+    const k = String(p.key || ''), q = Math.max(1, Math.min(20, +p.q || 1)); let u = null;
+    let m;
+    if ((m = /^skin~([\w-]+)~([SMLC])$/.exec(k))) u = PR.skin[m[2]];
+    else if (/^kb~[\w-]+$/.test(k)) u = PR.kb;
+    else if (/^ms~[\w-]+$/.test(k)) u = PR.ms;
+    else if (/^dc~[\w-]+(~w)?$/.test(k)) u = PR.decal;
+    else if ((m = /^(drop-[\w-]+?)(~5)?$/.exec(k))) u = m[2] ? 30 : 60;
+    else if ((m = /^([\w-]+?)(~5)?$/.exec(k)) && PR.packs[m[1]]) u = m[2] ? PR.packs[m[1]][1] : PR.packs[m[1]][0];
+    if (u == null) bad.push(k); else { p.price = u; t += u * q; }
+  }
+  for (const s of b.singles || []) if (!String(s.code).startsWith('XQV-')) t += PR.single * Math.max(1, Math.min(99, +s.q || 1));
+  const d = b.design;
+  if (d) { const raw = d.raw && d.raw.i ? Object.values(d.raw.i).flat() : (d.layout || []); const n = raw.filter(o => !String(Array.isArray(o) ? o[0] : o.c).startsWith('XQV-')).length;
+    const skins = d.raw && d.raw.k ? Object.values(d.raw.k).some(Boolean) : (d.skins || []).length > 0;
+    t += n * PR.single + (skins ? PR.skin[/^[SMLC]$/.test(d.skinSize) ? d.skinSize : 'M'] : 0); }
+  return { total: Math.round(t * 100) / 100, bad };
+}
+export const adminName = req => String(req.headers['x-admin-name'] || '').replace(/[^\w .'-]/g, '').slice(0, 30) || 'Admin';
+// light abuse protection: per instance, per IP
+const HITS = new Map();
+export function limited(req, key, n, ms) {
+  const ip = String(req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '').split(',')[0].trim(), k = key + ip, now = Date.now();
+  const a = (HITS.get(k) || []).filter(t => now - t < ms); a.push(now); HITS.set(k, a); if (HITS.size > 5000) HITS.clear(); return a.length > n;
+}
+export const ghPhone = p => { let d = String(p || '').replace(/\D/g, ''); if (d.startsWith('00')) d = d.slice(2); if (d.startsWith('0')) d = '233' + d.slice(1); else if (d.length === 9) d = '233' + d; return /^233[235][0-9]{8}$/.test(d) || /^[1-9][0-9]{9,13}$/.test(d) ? d : ''; };
 export const SITE = (process.env.SITE_URL || 'https://shop.baidencreatives.org').replace(/\/$/, '');
 const A = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
 const rnd = (n, abc = A) => { const b = crypto.getRandomValues(new Uint8Array(n)); return [...b].map(x => abc[x % abc.length]).join(''); };
@@ -19,6 +52,28 @@ export async function findOrder(id) {
   const j = latest(blobs); if (!j) return null;
   const r = await fetch(j.url, { cache: 'no-store' });
   return r.ok ? { order: await r.json(), dir: j.pathname.slice(0, j.pathname.lastIndexOf('/')) } : null;
+}
+// Support tickets and reviews use the same versioned-file pattern: <prefix><id>/doc-<time>.json
+const latestDoc = blobs => blobs.filter(b => /\/doc-\d+\.json$/.test(b.pathname)).sort((a, b) => b.pathname.localeCompare(a.pathname, 'en', { numeric: true }))[0];
+export async function saveDoc(dir, obj) {
+  const { blobs } = await list({ prefix: dir + '/' }), old = blobs.filter(b => /\/doc-\d+\.json$/.test(b.pathname));
+  await put(`${dir}/doc-${Date.now()}.json`, JSON.stringify(obj), { access: 'public', addRandomSuffix: false, contentType: 'application/json' });
+  if (old.length) await del(old.map(b => b.url)).catch(() => {});
+}
+export async function loadDoc(dir) { const { blobs } = await list({ prefix: dir + '/' }); const j = latestDoc(blobs); if (!j) return null; const r = await fetch(j.url, { cache: 'no-store' }); return r.ok ? r.json() : null; }
+export async function loadDocs(prefix) {
+  let blobs = [], cursor; do { const r = await list({ prefix, cursor, limit: 1000 }); blobs = blobs.concat(r.blobs); cursor = r.hasMore ? r.cursor : null; } while (cursor);
+  const by = {}; for (const b of blobs) { const d = b.pathname.slice(0, b.pathname.lastIndexOf('/')); (by[d] ||= []).push(b); }
+  const docs = await Promise.all(Object.values(by).map(latestDoc).filter(Boolean).map(b => fetch(b.url, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)));
+  return docs.filter(Boolean).sort((a, b) => b.at - a.at);
+}
+export const rid = (n = 5) => rnd(n);
+export async function allOrders(max = 400) {
+  let blobs = [], cursor; do { const r = await list({ prefix: 'orders/', cursor, limit: 1000 }); blobs = blobs.concat(r.blobs); cursor = r.hasMore ? r.cursor : null; } while (cursor);
+  const byDir = {}; for (const b of blobs) { const d = b.pathname.slice(0, b.pathname.lastIndexOf('/')); (byDir[d] ||= []).push(b); }
+  const js = Object.values(byDir).map(latest).filter(Boolean).sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt)).slice(0, max);
+  const orders = (await Promise.all(js.map(b => fetch(b.url, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)))).filter(Boolean);
+  return orders.sort((a, b) => b.at - a.at);
 }
 // Each save is a new file (order-<time>.json): a fresh URL is never served stale by the CDN. Older versions are removed.
 export const latest = blobs => blobs.filter(b => /\/order(-\d+)?\.json$/.test(b.pathname)).sort((a, b) => b.pathname.localeCompare(a.pathname, 'en', { numeric: true }))[0];
@@ -64,14 +119,20 @@ export async function paystack(path, body) {
 export async function confirmPayment(reference) {
   if (!payOn() || !/^SL-[2-9A-Z]{5}-[a-z0-9]{4,12}$/.test(reference || '')) return null;
   const tx = await paystack('/transaction/verify/' + encodeURIComponent(reference));
-  if (!tx || tx.status !== 'success' || tx.currency !== 'GHS') return null;
   const f = await findOrder(reference.slice(0, 8)); if (!f) return null;
-  if (f.order.paid && f.order.paid.ref === reference) return f.order;
-  const amount = tx.amount / 100;
-  f.order.paid = { amount, ref: reference, at: Date.now(), channel: tx.channel || '', short: amount + 0.001 < f.order.total };
-  (f.order.history ||= []).push({ s: 'paid', at: Date.now() });
-  if (f.order.status === 'new') { f.order.status = 'confirmed'; f.order.history.push({ s: 'confirmed', at: Date.now() }); }
-  await saveOrder(f.dir, f.order);
-  await pushAll({ title: `💰 Paid GH₵${amount} · ${f.order.id}`, body: `${f.order.name}${f.order.paid.short ? ` · ⚠ order total was GH₵${f.order.total}` : ''} · ${tx.channel === 'mobile_money' ? 'MoMo' : tx.channel || ''}`, url: `/admin/#${f.order.id}`, tag: f.order.id + '-paid' }).catch(() => {});
-  return f.order;
+  const o = f.order, rec = { ref: reference, status: tx && tx.status || 'unknown', amount: tx ? tx.amount / 100 : 0, currency: tx && tx.currency || '', channel: tx && tx.channel || '', psId: tx && tx.id || null,
+    fees: tx && tx.fees ? tx.fees / 100 : 0, checkedAt: Date.now(), msg: tx && tx.gateway_response || '' };
+  if (o.paid && o.paid.ref === reference) return o;                                  // already processed: nothing changes
+  const att = (o.attempts ||= []).find(x => x.ref === reference); if (att) Object.assign(att, { status: rec.status, checkedAt: rec.checkedAt, msg: rec.msg });
+  if (!tx || tx.status !== 'success') { await saveOrder(f.dir, o); return o; }        // abandoned / failed / pending: never paid
+  if (tx.currency !== 'GHS' || rec.amount + 0.001 < o.total) {                          // wrong amount or currency: recorded, not paid
+    o.payIssue = { ...rec, expected: o.total }; (o.history ||= []).push({ s: 'payment-mismatch', at: Date.now(), by: 'Paystack' }); await saveOrder(f.dir, o);
+    await pushAll({ title: `⚠ Payment check ${o.id}`, body: `Paystack says ${rec.currency} ${rec.amount}, order is GH₵${o.total}. Not marked paid.`, url: `/admin/#${o.id}`, tag: o.id + '-pay' }).catch(() => {});
+    return o; }
+  o.paid = { amount: rec.amount, ref: reference, at: Date.now(), verifiedAt: Date.now(), channel: rec.channel, currency: 'GHS', fees: rec.fees, psId: rec.psId, short: false };
+  delete o.payIssue; (o.history ||= []).push({ s: 'paid', at: Date.now(), by: 'Paystack' });
+  if (o.status === 'new') { o.status = 'confirmed'; o.history.push({ s: 'confirmed', at: Date.now(), by: 'Paystack' }); }
+  await saveOrder(f.dir, o);
+  await pushAll({ title: `💰 Paid GH₵${rec.amount} · ${o.id}`, body: `${o.name} · ${rec.channel === 'mobile_money' ? 'MoMo' : rec.channel || ''}`, url: `/admin/#${o.id}`, tag: o.id + '-paid' }).catch(() => {});
+  return o;
 }

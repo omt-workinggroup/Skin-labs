@@ -1,5 +1,5 @@
 // Skin Lab offline cache. The shop opens from the phone's cache, then quietly updates itself.
-const V = 'sl-b6068270', SHELL = ["/", "/data.5cad8629.js", "/inspo.7391542c.js", "/app.fd4e90f5.js", "/favicon.png"];
+const V = 'sl-3587fbb1', SHELL = ["/", "/data.ddcc7775.js", "/inspo.7391542c.js", "/app.cc4ea665.js", "/favicon.png"];
 self.addEventListener('install', e => { e.waitUntil(caches.open(V).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== V && k.startsWith('sl-')).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 const KEEP = /^\/(atlas|sheets|sheets-sm|sheets-xs|inspo|skins|laptops|laptops-real|hd|fonts)\/|\.[0-9a-f]{8}\.js$|\.(png|jpg)$/;

@@ -1,0 +1,52 @@
+[
+ {
+  "id": "dc-mickey-wink",
+  "name": "Mickey peeking",
+  "kind": "peek"
+ },
+ {
+  "id": "dc-pennywise",
+  "name": "Pennywise peeking",
+  "kind": "peek"
+ },
+ {
+  "id": "dc-stick-push",
+  "name": "Stick men pushing the trackpad",
+  "kind": "palm"
+ },
+ {
+  "id": "dc-goku-blast",
+  "name": "Goku Kamehameha",
+  "kind": "palm"
+ },
+ {
+  "id": "dc-axe-chase",
+  "name": "Axe man chases the logo",
+  "kind": "lid"
+ },
+ {
+  "id": "dc-iron-blast",
+  "name": "Iron Man logo blast",
+  "kind": "lid"
+ },
+ {
+  "id": "dc-heartbeat",
+  "name": "Heartbeat line",
+  "kind": "palm"
+ },
+ {
+  "id": "dc-mickey-pad",
+  "name": "Mickey by the trackpad",
+  "kind": "palm"
+ },
+ {
+  "id": "dc-minions",
+  "name": "Minions",
+  "kind": "palm"
+ },
+ {
+  "id": "dc-panda-logo",
+  "name": "Panda hugs the logo",
+  "kind": "lid"
+ }
+]
