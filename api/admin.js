@@ -19,7 +19,7 @@ export default async function handler(req, res) {
     if (q.a === 'pricing') {   // owner only: the printer's costs and our markup
       if (who !== 'owner') return json(res, 403, { error: 'Only the owner sees costs' });
       const s = await settings(), shop = [['Sticker sheet A5', PR.packs && Object.values(PR.packs)[0] ? Object.values(PR.packs)[0][1] : 30, 14.8, 21], ['Sticker sheet A4', Object.values(PR.packs || {})[0] ? Object.values(PR.packs)[0][0] : 60, 21, 29.7],
-        ['Laptop skin S (to 13.3")', PR.skin.S, 31, 22], ['Laptop skin M (14-15.6")', PR.skin.M, 36, 25], ['Laptop skin L (16-17.3")', PR.skin.L, 40, 27], ['Keyboard skin', PR.kb, 34, 23], ['Trackpad skin', PR.tp ?? 30, 12, 8],
+        ['Laptop skin S (to 13.3")', PR.skin.S, 31, 22], ['Laptop skin M (14-15.6")', PR.skin.M, 36, 25], ['Laptop skin L (16-17.3")', PR.skin.L, 40, 27], ['Keyboard skin', PR.kb, 34, 23], ['Trackpad skin', PR.tp ?? 30, 12, 8], ['Laptop Art (cut-out)', PR.decal, 20, 20, 'decal'],
         [`${Math.ceil((PR.minSingles || 25) / PR.single)} single stickers (minimum order)`, Math.ceil((PR.minSingles || 25) / PR.single) * PR.single, 5.5, 5.5, 'sticker', Math.ceil((PR.minSingles || 25) / PR.single)]]
         .map(([name, sell, w, h, kind = 'sticker', n = 1]) => { const c = cost(s, w, h, n, kind); return { name, sell, w, h, n, sheet: c.sheet, cost: c.cost, calc: c.calc, profit: Math.round((sell - c.cost - s.extra) * 100) / 100, margin: Math.round((1 - (c.cost + s.extra) / sell) * 100), x: Math.round(sell / (c.cost + s.extra) * 10) / 10 }; });
       return json(res, 200, { settings: s, shop, example: q.w ? price(s, q.w, q.h, q.q, q.kind) : null });

@@ -133,7 +133,7 @@ const ago = t => { const m = Math.round((Date.now() - t) / 60000); return m < 1 
 const when = t => new Date(t).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 const cedi = n => '₵' + (Math.round((n || 0) * 100) / 100).toLocaleString('en-GB');
 const first = n => (n || '').split(' ')[0];
-const kind = k => /^skin~/.test(k) ? 'laptop skin' : /^kb~/.test(k) ? 'keyboard skin' : /^(ms|tp)~/.test(k) ? 'trackpad skin' : /^dc~/.test(k) ? 'vinyl decal' : 'sticker sheet';
+const kind = k => /^skin~/.test(k) ? 'laptop skin' : /^kb~/.test(k) ? 'keyboard skin' : /^(ms|tp)~/.test(k) ? 'trackpad skin' : /^dc~/.test(k) ? 'Laptop Art' : 'sticker sheet';
 const what = o => [o.design ? `${o.design.packName || 'Custom pack'} (${o.design.size || '–'}, ${o.design.n} stickers)` : '', ...(o.packs || []).map(p => `${p.q}× ${p.label}`), (o.singles || []).length ? `${o.singles.reduce((a, s) => a + s.q, 0)} singles` : ''].filter(Boolean).join(' · ');
 const payPill = o => o.paid ? `<span class="pill paid">✓ Paid</span>` : o.payIssue ? `<span class="pill unpaid">⚠ Check payment</span>` : PAYON && !['cancelled', 'refunded'].includes(o.status) ? `<span class="pill unpaid">Unpaid</span>` : '';
 async function api(path, opt = {}) {
@@ -489,7 +489,7 @@ async function pricing() {
   const calcA = sz => Math.round({ A5: 14.8 * 21, A4: 21 * 29.7, A3: 29.7 * 42 }[sz] / 929.0304 * s.sqft * 100) / 100;
   $('#pz').outerHTML = `<div class="two">
     <div class="panel"><h2>Quick quote</h2><p class="lbl" style="text-transform:none;letter-spacing:0;font-size:13px;margin-bottom:10px">A customer asks for a size: type it in. The customer only ever hears the price on the right.</p>
-      <div class="qgrid"><label class="fl2"><span class="lbl">What</span><select id="qk"><option value="sticker">Sticker print (print & cut)</option><option value="skin">Skin (print, laminate, cut)</option></select></label>
+      <div class="qgrid"><label class="fl2"><span class="lbl">What</span><select id="qk"><option value="sticker">Sticker print (print & cut)</option><option value="skin">Skin (print, laminate, cut)</option><option value="decal">Laptop Art (cut only)</option></select></label>
         <label class="fl2"><span class="lbl">Width cm</span><input class="inp" id="qw" type="number" inputmode="decimal" value="29.7"></label><label class="fl2"><span class="lbl">Height cm</span><input class="inp" id="qh" type="number" inputmode="decimal" value="42"></label><label class="fl2"><span class="lbl">How many</span><input class="inp" id="qq" type="number" inputmode="numeric" value="1" min="1"></label></div>
       <div class="qpre"><button class="ib" data-q="14.8,21">A5</button><button class="ib" data-q="21,29.7">A4</button><button class="ib" data-q="29.7,42">A3</button><button class="ib" data-q="5.5,5.5,10">10 singles</button><button class="ib" data-q="36,25,1,skin">15.6″ lid</button><button class="ib" data-q="12,8,1,skin">Trackpad</button></div>
       <div id="qres" class="qres"></div></div>
@@ -508,7 +508,7 @@ async function pricing() {
     <p><b>Your margins are healthy.</b> At today's shop prices every product earns at least ${Math.min(...PRS.shop.map(r => r.margin))}% after printing and packing. Single stickers were the only risk, and the ₵25 minimum now covers them. Delivery is still charged separately.</p></div></div>`;
   const quote = async () => { const w = +$('#qw').value, h = +$('#qh').value, n = +$('#qq').value || 1, k = $('#qk').value; if (!(w > 0 && h > 0)) { $('#qres').innerHTML = ''; return; }
     try { const j = await api(`/api/admin/?a=pricing&w=${w}&h=${h}&q=${n}&kind=${k}`), x = j.example;
-      const line = `Hi! ${n > 1 ? n + ' × ' : ''}${k === 'skin' ? 'a skin' : k === 'decal' ? 'a vinyl decal' : 'a sticker print'} at ${x.w} × ${x.h} cm comes to about GH₵${x.price}. Printed in Accra on laminated vinyl. Want us to go ahead?`;
+      const line = `Hi! ${n > 1 ? n + ' × ' : ''}${k === 'skin' ? 'a skin' : k === 'decal' ? 'a Laptop Art cut-out' : 'a sticker print'} at ${x.w} × ${x.h} cm comes to about GH₵${x.price}. Printed in Accra on laminated vinyl. Want us to go ahead?`;
       $('#qres').innerHTML = `<div class="qbig"><div><span class="lbl">Tell the customer</span><b>${cedi(x.price)}</b></div><div><span class="lbl">Printer cost</span><b class="dim">${cedi(x.cost)}</b><small>${x.sheet === 'custom' ? 'bigger than A3, by area' : `${x.sheets} × ${x.sheet} sheet`}</small></div><div><span class="lbl">You keep</span><b class="g">${cedi(x.profit)}</b><small>${x.margin}% margin</small></div></div>
         <p class="lbl" style="text-transform:none;letter-spacing:0;font-size:12.5px">His calculator would say ${cedi(x.calc)} for the same size.</p><textarea class="msg" id="qmsg" style="min-height:76px;margin-top:8px">${esc(line)}</textarea><button class="btn" id="qcp">Copy reply for WhatsApp</button>`;
       $('#qcp').onclick = () => navigator.clipboard.writeText($('#qmsg').value).then(() => toast('Copied')); } catch (e) { $('#qres').textContent = e.message; } };

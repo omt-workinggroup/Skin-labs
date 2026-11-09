@@ -21,7 +21,7 @@ export default async function handler(req, res) {
     }
     if (q.a === 'quote') {
       if (limited(req, 'quote', 120, 10 * 60e3)) return json(res, 429, { error: 'Too many tries' });
-      const kind = ['sticker', 'skin'].includes(q.kind) ? q.kind : 'sticker', r = price(await settings(), q.w, q.h, q.q, kind);
+      const kind = ['sticker', 'skin', 'decal'].includes(q.kind) ? q.kind : 'sticker', r = price(await settings(), q.w, q.h, q.q, kind);
       return json(res, 200, { w: r.w, h: r.h, q: r.q, kind, price: r.price, approx: true });
     }
     if (q.a === 'popular') {

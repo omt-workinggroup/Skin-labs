@@ -43,7 +43,7 @@ const old = store.get('sl-sel', null); if (Array.isArray(old)) old.forEach(c => 
 Object.assign(cart, store.get('sl-cart', {})); Object.assign(packs, store.get('sl-packs', {}));
 Object.keys(cart).forEach(c => { if (!CODE[c] || !(cart[c] > 0)) delete cart[c]; });
 // a pack in the cart: "<id>" is the big sheet (A4, or the A3 pick & mix), "<id>~5" the small A5 sheet
-const SZ = { A3: 'A3 pick & mix', A4: 'A4 big sheet', A5: 'A5 small sheet', XL: 'XL lid centrepiece', S: 'Small skin', M: 'Medium skin', L: 'Large skin', C: 'Custom skin', Keyboard: 'Keyboard skin', Trackpad: 'Trackpad skin', Decal: 'Vinyl decal' };
+const SZ = { A3: 'A3 pick & mix', A4: 'A4 big sheet', A5: 'A5 small sheet', XL: 'XL lid centrepiece', S: 'Small skin', M: 'Medium skin', L: 'Large skin', C: 'Custom skin', Keyboard: 'Keyboard skin', Trackpad: 'Trackpad skin', Decal: 'Laptop Art', Art: 'Laptop Art' };
 // laptop skins: priced by size (change the numbers here)
 const SKINP = { S: { name: 'Small', fit: 'up to 13.3″', price: 70 }, M: { name: 'Medium', fit: '14″ – 15.6″', price: 80 }, L: { name: 'Large', fit: '16″ – 17.3″', price: 90 }, C: { name: 'Custom', fit: 'full wrap or your own picture', price: 120 } };
 const skinFor = inch => !inch ? 'M' : inch <= 13.5 ? 'S' : inch <= 15.7 ? 'M' : 'L';
@@ -51,7 +51,7 @@ function pkOf(k) { const ks = String(k);
   if (/^(kb|tp|ms)~/.test(ks)) { const [t, id] = ks.split('~'), sk = SKIN[id]; if (!sk) return null;
     return { k, id, skin: 1, kind: t, p: { nice: `${sk[1]} ${t === 'kb' ? 'keyboard' : 'trackpad'} skin`, bg: '#111' }, a5: false, size: t === 'kb' ? 'Keyboard' : 'Trackpad', price: XP[t === 'ms' ? 'tp' : t], n: 0, img: 'skin:' + id, label: `${sk[1]} · ${t === 'kb' ? 'keyboard' : 'trackpad'} skin`, fit: t === 'kb' ? 'keyboard area & palm rest' : 'the touchpad on your laptop' }; }
   if (/^dc~/.test(ks)) { const [, id, c] = ks.split('~'), d = DEC[id]; if (!d) return null;
-    return { k, id, decal: 1, p: { nice: d[1], bg: '#ececee' }, a5: false, size: 'Decal', price: XP.decal, n: 0, img: 'decal:' + id, label: `${d[1]} · ${c === 'w' ? 'white' : 'black'} vinyl decal`, fit: DKIND[d[2]] }; }
+    return { k, id, decal: 1, p: { nice: d[1], bg: '#ececee' }, a5: false, size: 'Art', price: XP.decal, n: 0, img: 'decal:' + id, label: `${d[1]} · Laptop Art (${c === 'w' ? 'white' : 'black'})`, fit: DKIND[d[2]] }; }
   if (ks.startsWith('skin~')) { const [, id, z] = String(k).split('~'), sk = SKIN[id], t = SKINP[z]; if (!sk || !t) return null;
     return { k, id, skin: 1, p: { nice: `${sk[1]} skin`, bg: '#111' }, a5: false, size: z, price: t.price, n: 0, img: 'skin:' + id, label: `${sk[1]} skin · ${t.name}`, fit: t.fit }; }
   const [id, s5] = String(k).split('~'), p = PK[id]; if (!p) return null; const a5 = s5 === '5' && !!p.a5;
@@ -416,7 +416,7 @@ function vHome() {
     <a class="hsearch" href="#search" role="search" aria-label="Search the shop"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><span>Search anime, football, gaming, coding…</span></a>
     ${freeStrip()}
     ${newDrops()}
-    <div class="seg hseg" id="h-seg"><button type="button" data-h="st">Stickers</button><button type="button" data-h="sk">Skins</button></div>
+    <div class="seg hseg" id="h-seg"><button type="button" data-h="st">Stickers</button><button type="button" data-h="sk">Skins</button><button type="button" data-h="dc">Laptop Art<i class="newb in">New</i></button></div>
     <div id="h-grid"></div>
     ${reviewsBlock()}
     <div class="extra">
@@ -427,8 +427,7 @@ function vHome() {
   const art = (id, list) => { $(id).innerHTML = list.map(([pid, k], i) => spr(PK[pid], PK[pid].items[k], 52, `transform:rotate(${[-8, 7][i]}deg);margin-right:-12px`)).join(''); };
   if ($('#xa1')) art('#xa1', [['p3-code-languages-1', 3], ['m2-spider-verse', 2]]); 
   const hs = (k, save) => { if (save) store.set('sl-home', k); document.querySelectorAll('#h-seg [data-h]').forEach(b => b.classList.toggle('on', b.dataset.h === k));
-    if (k === 'dc') k = 'st';
-    $('#h-grid').innerHTML = k === 'sk' ? skinsGrid() : catGrid(); if (k === 'sk') wireSkins($('#h-grid'));
+    $('#h-grid').innerHTML = k === 'sk' ? skinsGrid() : k === 'dc' ? decalsGrid() : catGrid(); if (k === 'sk') wireSkins($('#h-grid'));
     if (k === 'dc') $('#h-grid').querySelectorAll('[data-dec]').forEach(a => a.onclick = e => { if (e.target.closest('[data-save]')) return; e.preventDefault(); decalSheet(a.dataset.dec); }); };
   $('#h-seg').onclick = e => { const b = e.target.closest('[data-h]'); if (b) hs(b.dataset.h, 1); }; hs(store.get('sl-home', 'st'));
   $('#x-inspo').onclick = openInspo;
@@ -989,7 +988,12 @@ function vMine() {
 
 // ======================= Skin Lab 2.0: search, saved, keyboard & trackpad skins, help, reviews =======================
 const XP = { kb: 50, tp: 30, decal: 30 };   // keyboard-area skin, trackpad (mouse pad) skin, vinyl decal (same numbers as the server's price list)
-const DECALS = [];   // Skin Lab sells stickers and skins only (decals were dropped in Nov 2026; old decal orders still open in the admin)
+// Laptop Art: one-colour cut-out shapes (no background) that play with the laptop. Keys stay dc~ for old orders.
+const DECALS = [
+  ['dc-mickey-wink', 'Mickey peeking', 'peek'], ['dc-pennywise', 'Pennywise peeking', 'peek'], ['dc-stick-push', 'Stick men pushing the trackpad', 'palm'], ['dc-goku-blast', 'Goku Kamehameha', 'palm'],
+  ['dc-axe-chase', 'Axe man chases the logo', 'lid'], ['dc-iron-blast', 'Iron Man logo blast', 'lid'], ['dc-heartbeat', 'Heartbeat line', 'palm'], ['dc-mickey-pad', 'Mickey by the trackpad', 'palm'],
+  ['dc-minions', 'Minions', 'palm'], ['dc-panda-logo', 'Panda hugs the logo', 'lid']];
+const ART = 'Laptop Art';
 const DEC = Object.fromEntries(DECALS.map(d => [d[0], d]));
 const DKIND = { peek: 'Peeks over an edge', palm: 'Around the trackpad', lid: 'Plays with the lid logo' };
 const STYPE = { lap: ['Laptop skin', 'Lid'], kb: ['Keyboard skin', 'Around the keys'], tp: ['Trackpad skin', 'The touchpad'] };
@@ -1015,12 +1019,12 @@ function savedBadge() { const b = $('#hd-saved i'); if (b) { b.textContent = SAV
 function itemOf(k) {
   if (k.startsWith('sk:')) { const s = SKIN[k.slice(3)]; return s && { k, type: 'skin', name: `${s[1]} skin`, img: `skins/${s[0]}-s.${IX}`, price: SKINP.S.price, from: 1, href: '#skin-' + s[0], tag: SKTAG[s[0]] || '', cat: 'Skins' }; }
   if (k.startsWith('in:')) { const x = INS.find(y => y.id === k.slice(3)); return x && { k, type: 'inspo', name: x.alt, img: `inspo/sm/${x.id}.${IX}`, price: 0, href: '#inspo', cat: 'Inspiration' }; }
-  if (k.startsWith('dc:')) { const d = DEC[k.slice(3)]; return d && { k, type: 'decal', name: d[1], img: `decals/${d[0]}-s.${IX}`, price: XP.decal, href: '#decal-' + d[0], cat: 'Decals' }; }
+  if (k.startsWith('dc:')) { const d = DEC[k.slice(3)]; return d && { k, type: 'decal', name: d[1], img: `decals/${d[0]}-r.${IX}`, price: XP.decal, href: '#decal-' + d[0], cat: 'Decals' }; }
   const p = PK[k]; return p && { k, type: 'pack', name: p.nice, img: sh(p.id, 'sheets-xs'), price: p.p5 || p.price, from: !!p.a5, href: '#' + p.id, cat: (CAT[p.cat] || {}).name || '', size: p.size, n: p.items.length, isNew: !!p.new, bg: p.bg };
 }
 function itemCard(it) { return `<div class="sr"><a class="sri" href="${it.href}" style="--tb:${it.bg || '#151517'}"><img src="${it.img}" alt="" loading="lazy" decoding="async"></a>
   <div class="srm"><a href="${it.href}"><span class="lbl">${esc(it.type === 'pack' ? it.cat : it.cat)}${it.isNew ? ' · New' : ''}${POP.has(it.k) ? ' · Best seller' : ''}</span><b>${esc(it.name)}</b>
-  <span>${it.type === 'pack' ? `${it.size === 'XL' ? 'XL centrepiece' : it.size === 'A3' ? `A3 · ${it.n} stickers` : `A5 & A4 · up to ${it.n} stickers`}` : it.type === 'skin' ? 'Laptop · keyboard · trackpad' : 'One-colour vinyl decal'}</span></a>
+  <span>${it.type === 'pack' ? `${it.size === 'XL' ? 'XL centrepiece' : it.size === 'A3' ? `A3 · ${it.n} stickers` : `A5 & A4 · up to ${it.n} stickers`}` : it.type === 'skin' ? 'Laptop · keyboard · trackpad' : 'Laptop Art · cut-out'}</span></a>
   <span class="pr">${it.type === 'inspo' ? 'idea' : `${it.from ? 'from ' : ''}${CUR}${it.price}`}</span></div>${heart(it.k, it.name)}</div>`; }
 
 // ---------- popular (from real orders) + reviews ----------
@@ -1056,7 +1060,7 @@ function vSearch(q0) {
     <div class="sbar"><button type="button" class="chip" id="sfo" aria-expanded="false" aria-controls="sfp">Filters<span class="ct" id="sfn"></span></button>
       <label class="ssort"><span class="lbl">Sort</span><select id="sso" aria-label="Sort results"><option value="best">Best match</option><option value="pop">Most popular</option><option value="new">Newest first</option><option value="lo">Lowest price</option><option value="hi">Highest price</option><option value="az">A to Z</option></select></label></div>
     <div class="sfp" id="sfp" hidden role="region" aria-label="Filters">
-      <div class="lbl">Product</div><div class="hs" id="sft">${[['', 'Everything'], ['pack', 'Sticker packs'], ['skin', 'Skins']].map(([k, n]) => `<button type="button" class="chip" data-v="${k}">${n}</button>`).join('')}</div>
+      <div class="lbl">Product</div><div class="hs" id="sft">${[['', 'Everything'], ['pack', 'Sticker packs'], ['skin', 'Skins'], ['decal', ART]].map(([k, n]) => `<button type="button" class="chip" data-v="${k}">${n}</button>`).join('')}</div>
       <div class="lbl">Category</div><div class="hs" id="sfc"><button type="button" class="chip" data-v="">All</button>${D.cats.filter(c => !c.free).map(c => `<button type="button" class="chip" data-v="${esc(c.name)}">${esc(c.name)}</button>`).join('')}</div>
       <div class="lbl">Sheet size</div><div class="hs" id="sfz">${[['', 'Any'], ['A4', 'A5 & A4 packs'], ['A3', 'A3 pick & mix'], ['XL', 'XL centrepiece']].map(([k, n]) => `<button type="button" class="chip" data-v="${k}">${n}</button>`).join('')}</div>
       <div class="lbl">Price</div><div class="hs" id="sfm">${[[0, 'Any price'], [30, `Up to ${CUR}30`], [60, `Up to ${CUR}60`], [90, `Up to ${CUR}90`]].map(([k, n]) => `<button type="button" class="chip" data-v="${k}">${n}</button>`).join('')}</div>
@@ -1097,7 +1101,7 @@ function vSaved(shared) {
     <div class="sech"><div><h2>${shared ? 'A friend’s <em>picks</em>' : 'Saved <em>♥</em>'}</h2><p class="sub">${shared ? 'Someone shared these with you. Save the ones you like.' : 'Everything you hearted, kept on this phone.'}</p></div></div>
     ${keys.length ? `<div class="srl">${keys.map(k => itemCard(itemOf(k))).join('')}</div>
       <div class="two" style="margin-top:14px">${shared ? `<button type="button" class="btn y" id="sv-all">Save all ${keys.length}</button>` : `<button type="button" class="btn o" id="sv-share">Share my list</button><button type="button" class="btn o" id="sv-clear">Clear list</button>`}</div>`
-      : `<div class="none"><b>Nothing saved yet.</b><p>Tap the ♥ on any pack or skin to keep it here.</p><a class="btn y" href="#search">Browse everything</a></div>`}</section>${footer}`;
+      : `<div class="none"><b>Nothing saved yet.</b><p>Tap the ♥ on any pack, skin or Laptop Art to keep it here.</p><a class="btn y" href="#search">Browse everything</a></div>`}</section>${footer}`;
   if ($('#sv-all')) $('#sv-all').onclick = () => { SAVED = [...new Set([...keys, ...SAVED])].slice(0, 120); store.set('sl-saved', SAVED); savedBadge(); toast('Saved to your list'); location.hash = 'saved'; };
   if ($('#sv-share')) $('#sv-share').onclick = async () => { const u = `${location.origin}/#saved=${keys.map(encodeURIComponent).join(',')}`;
     try { if (navigator.share) await navigator.share({ title: 'My Skin Lab picks', url: u }); else { await navigator.clipboard.writeText(u); toast('Link copied'); } } catch (e) {} };
@@ -1173,23 +1177,26 @@ function skinSheet(id, type) {   // product page for one skin design, in a sheet
 // one panel per sheet, kept between redraws so picking an option never replays the slide-in
 function sheetIn(box, label) { let i = box.firstElementChild; if (!i || !i.classList.contains('in')) { box.innerHTML = '<div class="in" role="dialog" aria-modal="true"></div>'; i = box.firstElementChild; } i.setAttribute('aria-label', label); return i; }
 function decalsGrid() {
-  return `<p class="sub" style="margin:2px 0 12px">One-colour cut vinyl that plays with your laptop: around the trackpad, peeking over an edge, or with the glowing logo. ${CUR}${XP.decal} each, black or white.</p>
-    <div class="cats skins">${DECALS.map((d, i) => `<a class="catc" href="#decal-${d[0]}" data-dec="${d[0]}"><div class="table sk" style="aspect-ratio:3/2;background:#ececee"><img src="decals/${d[0]}-s.${IX}" alt="${esc(d[1])} vinyl decal" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover"><span class="newb">New</span>${heart('dc:' + d[0], d[1])}</div>
+  return `<p class="sub" style="margin:2px 0 12px">Cut-out shapes with no background that play with your laptop: around the trackpad, peeking over an edge, or hugging the logo. Tap one to see it on a real laptop. ${CUR}${XP.decal} each, black or white.</p>
+    <div class="cats skins">${DECALS.map((d, i) => `<a class="catc" href="#decal-${d[0]}" data-dec="${d[0]}"><div class="table sk" style="aspect-ratio:3/2;background:#ececee"><img class="dci" style="${d[2] === 'peek' ? 'object-position:center bottom' : ''}" src="decals/${d[0]}-r.${IX}" alt="${esc(d[1])}, Laptop Art on a real laptop" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover"><span class="newb">New</span>${heart('dc:' + d[0], d[1])}</div>
       <div class="cmeta"><span class="no">${String(i + 1).padStart(2, '0')}</span><b>${esc(d[1])}</b><span>${DKIND[d[2]]} · ${CUR}${XP.decal}</span></div></a>`).join('')}</div>`;
 }
 function decalSheet(id) {
-  const d = DEC[id]; if (!d) return; let col = store.get('sl-dcol', 'b');
+  const d = DEC[id]; if (!d) return; let col = store.get('sl-dcol', 'b'), view = 'r';
   let box = $('#dcs'); if (!box) { box = document.createElement('div'); box.id = 'dcs'; box.className = 'sheet'; document.body.appendChild(box); box.addEventListener('click', e => { if (e.target === box) box.hidden = true; }); }
   const key = () => `dc~${id}${col === 'w' ? '~w' : ''}`;
-  const draw = () => { sheetIn(box, `${d[1]} decal`).innerHTML = `<div class="grab"></div><h3>Vinyl decal <button type="button" class="chip" id="dcx">Close</button></h3>
-    <div class="skview"><img class="skimg" src="decals/${id}-${col === 'w' ? 'pw' : 'p'}.${IX}" alt="${esc(d[1])} in ${col === 'w' ? 'white' : 'black'} vinyl on a ${col === 'w' ? 'dark' : 'silver'} laptop">${heart('dc:' + id, d[1])}</div>
-    <h3 class="skn">${esc(d[1])}</h3><p class="small">${DKIND[d[2]]}. One-colour cut vinyl, no background: only the design sticks to your laptop.${d[2] === 'lid' ? ' Made for laptops with a logo in the middle of the lid (like a MacBook).' : ''}</p>
-    <div class="seg sktype" id="dcc" role="radiogroup" aria-label="Vinyl colour"><button type="button" role="radio" aria-checked="${col === 'b'}" class="${col === 'b' ? 'on' : ''}" data-c="b"><b>Black</b><small>for silver & light laptops</small></button><button type="button" role="radio" aria-checked="${col === 'w'}" class="${col === 'w' ? 'on' : ''}" data-c="w"><b>White</b><small>for dark laptops</small></button></div>
-    <div class="sum1"><span>Decal · ${col === 'w' ? 'white' : 'black'} vinyl</span><b>${CUR}${XP.decal}</b></div>
+  const draw = () => { sheetIn(box, `${d[1]}, Laptop Art`).innerHTML = `<div class="grab"></div><h3>Laptop Art <button type="button" class="chip" id="dcx">Close</button></h3>
+    <div class="seg dcv" id="dcv" role="tablist" aria-label="Pictures"><button type="button" role="tab" aria-selected="${view === 'r'}" class="${view === 'r' ? 'on' : ''}" data-v="r">Real photo</button><button type="button" role="tab" aria-selected="${view === 'p'}" class="${view === 'p' ? 'on' : ''}" data-v="p">In ${col === 'w' ? 'white' : 'black'}, clean</button></div>
+    <div class="skview"><img class="skimg" src="decals/${id}-${view === 'r' ? 'r' : col === 'w' ? 'pw' : 'p'}.${IX}" alt="${esc(d[1])} ${view === 'r' ? 'on a real laptop' : `in ${col === 'w' ? 'white' : 'black'} on a ${col === 'w' ? 'dark' : 'silver'} laptop`}" style="${view === 'r' ? 'object-fit:contain;background:#111' : ''}">${heart('dc:' + id, d[1])}</div>
+    <p class="small" style="margin:-4px 0 8px;opacity:.75">${view === 'r' ? 'This is how it looks on a laptop. You get the shape only, cut from vinyl.' : 'Your colour on a plain laptop, so you can see the exact shape.'}</p>
+    <h3 class="skn">${esc(d[1])}</h3><p class="small">${DKIND[d[2]]}. One colour, no background: only the shape sticks to your laptop.${d[2] === 'lid' ? ' Made for laptops with a logo in the middle of the lid (like a MacBook).' : ''}</p>
+    <div class="seg sktype" id="dcc" role="radiogroup" aria-label="Colour"><button type="button" role="radio" aria-checked="${col === 'b'}" class="${col === 'b' ? 'on' : ''}" data-c="b"><b>Black</b><small>for silver & light laptops</small></button><button type="button" role="radio" aria-checked="${col === 'w'}" class="${col === 'w' ? 'on' : ''}" data-c="w"><b>White</b><small>for dark laptops</small></button></div>
+    <div class="sum1"><span>Laptop Art · ${col === 'w' ? 'white' : 'black'}</span><b>${CUR}${XP.decal}</b></div>
     <button class="btn y" type="button" id="dcbuy">Buy now · ${CUR}${XP.decal}</button><button class="btn o" type="button" id="dcadd">Add to cart</button>`;
     $('#dcx').onclick = () => { box.hidden = true; if (location.hash.startsWith('#decal-')) history.replaceState(null, '', location.pathname); };
-    $('#dcc').onclick = e => { const b = e.target.closest('[data-c]'); if (b) { col = b.dataset.c; store.set('sl-dcol', col); buzz(); draw(); } };
-    $('#dcadd').onclick = () => { const k = key(); setPack(k, (packs[k] || 0) + 1); buzz(); box.hidden = true; toast(`${d[1]} decal added`); };
+    $('#dcv').onclick = e => { const b = e.target.closest('[data-v]'); if (b) { view = b.dataset.v; buzz(); draw(); } };
+    $('#dcc').onclick = e => { const b = e.target.closest('[data-c]'); if (b) { col = b.dataset.c; view = 'p'; store.set('sl-dcol', col); buzz(); draw(); } };
+    $('#dcadd').onclick = () => { const k = key(); setPack(k, (packs[k] || 0) + 1); buzz(); box.hidden = true; toast(`${d[1]} added`); };
     $('#dcbuy').onclick = () => { box.hidden = true; buyNow(key()); }; };
   draw(); box.hidden = false; openSheetA11y(box);
 }
@@ -1210,6 +1217,7 @@ const HELP = [
     ['Is delivery included?', 'No. You pay for the products online. Delivery or pickup is agreed with you on WhatsApp, and any delivery cost is told to you before we send.']]],
   ['Sizes & products', [['How big are the stickers?', 'Singles are about 5.5 cm. On sheets they are 2.5 to 7.5 cm. A5 is a small sheet, A4 a big sheet, A3 a pick & mix of about 84, and XL is one 18 cm centrepiece for your lid.'],
     ['Which skin size do I need?', `Small fits up to 13.3″, Medium 14–15.6″, Large 16–17.3″. Custom (${CUR}${SKINP.C.price}) is a full wrap or your own picture.`]]],
+  ['Laptop Art', [['What is Laptop Art?', `Cut-out shapes with no background (${CUR}${XP.decal}), in black or white. They play with your laptop: around the trackpad, peeking over an edge, or hugging the logo on the lid. Tap any one to see it on a real laptop first.`]]],
   ['Free sticker', [['How does the free sticker work?', 'Every order gets one free sticker. Pick it at checkout. It is never charged and you can change it until you pay.']]],
   ['Delivery & tracking', [['How do I track my order?', 'Your order page shows every step with the time: payment confirmed, artwork, printing, quality check, ready, out for delivery, delivered. Find it under Your orders on the shop, or type the order number below.'],
     ['Where do you deliver?', 'We are in Accra and arrange delivery or pickup with you on WhatsApp, including to university campuses.']]],
@@ -1220,7 +1228,7 @@ function vHelp(orderRef) {
     <div class="sech"><div><h2>Help <em>centre</em></h2><p class="sub">Answers first. A real person on WhatsApp if you need one.</p></div></div>
     <form class="track" id="trk"><label for="trk-i" class="lbl">Track an order</label><div class="tr2"><input id="trk-i" placeholder="e.g. SL-ABC12" autocapitalize="characters" value="${esc(orderRef || '')}"><button class="btn y" type="submit">Track</button></div></form>
     <form class="cq" id="cq"><h3>Custom size? Get a price</h3><p class="small">A big lid sticker, a sheet of your own designs, a skin for an odd laptop. Type the size and we'll tell you roughly what it costs.</p>
-      <div class="cq-g"><div class="fld"><label for="cq-k">What</label><select id="cq-k"><option value="sticker">Stickers (print &amp; cut)</option><option value="skin">Skin</option></select></div>
+      <div class="cq-g"><div class="fld"><label for="cq-k">What</label><select id="cq-k"><option value="sticker">Stickers (print &amp; cut)</option><option value="skin">Skin</option><option value="decal">Laptop Art (cut-out)</option></select></div>
         <div class="fld"><label for="cq-w">Width (cm)</label><input id="cq-w" type="number" inputmode="decimal" min="1" max="300" placeholder="e.g. 30"></div><div class="fld"><label for="cq-h">Height (cm)</label><input id="cq-h" type="number" inputmode="decimal" min="1" max="300" placeholder="e.g. 20"></div>
         <div class="fld"><label for="cq-q">How many</label><input id="cq-q" type="number" inputmode="numeric" min="1" max="500" value="1"></div></div>
       <div id="cq-r" class="cq-r" role="status" aria-live="polite"></div></form>
@@ -1236,7 +1244,7 @@ function vHelp(orderRef) {
       <a class="btn wa" href="https://wa.me/${WA}?text=${encodeURIComponent(orderRef ? `Hello Skin Lab, I need help with order ${orderRef}.` : 'Hello Skin Lab, I need help.')}" target="_blank" rel="noopener"><svg class="wa-i"><use href="#wa"/></svg>Chat on WhatsApp instead</a></form></section>${footer}`;
   { let t; const go = async () => { const w = +$('#cq-w').value, h = +$('#cq-h').value, q = +$('#cq-q').value || 1, k = $('#cq-k').value, r = $('#cq-r'); if (!(w > 0 && h > 0)) { r.innerHTML = ''; return; }
       try { const j = await (await fetch(`/api/public/?a=quote&w=${w}&h=${h}&q=${q}&kind=${k}`)).json(); if (!j.price) throw 0;
-        const what = `${q > 1 ? q + ' × ' : ''}${k === 'skin' ? 'skin' : k === 'decal' ? 'vinyl decal' : 'sticker print'} ${j.w} × ${j.h} cm`;
+        const what = `${q > 1 ? q + ' × ' : ''}${k === 'skin' ? 'skin' : k === 'decal' ? 'Laptop Art cut-out' : 'sticker print'} ${j.w} × ${j.h} cm`;
         r.innerHTML = `<div><span class="lbl">About</span><b>${CUR}${j.price}</b><small>${esc(what)} · final price confirmed on WhatsApp</small></div><a class="btn y" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent(`Hello Skin Lab, I'd like a custom ${what} (about ${CUR}${j.price}).`)}">Order this on WhatsApp</a>`;
       } catch (e) { r.innerHTML = '<small>Could not get a price right now. Ask us on WhatsApp.</small>'; } };
     ['#cq-w', '#cq-h', '#cq-q', '#cq-k'].forEach(x => $(x).addEventListener('input', () => { clearTimeout(t); t = setTimeout(go, 350); })); $('#cq').onsubmit = e => { e.preventDefault(); go(); }; }

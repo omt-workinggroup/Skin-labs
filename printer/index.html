@@ -159,7 +159,7 @@ function jobs(o) {
   const out = [];
   for (const p of o.packs || []) {
     const k = p.key || '';
-    if (/^dc~/.test(k)) { const [, id, c] = k.split('~'); out.push({ kind: 'decal', chip: 'Decal', size: c === 'w' ? 'white vinyl' : 'black vinyl', q: p.q, title: p.label, img: `/decals/${id}-s.webp`, file: `/print/decals/${id}.png`, wide: 1, how: 'One-colour cut vinyl. Cut from the PNG outline, weed, transfer tape.' }); }
+    if (/^dc~/.test(k)) { const [, id, c] = k.split('~'); out.push({ kind: 'decal', chip: 'Laptop Art', size: c === 'w' ? 'white vinyl' : 'black vinyl', q: p.q, title: p.label, img: `/decals/${id}-s.webp`, file: `/print/decals/${id}.png`, wide: 1, how: 'One-colour cut vinyl. Cut from the PNG outline, weed, transfer tape.' }); }
     else if (/^skin~/.test(k)) { const [, id, z] = k.split('~'); out.push({ kind: 'skin', chip: 'Skin ' + z, size: SKZ[z] || z, q: p.q, title: p.label, img: `/skins/${id}-s.webp`, file: `/print/skins/${id}.jpg`, wide: 1, how: 'Lid skin. Scale the master to the laptop, print on SAV, laminate, cut to the lid.' }); }
     else if (/^(kb|tp|ms)~/.test(k)) { const [t, id] = k.split('~'); out.push({ kind: 'skin', chip: t === 'kb' ? 'Keyboard' : 'Trackpad', size: t === 'kb' ? 'keyboard area + palm rest' : 'trackpad only (about 12 × 8 cm)', q: p.q, title: p.label, img: `/skins/${id}-s.webp`, file: `/print/skins/${id}.jpg`, wide: 1, how: t === 'kb' ? 'Cut around the keys and the trackpad. Model is in the order note.' : 'Small piece: gang it on another job\'s sheet. Round the corners.' }); }
     else { const [id, a5] = k.split('~'), size = a5 === '5' ? 'A5' : p.size || 'A4'; out.push({ kind: 'sheet', chip: size, size: SHEET[size] || size, q: p.q, title: p.label, n: p.n, img: `/sheets-xs/${a5 === '5' ? id + '-a5' : id}.webp`, file: FILES.packs[`${id}-${size}`] ? '/print/' + FILES.packs[`${id}-${size}`] : '', how: 'Print & cut on SAV, laminate, kiss-cut.' }); }
@@ -175,7 +175,7 @@ function jobs(o) {
   }
   return out;
 }
-const chipsOf = o => { const c = {}; jobs(o).forEach(j => c[j.chip] = (c[j.chip] || 0) + j.q); return Object.entries(c).map(([k, n]) => `<span class="chip ${/^Skin|Keyboard|Trackpad|Bottom/.test(k) ? 'skin' : k === 'Decal' ? 'decal' : k}"><b>${n}×</b>${esc(k)}</span>`).join(''); };
+const chipsOf = o => { const c = {}; jobs(o).forEach(j => c[j.chip] = (c[j.chip] || 0) + j.q); return Object.entries(c).map(([k, n]) => `<span class="chip ${/^Skin|Keyboard|Trackpad|Bottom/.test(k) ? 'skin' : k === 'Laptop Art' ? 'decal' : k}"><b>${n}×</b>${esc(k)}</span>`).join(''); };
 const stage = o => ['cancelled', 'refunded', 'refund-review'].includes(o.status) ? 'x' : !o.paidOk ? 'wait' : ['new', 'confirmed', 'artwork', 'clarify', 'hold'].includes(o.status) ? 'todo' : o.status === 'printing' ? 'printing' : ['qc', 'ready'].includes(o.status) ? 'ready' : 'done';
 const TABS = [['todo', 'To print'], ['printing', 'Printing'], ['ready', 'QC & ready'], ['wait', 'Not paid yet'], ['done', 'Sent out']];
 
