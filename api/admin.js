@@ -6,12 +6,12 @@
 import { list, del } from '@vercel/blob';
 import { settings, saveSettings, price, cost } from './_quote.js';
 import PR from './_prices.js';
-import { json, role, forPrinter, adminName, findOrder, saveOrder, STATUSES, FLOW, payOn, paystack, confirmPayment, pushAll, allOrders, loadDocs, loadDoc, saveDoc } from './_lib.js';
+import { json, role, limited, forPrinter, adminName, findOrder, saveOrder, STATUSES, FLOW, payOn, paystack, confirmPayment, pushAll, allOrders, loadDocs, loadDoc, saveDoc } from './_lib.js';
 
 const SL = /^SL-[2-9A-Z]{5}-[a-z0-9]{4,12}$/;
 const str = (s, n) => String(s ?? '').trim().slice(0, n);
 export default async function handler(req, res) {
-  const who = role(req); if (!who) return json(res, 401, { error: 'Wrong password' });
+  const who = role(req); if (!who) return (limited(req, 'login-fail', 8, 15 * 60e3) ? json(res, 429, { error: 'Too many wrong passwords. Wait 15 minutes and try again' }) : json(res, 401, { error: 'Wrong password' }));   // easy passwords: lock a phone out after 8 wrong tries in 15 min
   const by = adminName(req), q = req.query || {}, b0 = req.body || {};
   if (q.a === 'me') return json(res, 200, { role: who, name: by });
   if (who === 'printer') return printer(req, res, by, q, b0);
@@ -19,7 +19,7 @@ export default async function handler(req, res) {
     if (q.a === 'pricing') {   // owner only: the printer's costs and our markup
       if (who !== 'owner') return json(res, 403, { error: 'Only the owner sees costs' });
       const s = await settings(), shop = [['Sticker sheet A5', PR.packs && Object.values(PR.packs)[0] ? Object.values(PR.packs)[0][1] : 30, 14.8, 21], ['Sticker sheet A4', Object.values(PR.packs || {})[0] ? Object.values(PR.packs)[0][0] : 60, 21, 29.7],
-        ['Laptop skin S (to 13.3")', PR.skin.S, 31, 22], ['Laptop skin M (14-15.6")', PR.skin.M, 36, 25], ['Laptop skin L (16-17.3")', PR.skin.L, 40, 27], ['Keyboard skin', PR.kb, 34, 23], ['Trackpad skin', PR.tp ?? 30, 12, 8], ['Vinyl decal', PR.decal, 20, 20, 'decal'],
+        ['Laptop skin S (to 13.3")', PR.skin.S, 31, 22], ['Laptop skin M (14-15.6")', PR.skin.M, 36, 25], ['Laptop skin L (16-17.3")', PR.skin.L, 40, 27], ['Keyboard skin', PR.kb, 34, 23], ['Trackpad skin', PR.tp ?? 30, 12, 8],
         [`${Math.ceil((PR.minSingles || 25) / PR.single)} single stickers (minimum order)`, Math.ceil((PR.minSingles || 25) / PR.single) * PR.single, 5.5, 5.5, 'sticker', Math.ceil((PR.minSingles || 25) / PR.single)]]
         .map(([name, sell, w, h, kind = 'sticker', n = 1]) => { const c = cost(s, w, h, n, kind); return { name, sell, w, h, n, sheet: c.sheet, cost: c.cost, calc: c.calc, profit: Math.round((sell - c.cost - s.extra) * 100) / 100, margin: Math.round((1 - (c.cost + s.extra) / sell) * 100), x: Math.round(sell / (c.cost + s.extra) * 10) / 10 }; });
       return json(res, 200, { settings: s, shop, example: q.w ? price(s, q.w, q.h, q.q, q.kind) : null });

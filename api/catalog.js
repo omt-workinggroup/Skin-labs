@@ -1,7 +1,7 @@
 // /api/catalog : the sticker packs the shop owner adds from /admin (shown live in the shop and the designer).
 // GET (public) -> { packs: [...] }. POST (admin) {action}: add | sheet | del-sticker | del-pack.
 import { put, list, del } from '@vercel/blob';
-import { json, isAdmin, latest } from './_lib.js';
+import { json, isAdmin, latest, limited } from './_lib.js';
 
 const CATS = ['xl', 'mix', 'programmers', 'gaming', 'football', 'anime', 'cartoons', 'streetwear', 'quotes', 'girly', 'marvel', 'sneakers', 'cars', 'moto', 'dark'];
 async function load() {
@@ -24,7 +24,7 @@ export default async function handler(req, res) {
     res.statusCode = 200; res.setHeader('Content-Type', 'application/json'); return res.end(JSON.stringify({ packs: c.packs.filter(p => p.items.length) }));
   }
   if (req.method !== 'POST') return json(res, 405, { error: 'GET or POST' });
-  if (!isAdmin(req)) return json(res, 401, { error: 'Wrong password' });
+  if (!isAdmin(req)) return (limited(req, 'login-fail', 8, 15 * 60e3) ? json(res, 429, { error: 'Too many wrong passwords. Wait 15 minutes and try again' }) : json(res, 401, { error: 'Wrong password' }));
   const b = req.body || {}, cat = await load();
   if (b.action === 'add') {
     let p = b.packId && cat.packs.find(x => x.id === b.packId);

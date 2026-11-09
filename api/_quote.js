@@ -2,8 +2,8 @@
 // Lives only on the server (and the owner's admin). Customers only ever get the final price; the printer never sees prices.
 import { createHash } from 'crypto';
 import { saveDoc, loadDoc } from './_lib.js';
-// Blob files are public by URL, so the settings folder name carries a secret derived from the owner key.
-const DIR = () => 'settings/pricing-' + createHash('sha256').update('pricing:' + (process.env.ADMIN_KEY || '')).digest('hex').slice(0, 20);
+// Blob files are public by URL, so the settings folder name carries a secret derived from the storage token (so changing passwords keeps the settings).
+const DIR = () => 'settings/pricing-' + createHash('sha256').update('pricing:' + (process.env.BLOB_READ_WRITE_TOKEN || '')).digest('hex').slice(0, 20);
 
 // Printer's quote per printed sheet (print & cut on SAV, laminated), Nov 2026. His public calculator says GH₵6 per sq ft.
 export const DEFAULTS = { cost: { A5: 5, A4: 10, A3: 18 }, sqft: 6, markup: 3, extra: 2, min: 25, round: 5, cut: 1.5 };

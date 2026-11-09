@@ -489,12 +489,12 @@ async function pricing() {
   const calcA = sz => Math.round({ A5: 14.8 * 21, A4: 21 * 29.7, A3: 29.7 * 42 }[sz] / 929.0304 * s.sqft * 100) / 100;
   $('#pz').outerHTML = `<div class="two">
     <div class="panel"><h2>Quick quote</h2><p class="lbl" style="text-transform:none;letter-spacing:0;font-size:13px;margin-bottom:10px">A customer asks for a size: type it in. The customer only ever hears the price on the right.</p>
-      <div class="qgrid"><label class="fl2"><span class="lbl">What</span><select id="qk"><option value="sticker">Sticker print (print & cut)</option><option value="skin">Skin (print, laminate, cut)</option><option value="decal">Vinyl decal (cut only)</option></select></label>
+      <div class="qgrid"><label class="fl2"><span class="lbl">What</span><select id="qk"><option value="sticker">Sticker print (print & cut)</option><option value="skin">Skin (print, laminate, cut)</option></select></label>
         <label class="fl2"><span class="lbl">Width cm</span><input class="inp" id="qw" type="number" inputmode="decimal" value="29.7"></label><label class="fl2"><span class="lbl">Height cm</span><input class="inp" id="qh" type="number" inputmode="decimal" value="42"></label><label class="fl2"><span class="lbl">How many</span><input class="inp" id="qq" type="number" inputmode="numeric" value="1" min="1"></label></div>
       <div class="qpre"><button class="ib" data-q="14.8,21">A5</button><button class="ib" data-q="21,29.7">A4</button><button class="ib" data-q="29.7,42">A3</button><button class="ib" data-q="5.5,5.5,10">10 singles</button><button class="ib" data-q="36,25,1,skin">15.6″ lid</button><button class="ib" data-q="12,8,1,skin">Trackpad</button></div>
       <div id="qres" class="qres"></div></div>
     <div class="panel"><h2>The printer's costs</h2><div class="qgrid">${f('A5', s.cost.A5, 'A5 sheet ₵')}${f('A4', s.cost.A4, 'A4 sheet ₵')}${f('A3', s.cost.A3, 'A3 sheet ₵')}${f('sqft', s.sqft, 'His calculator ₵/sq ft')}</div>
-      <h2 style="margin-top:16px">Our rule</h2><div class="qgrid">${f('markup', s.markup, 'Markup ×', '0.1')}${f('extra', s.extra, 'Packing, per job ₵')}${f('min', s.min, 'Lowest price ₵', '1')}${f('cut', s.cut, 'Decal cutting ×', '0.1')}
+      <h2 style="margin-top:16px">Our rule</h2><div class="qgrid">${f('markup', s.markup, 'Markup ×', '0.1')}${f('extra', s.extra, 'Packing, per job ₵')}${f('min', s.min, 'Lowest price ₵', '1')}
         <label class="fl2"><span class="lbl">Round up to</span><select id="ps-round">${[1, 5, 10].map(r => `<option ${+s.round === r ? 'selected' : ''} value="${r}">₵${r}</option>`).join('')}</select></label></div>
       <p class="lbl" style="text-transform:none;letter-spacing:0;font-size:12.5px;margin-top:8px">Price = (printer cost + packing) × markup, rounded up, never below the lowest price.${s.at ? ` Last changed ${when(s.at)} by ${esc(s.by || '')}.` : ' Using the starting values.'}</p>
       <button class="btn" id="pss" style="width:100%">Save costs</button></div></div>
@@ -515,7 +515,7 @@ async function pricing() {
   let qt; ['#qw', '#qh', '#qq', '#qk'].forEach(x => $(x).addEventListener('input', () => { clearTimeout(qt); qt = setTimeout(quote, 250); })); quote();
   app.querySelector('.qpre').onclick = e => { const b = e.target.closest('[data-q]'); if (!b) return; const [w, h, n = 1, k = 'sticker'] = b.dataset.q.split(','); $('#qw').value = w; $('#qh').value = h; $('#qq').value = n; $('#qk').value = k; quote(); };
   $('#pss').onclick = async () => { const v = k => +$('#ps-' + k).value; $('#pss').textContent = 'Saving…';
-    try { await post('pricing', { settings: { cost: { A5: v('A5'), A4: v('A4'), A3: v('A3') }, sqft: v('sqft'), markup: v('markup'), extra: v('extra'), min: v('min'), cut: v('cut'), round: v('round') } }); toast('Saved. Quotes use the new costs'); pricing(); }
+    try { await post('pricing', { settings: { cost: { A5: v('A5'), A4: v('A4'), A3: v('A3') }, sqft: v('sqft'), markup: v('markup'), extra: v('extra'), min: v('min'), round: v('round') } }); toast('Saved. Quotes use the new costs'); pricing(); }
     catch (e) { toast(e.message); $('#pss').textContent = 'Save costs'; } };
 }
 

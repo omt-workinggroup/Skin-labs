@@ -1,6 +1,6 @@
 // /api/public : customer-side helpers.
 // GET  ?a=reviews  -> approved reviews only (verified purchases: written from a delivered order's own page)
-// GET  ?a=quote&w=&h=&q=&kind=sticker|skin|decal -> an approximate price for a custom size (the price only)
+// GET  ?a=quote&w=&h=&q=&kind=sticker|skin -> an approximate price for a custom size (the price only)
 // GET  ?a=popular  -> best-selling packs, counted from real orders (no names, no numbers)
 // POST {a:'support', topic, order?, name, phone, msg}  -> support ticket, reference SUP-XXXXX
 // POST {a:'review', id, rating, text, permit, photo?, fb?} -> review of a delivered order (moderated before it shows)
@@ -21,7 +21,7 @@ export default async function handler(req, res) {
     }
     if (q.a === 'quote') {
       if (limited(req, 'quote', 120, 10 * 60e3)) return json(res, 429, { error: 'Too many tries' });
-      const kind = ['sticker', 'skin', 'decal'].includes(q.kind) ? q.kind : 'sticker', r = price(await settings(), q.w, q.h, q.q, kind);
+      const kind = ['sticker', 'skin'].includes(q.kind) ? q.kind : 'sticker', r = price(await settings(), q.w, q.h, q.q, kind);
       return json(res, 200, { w: r.w, h: r.h, q: r.q, kind, price: r.price, approx: true });
     }
     if (q.a === 'popular') {

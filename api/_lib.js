@@ -16,7 +16,6 @@ export function priceOrder(b) {
     if ((m = /^skin~([\w-]+)~([SMLC])$/.exec(k))) u = PR.skin[m[2]];
     else if (/^kb~[\w-]+$/.test(k)) u = PR.kb;
     else if (/^(ms|tp)~[\w-]+$/.test(k)) u = PR.tp ?? PR.ms;
-    else if (/^dc~[\w-]+(~w)?$/.test(k)) u = PR.decal;
     else if ((m = /^(drop-[\w-]+?)(~5)?$/.exec(k))) u = m[2] ? 30 : 60;
     else if ((m = /^([\w-]+?)(~5)?$/.exec(k)) && PR.packs[m[1]]) u = m[2] ? PR.packs[m[1]][1] : PR.packs[m[1]][0];
     if (u == null) bad.push(k); else { p.price = u; t += u * q; }

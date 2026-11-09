@@ -412,11 +412,11 @@ function vHome() {
   app.innerHTML = `<section class="sec" style="padding-top:18px">
     ${myOrders()}${lastOrder()}
     <div class="kick-row"><span>Stickers from ${CUR}3 · Accra</span><span>+1 free with every order</span></div>
-    <div class="sech hero2"><div><h1 class="h1 hero-h">Your laptop, <em>your story.</em></h1><p class="hsub">Every sticker from just ${CUR}3. Packs, skins and decals, printed in Accra.</p></div>${INS.length > 4 ? `<a class="hcol" href="#inspo" aria-label="See sticker inspiration">${[[0, -5, 0, 4], [3, 4, 34, 0], [12, -2, 56, 14]].map(([k, r, x, y]) => `<img src="inspo/sm/${INS[k].id}.${IX}" alt="" loading="lazy" style="left:${x}%;top:${y}%;transform:rotate(${r}deg)">`).join('')}<span class="lbl">Inspiration →</span></a>` : ''}</div>
+    <div class="sech hero2"><div><h1 class="h1 hero-h">Your laptop, <em>your story.</em></h1><p class="hsub">Every sticker from just ${CUR}3. Sticker packs and laptop skins, printed in Accra.</p></div>${INS.length > 4 ? `<a class="hcol" href="#inspo" aria-label="See sticker inspiration">${[[0, -5, 0, 4], [3, 4, 34, 0], [12, -2, 56, 14]].map(([k, r, x, y]) => `<img src="inspo/sm/${INS[k].id}.${IX}" alt="" loading="lazy" style="left:${x}%;top:${y}%;transform:rotate(${r}deg)">`).join('')}<span class="lbl">Inspiration →</span></a>` : ''}</div>
     <a class="hsearch" href="#search" role="search" aria-label="Search the shop"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><span>Search anime, football, gaming, coding…</span></a>
     ${freeStrip()}
     ${newDrops()}
-    <div class="seg hseg" id="h-seg"><button type="button" data-h="st">Stickers</button><button type="button" data-h="sk">Skins</button><button type="button" data-h="dc">Decals<i class="newb in">New</i></button></div>
+    <div class="seg hseg" id="h-seg"><button type="button" data-h="st">Stickers</button><button type="button" data-h="sk">Skins</button></div>
     <div id="h-grid"></div>
     ${reviewsBlock()}
     <div class="extra">
@@ -427,7 +427,8 @@ function vHome() {
   const art = (id, list) => { $(id).innerHTML = list.map(([pid, k], i) => spr(PK[pid], PK[pid].items[k], 52, `transform:rotate(${[-8, 7][i]}deg);margin-right:-12px`)).join(''); };
   if ($('#xa1')) art('#xa1', [['p3-code-languages-1', 3], ['m2-spider-verse', 2]]); 
   const hs = (k, save) => { if (save) store.set('sl-home', k); document.querySelectorAll('#h-seg [data-h]').forEach(b => b.classList.toggle('on', b.dataset.h === k));
-    $('#h-grid').innerHTML = k === 'sk' ? skinsGrid() : k === 'dc' ? decalsGrid() : catGrid(); if (k === 'sk') wireSkins($('#h-grid'));
+    if (k === 'dc') k = 'st';
+    $('#h-grid').innerHTML = k === 'sk' ? skinsGrid() : catGrid(); if (k === 'sk') wireSkins($('#h-grid'));
     if (k === 'dc') $('#h-grid').querySelectorAll('[data-dec]').forEach(a => a.onclick = e => { if (e.target.closest('[data-save]')) return; e.preventDefault(); decalSheet(a.dataset.dec); }); };
   $('#h-seg').onclick = e => { const b = e.target.closest('[data-h]'); if (b) hs(b.dataset.h, 1); }; hs(store.get('sl-home', 'st'));
   $('#x-inspo').onclick = openInspo;
@@ -986,12 +987,9 @@ function vMine() {
     if (d) { store.set('sl-mine', store.get('sl-mine', []).filter(y => y.id !== d.dataset.del)); vMine(); toast('Deleted'); } };
 }
 
-// ======================= Skin Lab 2.0: search, saved, decals, keyboard & trackpad skins, help, reviews =======================
+// ======================= Skin Lab 2.0: search, saved, keyboard & trackpad skins, help, reviews =======================
 const XP = { kb: 50, tp: 30, decal: 30 };   // keyboard-area skin, trackpad (mouse pad) skin, vinyl decal (same numbers as the server's price list)
-const DECALS = [
-  ['dc-mickey-wink', 'Mickey peeking', 'peek'], ['dc-pennywise', 'Pennywise peeking', 'peek'], ['dc-stick-push', 'Stick men pushing the trackpad', 'palm'], ['dc-goku-blast', 'Goku Kamehameha', 'palm'],
-  ['dc-axe-chase', 'Axe man chases the logo', 'lid'], ['dc-iron-blast', 'Iron Man logo blast', 'lid'], ['dc-heartbeat', 'Heartbeat line', 'palm'], ['dc-mickey-pad', 'Mickey by the trackpad', 'palm'],
-  ['dc-minions', 'Minions', 'palm'], ['dc-panda-logo', 'Panda hugs the logo', 'lid']];
+const DECALS = [];   // Skin Lab sells stickers and skins only (decals were dropped in Nov 2026; old decal orders still open in the admin)
 const DEC = Object.fromEntries(DECALS.map(d => [d[0], d]));
 const DKIND = { peek: 'Peeks over an edge', palm: 'Around the trackpad', lid: 'Plays with the lid logo' };
 const STYPE = { lap: ['Laptop skin', 'Lid'], kb: ['Keyboard skin', 'Around the keys'], tp: ['Trackpad skin', 'The touchpad'] };
@@ -1036,7 +1034,7 @@ function reviewsBlock(filterKey) {
     <div class="rl">${list.slice(0, 12).map(r => `<figure class="rv">${r.photo ? `<img src="${esc(r.photo)}" alt="Customer photo" loading="lazy">` : ''}<span class="st" aria-label="${r.rating} out of 5">${'★'.repeat(r.rating)}<i>${'★'.repeat(5 - r.rating)}</i></span>
       ${r.text ? `<blockquote>${esc(r.text)}</blockquote>` : ''}<figcaption>${esc(r.name)} · <span class="vb">✓ Verified purchase</span><br><small>${esc((r.items || []).slice(0, 2).join(' · '))} · ${new Date(r.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</small></figcaption></figure>`).join('')}</div></section>`; }
 
-// ---------- search: every pack, skin and decal, matched on names, categories, characters and themes ----------
+// ---------- search: every pack and skin, matched on names, categories, characters and themes ----------
 const CATKW = { programmers: 'coding code coder developer dev programmer python javascript js html css react node git github linux hacker tech software backend frontend', gaming: 'gamer games playstation ps5 xbox controller fortnite gta cod fifa',
   football: 'soccer footy club barca madrid messi ronaldo premier league', anime: 'manga naruto itachi one piece luffy demon slayer goku dragon ball my hero academia', cartoons: 'cartoon disney kids',
   streetwear: 'street hype drip fashion', quotes: 'quotes motivation vibes words', girly: 'girl girly cute pink aesthetic kawaii', marvel: 'superhero heroes spiderman spider-man avengers batman dc',
@@ -1058,7 +1056,7 @@ function vSearch(q0) {
     <div class="sbar"><button type="button" class="chip" id="sfo" aria-expanded="false" aria-controls="sfp">Filters<span class="ct" id="sfn"></span></button>
       <label class="ssort"><span class="lbl">Sort</span><select id="sso" aria-label="Sort results"><option value="best">Best match</option><option value="pop">Most popular</option><option value="new">Newest first</option><option value="lo">Lowest price</option><option value="hi">Highest price</option><option value="az">A to Z</option></select></label></div>
     <div class="sfp" id="sfp" hidden role="region" aria-label="Filters">
-      <div class="lbl">Product</div><div class="hs" id="sft">${[['', 'Everything'], ['pack', 'Sticker packs'], ['skin', 'Skins'], ['decal', 'Decals']].map(([k, n]) => `<button type="button" class="chip" data-v="${k}">${n}</button>`).join('')}</div>
+      <div class="lbl">Product</div><div class="hs" id="sft">${[['', 'Everything'], ['pack', 'Sticker packs'], ['skin', 'Skins']].map(([k, n]) => `<button type="button" class="chip" data-v="${k}">${n}</button>`).join('')}</div>
       <div class="lbl">Category</div><div class="hs" id="sfc"><button type="button" class="chip" data-v="">All</button>${D.cats.filter(c => !c.free).map(c => `<button type="button" class="chip" data-v="${esc(c.name)}">${esc(c.name)}</button>`).join('')}</div>
       <div class="lbl">Sheet size</div><div class="hs" id="sfz">${[['', 'Any'], ['A4', 'A5 & A4 packs'], ['A3', 'A3 pick & mix'], ['XL', 'XL centrepiece']].map(([k, n]) => `<button type="button" class="chip" data-v="${k}">${n}</button>`).join('')}</div>
       <div class="lbl">Price</div><div class="hs" id="sfm">${[[0, 'Any price'], [30, `Up to ${CUR}30`], [60, `Up to ${CUR}60`], [90, `Up to ${CUR}90`]].map(([k, n]) => `<button type="button" class="chip" data-v="${k}">${n}</button>`).join('')}</div>
@@ -1099,7 +1097,7 @@ function vSaved(shared) {
     <div class="sech"><div><h2>${shared ? 'A friend’s <em>picks</em>' : 'Saved <em>♥</em>'}</h2><p class="sub">${shared ? 'Someone shared these with you. Save the ones you like.' : 'Everything you hearted, kept on this phone.'}</p></div></div>
     ${keys.length ? `<div class="srl">${keys.map(k => itemCard(itemOf(k))).join('')}</div>
       <div class="two" style="margin-top:14px">${shared ? `<button type="button" class="btn y" id="sv-all">Save all ${keys.length}</button>` : `<button type="button" class="btn o" id="sv-share">Share my list</button><button type="button" class="btn o" id="sv-clear">Clear list</button>`}</div>`
-      : `<div class="none"><b>Nothing saved yet.</b><p>Tap the ♥ on any pack, skin or decal to keep it here.</p><a class="btn y" href="#search">Browse everything</a></div>`}</section>${footer}`;
+      : `<div class="none"><b>Nothing saved yet.</b><p>Tap the ♥ on any pack or skin to keep it here.</p><a class="btn y" href="#search">Browse everything</a></div>`}</section>${footer}`;
   if ($('#sv-all')) $('#sv-all').onclick = () => { SAVED = [...new Set([...keys, ...SAVED])].slice(0, 120); store.set('sl-saved', SAVED); savedBadge(); toast('Saved to your list'); location.hash = 'saved'; };
   if ($('#sv-share')) $('#sv-share').onclick = async () => { const u = `${location.origin}/#saved=${keys.map(encodeURIComponent).join(',')}`;
     try { if (navigator.share) await navigator.share({ title: 'My Skin Lab picks', url: u }); else { await navigator.clipboard.writeText(u); toast('Link copied'); } } catch (e) {} };
@@ -1204,15 +1202,14 @@ function alsoLike(title, list) { return list.length ? `<section class="also"><di
 
 // ---------- help centre + support tickets ----------
 const HELP = [
-  ['Ordering', [['How do I order?', 'Tap Buy now on any pack, skin or decal (or add a few things to your cart), pick your free sticker, add your name, WhatsApp number and location, and pay on Paystack. You come straight back to your order page.'],
+  ['Ordering', [['How do I order?', 'Tap Buy now on any pack or skin (or add a few things to your cart), pick your free sticker, add your name, WhatsApp number and location, and pay on Paystack. You come straight back to your order page.'],
     ['Can I pick single stickers?', `Yes. Open any pack, tap the stickers you like (${CUR}${PRICE} each) and check out. We lay them out on one Skin Lab sheet for you.`],
     ['Can I design my own laptop?', 'Yes. In Design, pick your laptop model, then place skins and stickers on the lid, keyboard area and bottom at real size. Add it to the cart when you like it.']]],
   ['Payments', [['How do I pay?', 'Online with Paystack: Mobile Money (MTN, Telecel, AirtelTigo) or a bank card. Your payment is checked with Paystack before anything is printed.'],
     ['I paid but the page says not paid', 'MoMo can take a minute. Open your order page and tap Check again: it never charges you twice. Still stuck? Report a problem below with your order number.'],
     ['Is delivery included?', 'No. You pay for the products online. Delivery or pickup is agreed with you on WhatsApp, and any delivery cost is told to you before we send.']]],
   ['Sizes & products', [['How big are the stickers?', 'Singles are about 5.5 cm. On sheets they are 2.5 to 7.5 cm. A5 is a small sheet, A4 a big sheet, A3 a pick & mix of about 84, and XL is one 18 cm centrepiece for your lid.'],
-    ['Which skin size do I need?', `Small fits up to 13.3″, Medium 14–15.6″, Large 16–17.3″. Custom (${CUR}${SKINP.C.price}) is a full wrap or your own picture.`],
-    ['What are decals?', `One-colour cut vinyl with no background (${CUR}${XP.decal}), made to sit around the trackpad, peek over an edge or play with the lid logo.`]]],
+    ['Which skin size do I need?', `Small fits up to 13.3″, Medium 14–15.6″, Large 16–17.3″. Custom (${CUR}${SKINP.C.price}) is a full wrap or your own picture.`]]],
   ['Free sticker', [['How does the free sticker work?', 'Every order gets one free sticker. Pick it at checkout. It is never charged and you can change it until you pay.']]],
   ['Delivery & tracking', [['How do I track my order?', 'Your order page shows every step with the time: payment confirmed, artwork, printing, quality check, ready, out for delivery, delivered. Find it under Your orders on the shop, or type the order number below.'],
     ['Where do you deliver?', 'We are in Accra and arrange delivery or pickup with you on WhatsApp, including to university campuses.']]],
@@ -1223,7 +1220,7 @@ function vHelp(orderRef) {
     <div class="sech"><div><h2>Help <em>centre</em></h2><p class="sub">Answers first. A real person on WhatsApp if you need one.</p></div></div>
     <form class="track" id="trk"><label for="trk-i" class="lbl">Track an order</label><div class="tr2"><input id="trk-i" placeholder="e.g. SL-ABC12" autocapitalize="characters" value="${esc(orderRef || '')}"><button class="btn y" type="submit">Track</button></div></form>
     <form class="cq" id="cq"><h3>Custom size? Get a price</h3><p class="small">A big lid sticker, a sheet of your own designs, a skin for an odd laptop. Type the size and we'll tell you roughly what it costs.</p>
-      <div class="cq-g"><div class="fld"><label for="cq-k">What</label><select id="cq-k"><option value="sticker">Stickers (print &amp; cut)</option><option value="skin">Skin</option><option value="decal">Vinyl decal</option></select></div>
+      <div class="cq-g"><div class="fld"><label for="cq-k">What</label><select id="cq-k"><option value="sticker">Stickers (print &amp; cut)</option><option value="skin">Skin</option></select></div>
         <div class="fld"><label for="cq-w">Width (cm)</label><input id="cq-w" type="number" inputmode="decimal" min="1" max="300" placeholder="e.g. 30"></div><div class="fld"><label for="cq-h">Height (cm)</label><input id="cq-h" type="number" inputmode="decimal" min="1" max="300" placeholder="e.g. 20"></div>
         <div class="fld"><label for="cq-q">How many</label><input id="cq-q" type="number" inputmode="numeric" min="1" max="500" value="1"></div></div>
       <div id="cq-r" class="cq-r" role="status" aria-live="polite"></div></form>
