@@ -1,9 +1,11 @@
 // /api/public : customer-side helpers.
 // GET  ?a=reviews  -> approved reviews only (verified purchases: written from a delivered order's own page)
+// GET  ?a=quote&w=&h=&q=&kind=sticker|skin|decal -> an approximate price for a custom size (the price only)
 // GET  ?a=popular  -> best-selling packs, counted from real orders (no names, no numbers)
 // POST {a:'support', topic, order?, name, phone, msg}  -> support ticket, reference SUP-XXXXX
 // POST {a:'review', id, rating, text, permit, photo?, fb?} -> review of a delivered order (moderated before it shows)
 import { put } from '@vercel/blob';
+import { settings, price } from './_quote.js';
 import { json, findOrder, saveOrder, pushAll, limited, ghPhone, rid, saveDoc, loadDoc, loadDocs, allOrders } from './_lib.js';
 
 const str = (s, n) => String(s ?? '').replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, n);
@@ -16,6 +18,11 @@ export default async function handler(req, res) {
       res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=120, stale-while-revalidate=600'); res.statusCode = 200; res.setHeader('Content-Type', 'application/json');
       return res.end(JSON.stringify({ reviews: all.slice(0, 60).map(r => ({ rating: r.rating, text: r.text, name: r.first, at: r.at, items: r.items, keys: r.keys, photo: r.permit ? r.photo || '' : '', verified: true })),
         count: all.length, avg: all.length ? Math.round(all.reduce((a, r) => a + r.rating, 0) / all.length * 10) / 10 : 0 }));
+    }
+    if (q.a === 'quote') {
+      if (limited(req, 'quote', 120, 10 * 60e3)) return json(res, 429, { error: 'Too many tries' });
+      const kind = ['sticker', 'skin', 'decal'].includes(q.kind) ? q.kind : 'sticker', r = price(await settings(), q.w, q.h, q.q, kind);
+      return json(res, 200, { w: r.w, h: r.h, q: r.q, kind, price: r.price, approx: true });
     }
     if (q.a === 'popular') {
       const os = (await allOrders(500)).filter(o => !['cancelled', 'refunded'].includes(o.status) && Date.now() - o.at < 120 * 864e5), n = {};

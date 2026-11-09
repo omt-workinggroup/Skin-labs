@@ -18,10 +18,11 @@ export default async function handler(req, res) {
   const singles = Array.isArray(b.singles) ? b.singles.slice(0, 300).map(s => ({ code: str(s.code, 12), q: Math.max(1, Math.min(99, +s.q || 1)), pack: str(s.pack, 60), img: /^https:\/\//.test(s.img || '') ? str(s.img, 300) : '' })) : [];
   const d = b.design && typeof b.design === 'object' ? b.design : null;
   if (!packs.length && !singles.length && !d) return json(res, 400, { error: 'The cart is empty' });
-  const design = d ? { line: str(d.line, 300), laptop: str(d.laptop, 80), packName: str(d.packName, 60), size: str(d.size, 4), n: +d.n || 0, skins: Array.isArray(d.skins) ? d.skins.slice(0, 3).map(x => str(x, 40)) : [], skinSize: /^[SMLC]$/.test(d.skinSize) ? d.skinSize : '',
+  const design = d ? { line: str(d.line, 300), laptop: str(d.laptop, 80), packName: str(d.packName, 60), size: str(d.size, 4), n: +d.n || 0, skins: Array.isArray(d.skins) ? d.skins.slice(0, 4).map(x => str(x, 40)) : [], skinSize: /^[SMLC]$/.test(d.skinSize) ? d.skinSize : '',
     layout: Array.isArray(d.layout) ? d.layout.slice(0, 300) : [], scaled: !!d.scaled, raw: d.raw && typeof d.raw === 'object' ? d.raw : null } : null;
   const pr = priceOrder({ packs, singles, design });
   if (pr.bad.length) return json(res, 400, { error: 'Something in your cart is no longer in the shop. Remove it and try again', bad: pr.bad });
+  if (pr.short) return json(res, 400, { error: `Single stickers start from GH₵${pr.minSingles} per order. Add GH₵${pr.short} more (${Math.ceil(pr.short / PR.single)} more sticker${Math.ceil(pr.short / PR.single) > 1 ? 's' : ''}), or pick a full pack`, field: 'singles', short: pr.short });
   if (design) design.skinPrice = design.skinSize ? PR.skin[design.skinSize] : 0;
   const id = newId(), dir = `orders/${id}-${secret()}`;
   if (design) {

@@ -137,6 +137,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 .pkh{display:flex;justify-content:space-between;align-items:center}.pkh button{width:40px;height:40px;font-size:18px}
 .pkn{display:grid;gap:6px}.pkn input{height:50px;background:none;border:1px solid var(--line2);color:#fff;font:16px var(--body);padding:0 14px;outline:none}
 .pki{min-height:200px;display:grid;place-items:center;background:#151515}.pki img{width:100%;display:block}
+.skpart{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-bottom:10px}.skpart button{display:grid;gap:2px;text-align:left;padding:10px 12px;border:1px solid var(--line2);border-radius:10px;background:transparent;color:inherit;min-width:0}.skpart button b{font-size:13px}.skpart button small{font-size:11px;opacity:.65;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.skpart button.on{border-color:#FFD21F;background:rgba(255,210,31,.1)}
 .skz{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.skz button{display:grid;gap:1px;text-align:left;padding:10px 12px;border:1px solid var(--line2)}.skz button.on{background:#fff;color:#000;border-color:#fff}.skz b{font-size:14.5px;font-weight:600}.skz small{font-size:11px;opacity:.7}.skz i{font-style:normal;font-weight:700;font-size:15px;margin-top:3px}
 </style>
 <script type="importmap">{"imports":{"three":"/vendor/three/three.module.min.js"}}</script>
@@ -186,9 +187,11 @@ const SOLID = [['s-black', 'Matte black', '#121213'], ['s-white', 'Gloss white',
 
 // ---------- state ----------
 let L = null, col = '', surf = 'lid', sel = -1, lidA = 108, hist = [], skinSize = '';
+const PADP = 30;
 const SKINP = { S: { name: 'Small', fit: 'up to 13.3″', price: 70 }, M: { name: 'Medium', fit: '14″ – 15.6″', price: 80 }, L: { name: 'Large', fit: '16″ – 17.3″', price: 90 }, C: { name: 'Custom', fit: 'full wrap or own picture', price: 120 } };
 const skinFor = inch => !inch ? 'M' : inch <= 13.5 ? 'S' : inch <= 15.7 ? 'M' : 'L';
-const items = { lid: [], kb: [], bot: [] }, skin = { lid: '', kb: '', bot: '' };
+const items = { lid: [], kb: [], bot: [] }, skin = { lid: '', kb: '', bot: '', pad: '' };
+let part = 'kb', PADR = null;   // part: on the keyboard surface, skin the keyboard area or just the trackpad
 const SN = { lid: 'Lid', kb: 'Keyboard', bot: 'Bottom' };
 
 // ---------- step 1: find your laptop ----------
@@ -260,7 +263,10 @@ async function paintBase(s) {
   if (L.style !== 'mac' && ['budget', 'game', 'biz', 'chrome'].includes(L.style)) { g.fillStyle = grain(g, light); g.fillRect(0, 0, W, H); }
   if (s === 'lid') { if (skin.lid) await paintSkin(g, skin.lid, W, H); else lidMark(g, W, H, light); }
   if (s === 'bot') { await paintSkin(g, skin.bot, W, H); bottom(g, W, H, light); }
-  if (s === 'kb') { await paintSkin(g, skin.kb, W, H); keyboard(g, W, H, light); }
+  if (s === 'kb') { await paintSkin(g, skin.kb, W, H); keyboard(g, W, H, light);
+    if (skin.pad && PADR) { const [x, y, w, h] = PADR; g.save(); rr(g, x, y, w, h, W * .012); g.clip(); const c = document.createElement('canvas'); c.width = Math.ceil(w); c.height = Math.ceil(h);
+      await paintSkin(c.getContext('2d'), skin.pad, c.width, c.height); g.drawImage(c, x, y); g.restore();
+      g.strokeStyle = light ? 'rgba(0,0,0,.22)' : 'rgba(255,255,255,.22)'; g.lineWidth = W * .0016; rr(g, x, y, w, h, W * .012); g.stroke(); } }
 }
 function paintNow(s) { if (!BASE[s]) return; const old = TX[s].image; TX[s].image = BASE[s]; BASE[s] = old; TX[s].needsUpdate = true; kick(); }   // swap canvases: no 2048 px copy
 async function paint(s) { PT('paint-' + s); await paintBase(s); PT('base-' + s); paintNow(s); syncStickers(s); if (s === 'lid' && mode === 'ph') phLid(); }
@@ -344,7 +350,7 @@ function keyboard(g, W, H, light) {
   if (L.style === 'game') { g.fillStyle = 'rgba(42,216,255,.28)'; g.fillRect(kx, ky + kh + H * .01, kw, H * .004); }
   const tw = W * (mac ? .42 : .3), th = H * (mac ? .33 : .3), tx = (W - tw) / 2 - (pad ? W * .07 : 0), ty = H * .64;
   const tg = g.createLinearGradient(0, ty, 0, ty + th); tg.addColorStop(0, light ? 'rgba(0,0,0,.05)' : 'rgba(255,255,255,.06)'); tg.addColorStop(1, light ? 'rgba(0,0,0,.09)' : 'rgba(255,255,255,.03)');
-  g.fillStyle = tg; g.strokeStyle = light ? 'rgba(0,0,0,.16)' : 'rgba(255,255,255,.14)'; g.lineWidth = W * .0012; rr(g, tx, ty, tw, th, W * .012); g.fill(); g.stroke();
+  g.fillStyle = tg; g.strokeStyle = light ? 'rgba(0,0,0,.16)' : 'rgba(255,255,255,.14)'; g.lineWidth = W * .0012; rr(g, tx, ty, tw, th, W * .012); g.fill(); g.stroke(); PADR = [tx, ty, tw, th];
   if (L.name.startsWith('ThinkPad')) { g.fillStyle = '#c4161c'; g.beginPath(); g.arc(kx + mainW * .515, ky + rh * 3.9, H * .011, 0, 7); g.fill();
     g.fillStyle = cap[1]; [-1, 0, 1].forEach(i => { rr(g, W / 2 - W * .1 + (i + 1) * W * .067, ty - H * .045, W * .062, H * .03, H * .008); g.fill(); }); }
   if (!mac && L.style !== 'chrome') { g.fillStyle = light ? 'rgba(0,0,0,.35)' : 'rgba(255,255,255,.35)'; g.font = `600 ${W * .011}px Geist, sans-serif`; g.textAlign = 'left'; g.fillText(L.brand === 'Lenovo' && L.name.startsWith('ThinkPad') ? 'ThinkPad' : L.brand, W * .05, H * .95); }
@@ -744,16 +750,18 @@ function pane() {
       items[surf].push(o); sel = items[surf].length - 1; refresh(); popIn([o], surf);
       if (toPhotoOrGL()) return; if (!idle && !tween) {} else go(surf); };
   } else if (tab === 'skins') {
-    warmSkins();
-    p.innerHTML = `<div class="skins" id="sk"><button class="sk ${!skin[surf] ? 'on' : ''}" data-x=""><span style="display:grid;place-items:center;color:#777">∅</span><span class="lbl">No skin</span></button>
-      ${PHOTO.map(([id, n]) => `<button class="sk ${skin[surf] === id ? 'on' : ''}" data-x="${id}"><span style="background-image:url(/skins/${id}-s.${IX})"></span><span class="lbl">${n}</span></button>`).join('')}
-      ${SOLID.map(([id, n, c]) => `<button class="sk ${skin[surf] === id ? 'on' : ''}" data-x="${id}"><span style="background:${c}"></span><span class="lbl">${n}</span></button>`).join('')}</div>
-      <p class="lbl" style="text-transform:none;letter-spacing:0;font-family:var(--body);font-size:12.5px">Covers the whole ${SN[surf].toLowerCase()}. Stickers sit on top.</p>
-      <div class="lbl" style="margin-top:4px">Skin size</div><div class="skz" id="skz">${Object.entries(SKINP).map(([k, t]) => `<button data-z="${k}" class="${k === skinSize ? 'on' : ''}"><b>${t.name}</b><small>${t.fit}</small><i>GH₵${t.price}</i></button>`).join('')}</div>
-      <p class="lbl" style="text-transform:none;letter-spacing:0;font-family:var(--body);font-size:12.5px">${L.scr}″ laptop · we picked ${SKINP[skinFor(L.scr)].name} for you. Custom is a full wrap (lid, keyboard area and bottom) or your own picture.</p>`;
-    $('#skz').onclick = e => { const b = e.target.closest('[data-z]'); if (b) { skinSize = b.dataset.z; save3(); pane(); } };
+    warmSkins(); const tg = surf === 'kb' && part === 'pad' ? 'pad' : surf;
+    p.innerHTML = `${surf === 'kb' ? `<div class="skpart" id="skp" role="tablist" aria-label="What to skin"><button role="tab" data-p="kb" class="${tg === 'kb' ? 'on' : ''}" aria-selected="${tg === 'kb'}"><b>Keyboard area</b><small>palm rest, round the keys</small></button><button role="tab" data-p="pad" class="${tg === 'pad' ? 'on' : ''}" aria-selected="${tg === 'pad'}"><b>Trackpad</b><small>the mouse pad · GH₵${PADP}</small></button></div>` : ''}
+      <div class="skins" id="sk"><button class="sk ${!skin[tg] ? 'on' : ''}" data-x=""><span style="display:grid;place-items:center;color:#777">∅</span><span class="lbl">No skin</span></button>
+      ${PHOTO.map(([id, n]) => `<button class="sk ${skin[tg] === id ? 'on' : ''}" data-x="${id}"><span style="background-image:url(/skins/${id}-s.${IX})"></span><span class="lbl">${n}</span></button>`).join('')}
+      ${SOLID.map(([id, n, c]) => `<button class="sk ${skin[tg] === id ? 'on' : ''}" data-x="${id}"><span style="background:${c}"></span><span class="lbl">${n}</span></button>`).join('')}</div>
+      <p class="lbl" style="text-transform:none;letter-spacing:0;font-family:var(--body);font-size:12.5px">${tg === 'pad' ? 'Covers just the trackpad (the mouse pad below the keys). It still clicks and swipes as normal.' : `Covers the whole ${SN[surf].toLowerCase()}. Stickers sit on top.`}</p>
+      ${tg === 'pad' ? '' : `<div class="lbl" style="margin-top:4px">Skin size</div><div class="skz" id="skz">${Object.entries(SKINP).map(([k, t]) => `<button data-z="${k}" class="${k === skinSize ? 'on' : ''}"><b>${t.name}</b><small>${t.fit}</small><i>GH₵${t.price}</i></button>`).join('')}</div>
+      <p class="lbl" style="text-transform:none;letter-spacing:0;font-family:var(--body);font-size:12.5px">${L.scr}″ laptop · we picked ${SKINP[skinFor(L.scr)].name} for you. Custom is a full wrap (lid, keyboard area and bottom) or your own picture.</p>`}`;
+    if ($('#skp')) $('#skp').onclick = e => { const b = e.target.closest('[data-p]'); if (b) { part = b.dataset.p; pane(); } };
+    if ($('#skz')) $('#skz').onclick = e => { const b = e.target.closest('[data-z]'); if (b) { skinSize = b.dataset.z; save3(); pane(); } };
     $('#sk').addEventListener('pointerdown', e => { const b = e.target.closest('[data-x]'); if (b && b.dataset.x.startsWith('ph-')) skinImg(b.dataset.x); });   // start decoding on touch, before the tap ends
-    $('#sk').onclick = e => { const b = e.target.closest('[data-x]'); if (!b) return; snap(); skin[surf] = b.dataset.x; document.querySelectorAll('#sk .sk').forEach(x => x.classList.toggle('on', x === b)); paint(surf); if (!toPhotoOrGL()) go(surf); };
+    $('#sk').onclick = e => { const b = e.target.closest('[data-x]'); if (!b) return; snap(); skin[tg] = b.dataset.x; document.querySelectorAll('#sk .sk').forEach(x => x.classList.toggle('on', x === b)); paint(surf); if (!toPhotoOrGL()) go(surf); };
   } else {
     p.innerHTML = `<div class="lbl" style="margin-bottom:10px">Colours this model comes in</div><div class="cols" id="cl">${L.cols.map(c => `<button class="${c === col ? 'on' : ''}" data-c="${c}"><i style="background:${LCOL[c]}"></i>${c[0].toUpperCase() + c.slice(1)}</button>`).join('')}</div>`;
     $('#cl').onclick = e => { const b = e.target.closest('[data-c]'); if (!b) return; col = b.dataset.c; build(); pane(); };
@@ -767,7 +775,7 @@ const st = LL ? null : store.get('sl-design3', null);
 if (st && st.skin) Object.assign(skin, st.skin);
 if (st && st.skinSize && SKINP[st.skinSize]) skinSize = st.skinSize;
 if (LL) { L = LL; col = L.cols.includes(fromLink.c) ? fromLink.c : L.cols[0]; for (const k in items) items[k] = ((fromLink.i || {})[k] || []).filter(o => CODE[o[0]]).map(([c, x, y, sz, r]) => ({ c, x, y, s: sz, r }));
-  Object.assign(skin, { lid: '', kb: '', bot: '', ...(fromLink.k || {}) }); vEditor(); toast('Design from an order'); } else if (st && LAPS[st.i] && location.hash !== '#pick') { L = LAPS[st.i]; col = L.cols.includes(st.col) ? st.col : L.cols[0];
+  Object.assign(skin, { lid: '', kb: '', bot: '', pad: '', ...(fromLink.k || {}) }); vEditor(); toast('Design from an order'); } else if (st && LAPS[st.i] && location.hash !== '#pick') { L = LAPS[st.i]; col = L.cols.includes(st.col) ? st.col : L.cols[0];
   for (const k in items) items[k] = (st.items && st.items[k] || []).filter(o => CODE[o.c]); Object.assign(skin, st.skin || {}); vEditor(); } else { vPick(); warmGL(); } warmGL();
 addEventListener('hashchange', () => { if (location.hash === '#pick') vPick(); });
 fetch('/free/free.json').then(r => r.ok ? r.json() : null).then(f => { if (!f) return; try { localStorage.setItem('sl-free-cat', JSON.stringify(f)); } catch (e) {} if (addFree(f) && $('#tray')) { ccat = 'free'; cpack = 'free-stickers'; pane(); } }).catch(() => {});

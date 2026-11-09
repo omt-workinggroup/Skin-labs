@@ -105,6 +105,14 @@ textarea.msg{min-height:96px;font:14px/1.5 Geist,sans-serif;resize:vertical}
 .np{display:grid;gap:8px}.np input{min-height:46px;background:var(--s1);border:1px solid var(--line2);border-radius:var(--rad2);color:#fff;padding:0 12px;font-size:15px;width:100%}.np input[type=color]{width:48px;min-height:32px;height:32px;padding:0;border:0}
 .go{min-height:52px;background:var(--fg);color:#000;font-weight:600;border-radius:var(--rad2)}.go:disabled{opacity:.4}
 .pkx{background:var(--s1);border:1px solid var(--line);border-radius:var(--rad);padding:12px;margin-bottom:12px;display:grid;gap:10px}.pkh{display:grid;grid-template-columns:90px minmax(0,1fr);gap:12px;align-items:start}.pkh img{width:90px;display:block;border-radius:8px}.pkh b{display:block;font-size:17px}.row2{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+/* pricing (owner) */
+.qgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}.fl2{display:grid;gap:4px}.fl2 .inp,.fl2 select{min-height:44px}
+.qpre{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}.qpre .ib{min-height:34px;font-size:12.5px}
+.qbig{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin:6px 0 8px}.qbig>div{background:var(--s2);border-radius:var(--rad2);padding:10px 12px;display:grid;gap:2px}
+.qbig b{font-size:24px;font-weight:600;letter-spacing:-.02em}.qbig>div:first-child b{color:var(--y);font-size:30px}.qbig b.dim{color:#a1a1aa}.qbig b.g{color:var(--g)}.qbig small{color:var(--mute);font-size:12px}
+.tblw{overflow-x:auto;margin:0 calc(-1*16px);padding:0 16px}.tbl{width:100%;border-collapse:collapse;font-size:13.5px;min-width:560px}.tbl th{text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);font-weight:500;padding:8px 8px 8px 0;border-bottom:1px solid var(--line2)}
+.tbl td{padding:10px 8px 10px 0;border-bottom:1px solid var(--line);vertical-align:top}.tbl td small{display:block;color:var(--mute);font-size:11.5px}.tbl td.ok{color:var(--g)}.tbl td.lo{color:var(--o)}
+.fb p{font-size:14px;line-height:1.55;color:#d4d4d8;margin-top:10px}.fb p:first-child{margin-top:0}.fb b{color:#fff}
 </style></head><body>
 <div id="app"></div><div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 <script>
@@ -120,12 +128,12 @@ const ST = { new: 'New', confirmed: 'Confirmed', artwork: 'Artwork', printing: '
   clarify: 'Needs clarification', hold: 'On hold', 'failed-delivery': 'Delivery failed', cancelled: 'Cancelled', 'refund-review': 'Refund in progress', refunded: 'Refunded',
   paid: 'Paid (Paystack)', 'payment-mismatch': 'Payment mismatch', 'customer-note': 'Customer note updated', 'refund-failed': 'Refund failed' };
 const STAGE = { todo: ['new'], prod: ['confirmed', 'artwork', 'printing', 'qc'], ship: ['ready', 'on-the-way'], done: ['delivered'], issues: ['clarify', 'hold', 'failed-delivery', 'refund-review'], closed: ['cancelled', 'refunded'] };
-let view = 'orders', orders = [], filter = 'todo', payFilter = '', q = '', PAYON = false, seen = new Set(JSON.parse(ls('sl-admin-seen') || '[]')), timer = 0, tickets = null, reviews = null;
+let ROLE = 'owner', view = 'orders', orders = [], filter = 'todo', payFilter = '', q = '', PAYON = false, seen = new Set(JSON.parse(ls('sl-admin-seen') || '[]')), timer = 0, tickets = null, reviews = null;
 const ago = t => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : new Date(t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }); };
 const when = t => new Date(t).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 const cedi = n => '₵' + (Math.round((n || 0) * 100) / 100).toLocaleString('en-GB');
 const first = n => (n || '').split(' ')[0];
-const kind = k => /^skin~/.test(k) ? 'laptop skin' : /^kb~/.test(k) ? 'keyboard skin' : /^ms~/.test(k) ? 'mouse skin' : /^dc~/.test(k) ? 'vinyl decal' : 'sticker sheet';
+const kind = k => /^skin~/.test(k) ? 'laptop skin' : /^kb~/.test(k) ? 'keyboard skin' : /^(ms|tp)~/.test(k) ? 'trackpad skin' : /^dc~/.test(k) ? 'vinyl decal' : 'sticker sheet';
 const what = o => [o.design ? `${o.design.packName || 'Custom pack'} (${o.design.size || '–'}, ${o.design.n} stickers)` : '', ...(o.packs || []).map(p => `${p.q}× ${p.label}`), (o.singles || []).length ? `${o.singles.reduce((a, s) => a + s.q, 0)} singles` : ''].filter(Boolean).join(' · ');
 const payPill = o => o.paid ? `<span class="pill paid">✓ Paid</span>` : o.payIssue ? `<span class="pill unpaid">⚠ Check payment</span>` : PAYON && !['cancelled', 'refunded'].includes(o.status) ? `<span class="pill unpaid">Unpaid</span>` : '';
 async function api(path, opt = {}) {
@@ -144,21 +152,23 @@ function login(msg) {
   $('#go').onclick = go; $('#pw').onkeydown = e => { if (e.key === 'Enter') go(); }; $('#pw').focus();
 }
 async function load(isFirst) {
-  try { const j = await api('/api/admin/?a=orders'); const before = new Set(orders.map(o => o.id)); orders = j.orders; PAYON = !!j.pay;
+  try { if (isFirst) { const me = await api('/api/admin/?a=me'); ROLE = me.role;
+      if (ROLE === 'printer') { ls('sl-print', KEY()); ls('sl-print-name', ME()); ls('sl-admin', null); location.replace('/printer/'); return; } }
+    const j = await api('/api/admin/?a=orders'); const before = new Set(orders.map(o => o.id)); orders = j.orders; PAYON = !!j.pay;
     const fresh = orders.filter(o => !before.has(o.id) && before.size);
     if (fresh.length) { ding(); toast(`${fresh.length} new order${fresh.length > 1 ? 's' : ''}`); }
     if (isFirst) { const h = decodeURIComponent(location.hash.slice(1)); route(h); clearInterval(timer); timer = setInterval(() => load(), 25000); }
     else if (view === 'orders' && !$('.dv')) list(); else badge();
   } catch (e) { if (e.code === 401) { ls('sl-admin', null); login('Wrong password'); } else if (isFirst) login(e.message); }
 }
-function route(h) { if (h === 'stickers') stickers(); else if (h === 'payments') payments(); else if (h === 'support') support(true); else if (h === 'reviews') reviewsView(true); else { list(); if (/^SL-/.test(h)) open(h); } }
+function route(h) { if (h === 'stickers' && ROLE === 'owner') stickers(); else if (h === 'pricing' && ROLE === 'owner') pricing(); else if (h === 'payments') payments(); else if (h === 'support') support(true); else if (h === 'reviews') reviewsView(true); else { list(); if (/^SL-/.test(h)) open(h); } }
 function ding() { try { const c = new (window.AudioContext || window.webkitAudioContext)(), o = c.createOscillator(), g = c.createGain(); o.frequency.value = 880; o.connect(g); g.connect(c.destination); g.gain.setValueAtTime(.2, c.currentTime); g.gain.exponentialRampToValueAtTime(.001, c.currentTime + .6); o.start(); o.stop(c.currentTime + .6); } catch (e) {} try { navigator.vibrate && navigator.vibrate([80, 60, 80]); } catch (e) {} }
 function badge() { const n = orders.filter(o => o.status === 'new').length; document.title = (n ? `(${n}) ` : '') + 'Orders · Skin Lab admin'; }
 
 // ---------- top bar ----------
 const topbar = v => { const nNew = orders.filter(o => o.status === 'new').length, nOpen = tickets ? tickets.filter(t => t.status !== 'resolved').length : 0, nRev = reviews ? reviews.filter(r => r.status === 'pending').length : 0;
-  return `<header class="top"><div class="row"><b class="brand">Skin Lab<span>admin</span></b><div class="me"><span class="who" title="Changes are recorded under this name">${esc(ME())}</span><button class="ib" id="lo" aria-label="Log out">Log out</button></div></div>
-  <nav class="nav" aria-label="Sections">${[['orders', 'Orders', nNew], ['payments', 'Payments', 0], ['support', 'Support', nOpen], ['reviews', 'Reviews', nRev], ['stickers', 'Stickers', 0]].map(([k, n, c]) => `<button class="${v === k ? 'on' : ''}" data-v="${k}">${n}${c ? `<i>${c}</i>` : ''}</button>`).join('')}</nav></header>`; };
+  return `<header class="top"><div class="row"><b class="brand">Skin Lab<span>admin</span></b><div class="me"><span class="who" title="Changes are recorded under this name">${esc(ME())}${ROLE !== 'owner' ? ` · ${ROLE}` : ''}</span><button class="ib" id="lo" aria-label="Log out">Log out</button></div></div>
+  <nav class="nav" aria-label="Sections">${[['orders', 'Orders', nNew], ['payments', 'Payments', 0], ['support', 'Support', nOpen], ['reviews', 'Reviews', nRev], ...(ROLE === 'owner' ? [['pricing', 'Pricing', 0], ['stickers', 'Stickers', 0]] : [])].map(([k, n, c]) => `<button class="${v === k ? 'on' : ''}" data-v="${k}">${n}${c ? `<i>${c}</i>` : ''}</button>`).join('')}</nav></header>`; };
 function wireTop() {
   app.querySelector('.nav').onclick = e => { const b = e.target.closest('[data-v]'); if (!b) return; history.replaceState(null, '', b.dataset.v === 'orders' ? location.pathname : '#' + b.dataset.v); route(b.dataset.v); };
   $('#lo').onclick = () => { if (!confirm('Log out of the admin?')) return; ls('sl-admin', null); login(); };
@@ -200,7 +210,7 @@ function list() {
     <div class="tools"><input class="srch" id="q" placeholder="Search name, number, order, product…" value="${esc(q)}" aria-label="Search orders">
       ${PAYON ? `<select id="pf" aria-label="Payment" style="flex:0 0 150px"><option value="">Paid & unpaid</option><option value="paid" ${payFilter === 'paid' ? 'selected' : ''}>Paid only</option><option value="unpaid" ${payFilter === 'unpaid' ? 'selected' : ''}>Unpaid only</option></select>` : ''}</div>
     <div class="list">${show.length ? show.map(o => { const pic = o.design && (o.design.sheet || o.design.mock);
-      const pp = !pic && !(o.picks && o.picks.sheet) && (o.packs || [])[0], img = pic || (o.picks && o.picks.sheet) || (pp ? (/^dc~/.test(pp.key) ? `/decals/${pp.key.slice(3)}-s.webp` : /^(skin|kb|ms)~/.test(pp.key) ? `/skins/${pp.key.split('~')[1]}-s.webp` : `/sheets-xs/${pp.key.replace('~5', '-a5')}.webp`) : '');
+      const pp = !pic && !(o.picks && o.picks.sheet) && (o.packs || [])[0], img = pic || (o.picks && o.picks.sheet) || (pp ? (/^dc~/.test(pp.key) ? `/decals/${pp.key.slice(3)}-s.webp` : /^(skin|kb|tp|ms)~/.test(pp.key) ? `/skins/${pp.key.split('~')[1]}-s.webp` : `/sheets-xs/${pp.key.replace('~5', '-a5')}.webp`) : '');
       return `<button class="card ${o.status === 'new' && !seen.has(o.id) ? 'new' : ''}" data-id="${o.id}"><span class="pic" ${img ? `style="background-image:url('${esc(img)}')"` : ''}>${img ? '' : 'SINGLES'}</span>
         <span class="body"><span class="meta"><b class="nm">${esc(o.name)}</b><span class="pills"><span class="pill ${o.status}">${ST[o.status] || o.status}</span></span></span>
         <p>${esc(o.id)} · ${ago(o.at)}${o.loc ? ' · ' + esc(o.loc) : ''}</p><p class="what">${esc(what(o))}</p>
@@ -253,7 +263,7 @@ function open(id) {
         ${d && d.sheet ? `<a href="${esc(d.sheet)}" target="_blank" rel="noopener"><img src="${esc(d.sheet)}" alt=""><small>${esc(d.packName || 'Custom pack')} · ${esc(d.size)} sheet${d.scaled ? ' · scaled' : ''}</small></a>` : ''}${d && d.mock ? `<a href="${esc(d.mock)}" target="_blank" rel="noopener"><img src="${esc(d.mock)}" alt=""><small>${esc(d.laptop)}</small></a>` : ''}</div></div>` : ''}
       <div class="panel"><h2>What they ordered</h2><div class="rows">
         ${d ? `<div><span>${esc(d.packName || 'Custom pack')}<br><small>${d.n ? `${esc(d.size)} sheet · ${d.n} stickers` : 'no stickers'}</small></span><b>${cedi(d.n * 3)}</b></div>${d.skins && d.skins.length ? `<div><span>${esc(d.skins.join(', '))} skin<br><small>${({ S: 'Small', M: 'Medium', L: 'Large', C: 'Custom' }[d.skinSize] || '')} · ${esc(d.laptop)}</small></span><b>${d.skinPrice ? cedi(d.skinPrice) : '–'}</b></div>` : ''}` : ''}
-        ${(o.packs || []).map(p => `<div><span class="sgl">${/^dc~/.test(p.key) ? `<img src="/decals/${esc(p.key.slice(3))}-s.webp" alt="">` : /^(skin|kb|ms)~/.test(p.key) ? `<img src="/skins/${esc(p.key.split('~')[1])}-s.webp" alt="">` : ''}<span>${esc(p.label)}<br><small>${kind(p.key)}${p.n ? ' · ' + p.n + ' stickers' : ''}</small></span></span><b>${p.q} × ${cedi(p.price)}</b></div>`).join('')}
+        ${(o.packs || []).map(p => `<div><span class="sgl">${/^dc~/.test(p.key) ? `<img src="/decals/${esc(p.key.slice(3))}-s.webp" alt="">` : /^(skin|kb|tp|ms)~/.test(p.key) ? `<img src="/skins/${esc(p.key.split('~')[1])}-s.webp" alt="">` : ''}<span>${esc(p.label)}<br><small>${kind(p.key)}${p.n ? ' · ' + p.n + ' stickers' : ''}</small></span></span><b>${p.q} × ${cedi(p.price)}</b></div>`).join('')}
         ${o.free ? `<div><span class="sgl"><img src="${esc(o.free.img || `/free/${o.free.code}.webp`)}" alt=""><span>${esc(o.free.code)} · ${esc(o.free.name)}<br><small>free sticker${o.free.onDesign ? ' · on their laptop design' : ''}</small></span></span><b>FREE</b></div>` : ''}
         ${(o.singles || []).map(s => ({ ...s, img: s.img || (/^[A-Z]{3}-\d{3}$/.test(s.code) ? `/hd/${s.code}.avif` : '') })).map(s => `<div><span class="sgl">${s.img ? `<a href="${esc(s.img)}" target="_blank" rel="noopener"><img src="${esc(s.img)}" alt=""></a>` : ''}<span>${esc(s.code)}<br><small>${esc(s.pack)}</small></span></span><b>× ${s.q}</b></div>`).join('')}
         <div><b>Total</b><b>${cedi(o.total)}${o.clientTotal !== undefined ? `<br><small>browser said ${cedi(o.clientTotal)}</small>` : ''}</b></div></div>
@@ -269,7 +279,7 @@ function open(id) {
       <div class="panel"><h2>Internal notes</h2>${(o.notes || []).map(n => `<div class="note">${esc(n.t)}<small>${esc(n.by)} · ${when(n.at)}</small></div>`).join('') || '<p class="lbl">No notes yet</p>'}
         <textarea class="msg" id="inn" placeholder="Only the team sees this" style="margin-top:10px;min-height:70px" aria-label="Internal note"></textarea><button class="btn" id="ins">Add note</button></div>
       <div class="panel"><h2>History</h2><div class="hist">${(o.history || []).slice().reverse().map(h => `<div><span><b>${esc(ST[h.s] || h.s)}</b>${h.note ? ` · ${esc(h.note)}` : ''}<small>${when(h.at)}${h.by ? ' · ' + esc(h.by) : ''}</small></span></div>`).join('')}</div></div>
-      <button class="btn" id="del" style="width:100%;color:var(--r);border-color:rgba(248,113,113,.35);margin-top:20px">Delete this order</button>
+      ${ROLE === 'owner' ? '' : '<!--'}<button class="btn" id="del" style="width:100%;color:var(--r);border-color:rgba(248,113,113,.35);margin-top:20px">Delete this order</button>${ROLE === 'owner' ? '' : '-->'}
     </div></div></div>`;
   document.body.appendChild(v); document.body.style.overflow = 'hidden'; $('#bk').focus();
   const wa = () => { $('#wa').href = `https://wa.me/${o.phone}?text=${encodeURIComponent($('#msg').value)}`; }; wa(); $('#msg').oninput = wa;
@@ -277,7 +287,7 @@ function open(id) {
   const reopen = j => { Object.assign(o, j.order); v.remove(); document.body.style.overflow = ''; open(o.id); };
   $('#bk').onclick = close; v.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
   if ($('#cpl')) $('#cpl').onclick = () => { navigator.clipboard.writeText(printList).then(() => toast('Copied')); };
-  $('#del').onclick = async () => { if (!confirm(`Delete order ${o.id} from ${o.name}? This can't be undone.`)) return;
+  if ($('#del')) $('#del').onclick = async () => { if (!confirm(`Delete order ${o.id} from ${o.name}? This can't be undone.`)) return;
     try { await post('delete', { id: o.id }); orders = orders.filter(x => x.id !== o.id); close(); toast('Deleted'); } catch (x) { toast(x.message); } };
   const setStatus = async (s, force) => { try { const j = await post('status', { id: o.id, status: s, force }); reopen(j); $('#msg').value = (MSG[o.status] || MSG.new)(o); wa(); toast(ST[o.status]); }
     catch (x) { if (x.j && x.j.needConfirm && confirm(x.message)) return setStatus(s, true); toast(x.message); } };
@@ -468,6 +478,45 @@ function drawStickers() {
   box.querySelectorAll('[data-dels]').forEach(b => b.onclick = async () => { if (!confirm(`Delete sticker ${b.dataset.dels}?`)) return; await api('/api/catalog/', { method: 'POST', body: JSON.stringify({ action: 'del-sticker', code: b.dataset.dels }) }); toast('Deleted'); stickers(); });
   box.querySelectorAll('[data-delp]').forEach(b => b.onclick = async () => { const p = drops.find(x => x.id === b.dataset.delp); if (!confirm(`Delete the whole pack “${p.name}” (${p.items.length} stickers)?`)) return; await api('/api/catalog/', { method: 'POST', body: JSON.stringify({ action: 'del-pack', packId: p.id }) }); toast('Pack deleted'); stickers(); });
   box.querySelectorAll('[data-sheet]').forEach(b => b.onclick = async () => { const p = drops.find(x => x.id === b.dataset.sheet); b.textContent = 'Making…'; try { const sh = await makeSheet(p); await api('/api/catalog/', { method: 'POST', body: JSON.stringify({ action: 'sheet', packId: p.id, img: sh.img, w: sh.w, h: sh.h }) }); toast('Sheet updated'); stickers(); } catch (x) { toast(x.message); b.textContent = 'Remake sheet'; } });
+}
+
+// ---------- pricing (owner only): the printer's costs -> our prices. Customers and the printer never see this ----------
+let PRS = null;
+async function pricing() {
+  view = 'pricing'; app.innerHTML = `${topbar('pricing')}<div class="w"><span class="lbl">Only you see this page</span><h1>Costs & <em>prices.</em></h1><div id="pz" class="lbl" style="margin-top:20px">Loading…</div></div>`; wireTop();
+  try { PRS = await api('/api/admin/?a=pricing'); } catch (e) { $('#pz').textContent = e.message; return; }
+  const s = PRS.settings, f = (k, v, l, step = '0.5') => `<label class="fl2"><span class="lbl">${l}</span><input class="inp" type="number" inputmode="decimal" step="${step}" min="0" id="ps-${k}" value="${v}"></label>`;
+  const calcA = sz => Math.round({ A5: 14.8 * 21, A4: 21 * 29.7, A3: 29.7 * 42 }[sz] / 929.0304 * s.sqft * 100) / 100;
+  $('#pz').outerHTML = `<div class="two">
+    <div class="panel"><h2>Quick quote</h2><p class="lbl" style="text-transform:none;letter-spacing:0;font-size:13px;margin-bottom:10px">A customer asks for a size: type it in. The customer only ever hears the price on the right.</p>
+      <div class="qgrid"><label class="fl2"><span class="lbl">What</span><select id="qk"><option value="sticker">Sticker print (print & cut)</option><option value="skin">Skin (print, laminate, cut)</option><option value="decal">Vinyl decal (cut only)</option></select></label>
+        <label class="fl2"><span class="lbl">Width cm</span><input class="inp" id="qw" type="number" inputmode="decimal" value="29.7"></label><label class="fl2"><span class="lbl">Height cm</span><input class="inp" id="qh" type="number" inputmode="decimal" value="42"></label><label class="fl2"><span class="lbl">How many</span><input class="inp" id="qq" type="number" inputmode="numeric" value="1" min="1"></label></div>
+      <div class="qpre"><button class="ib" data-q="14.8,21">A5</button><button class="ib" data-q="21,29.7">A4</button><button class="ib" data-q="29.7,42">A3</button><button class="ib" data-q="5.5,5.5,10">10 singles</button><button class="ib" data-q="36,25,1,skin">15.6″ lid</button><button class="ib" data-q="12,8,1,skin">Trackpad</button></div>
+      <div id="qres" class="qres"></div></div>
+    <div class="panel"><h2>The printer's costs</h2><div class="qgrid">${f('A5', s.cost.A5, 'A5 sheet ₵')}${f('A4', s.cost.A4, 'A4 sheet ₵')}${f('A3', s.cost.A3, 'A3 sheet ₵')}${f('sqft', s.sqft, 'His calculator ₵/sq ft')}</div>
+      <h2 style="margin-top:16px">Our rule</h2><div class="qgrid">${f('markup', s.markup, 'Markup ×', '0.1')}${f('extra', s.extra, 'Packing, per job ₵')}${f('min', s.min, 'Lowest price ₵', '1')}${f('cut', s.cut, 'Decal cutting ×', '0.1')}
+        <label class="fl2"><span class="lbl">Round up to</span><select id="ps-round">${[1, 5, 10].map(r => `<option ${+s.round === r ? 'selected' : ''} value="${r}">₵${r}</option>`).join('')}</select></label></div>
+      <p class="lbl" style="text-transform:none;letter-spacing:0;font-size:12.5px;margin-top:8px">Price = (printer cost + packing) × markup, rounded up, never below the lowest price.${s.at ? ` Last changed ${when(s.at)} by ${esc(s.by || '')}.` : ' Using the starting values.'}</p>
+      <button class="btn" id="pss" style="width:100%">Save costs</button></div></div>
+  <div class="panel"><h2>Your shop prices against the printer's cost</h2><div class="tblw"><table class="tbl"><thead><tr><th>Product</th><th>Prints on</th><th>Cost</th><th>You sell</th><th>Profit</th><th>Margin</th></tr></thead><tbody>
+    ${PRS.shop.map(r => `<tr><td>${esc(r.name)}<small>${r.w} × ${r.h} cm${r.n > 1 ? ` × ${r.n}` : ''}</small></td><td>${esc(r.sheet)}</td><td>${cedi(r.cost)}</td><td><b>${cedi(r.sell)}</b></td><td class="${r.profit < 15 ? 'lo' : 'ok'}">${cedi(r.profit)}</td><td>${r.margin}%<small>${r.x}× cost</small></td></tr>`).join('')}</tbody></table></div>
+    <p class="lbl" style="text-transform:none;letter-spacing:0;font-size:12.5px;margin-top:10px">Cost includes ${cedi(s.extra)} packing per job. Skins print on one A3 (the lid fits); keyboard skins also need cutting time, so they earn the least.</p></div>
+  <div class="panel"><h2>Feedback on the printer's prices</h2><div class="fb">
+    <p><b>His own calculator charges less than he quoted.</b> The Gigabyte Press calculator prices Print & Cut sticker vinyl at ₵${s.sqft} per square foot. That makes an A5 ₵${calcA('A5')}, an A4 ₵${calcA('A4')} and an A3 ₵${calcA('A3')}. He quoted ₵${s.cost.A5} / ₵${s.cost.A4} / ₵${s.cost.A3}, which is ${Math.round(s.cost.A5 / calcA('A5') * 10) / 10}× / ${Math.round(s.cost.A4 / calcA('A4') * 10) / 10}× / ${Math.round(s.cost.A3 / calcA('A3') * 10) / 10}× his calculator.</p>
+    <p><b>Small sheets are his worst deal.</b> Per square foot his A5 is ₵${Math.round(s.cost.A5 / (14.8 * 21 / 929.0304))}, A4 ₵${Math.round(s.cost.A4 / (21 * 29.7 / 929.0304))}, A3 ₵${Math.round(s.cost.A3 / (29.7 * 42 / 929.0304))}. Four A5 jobs fit on one A3, so batching small orders onto A3 sheets once or twice a day cuts the cost of an A5 job from ₵${s.cost.A5} to about ₵${Math.round(s.cost.A3 / 4 * 10) / 10}.</p>
+    <p><b>What to ask him for.</b> His quote probably includes lamination and cutting, which the calculator leaves out. Ask what is included. Then ask for a regular-customer rate between the two: around ₵${Math.ceil(calcA('A5') * 2)} for A5, ₵${Math.ceil(calcA('A4') * 1.8)} for A4 and ₵${Math.ceil(calcA('A3') * 1.6)} for A3, or ₵${Math.ceil(s.sqft * 1.6)} per sq ft for batched A3 sheets, in exchange for steady weekly volume.</p>
+    <p><b>Your margins are healthy.</b> At today's shop prices every product earns at least ${Math.min(...PRS.shop.map(r => r.margin))}% after printing and packing. Single stickers were the only risk, and the ₵25 minimum now covers them. Delivery is still charged separately.</p></div></div>`;
+  const quote = async () => { const w = +$('#qw').value, h = +$('#qh').value, n = +$('#qq').value || 1, k = $('#qk').value; if (!(w > 0 && h > 0)) { $('#qres').innerHTML = ''; return; }
+    try { const j = await api(`/api/admin/?a=pricing&w=${w}&h=${h}&q=${n}&kind=${k}`), x = j.example;
+      const line = `Hi! ${n > 1 ? n + ' × ' : ''}${k === 'skin' ? 'a skin' : k === 'decal' ? 'a vinyl decal' : 'a sticker print'} at ${x.w} × ${x.h} cm comes to about GH₵${x.price}. Printed in Accra on laminated vinyl. Want us to go ahead?`;
+      $('#qres').innerHTML = `<div class="qbig"><div><span class="lbl">Tell the customer</span><b>${cedi(x.price)}</b></div><div><span class="lbl">Printer cost</span><b class="dim">${cedi(x.cost)}</b><small>${x.sheet === 'custom' ? 'bigger than A3, by area' : `${x.sheets} × ${x.sheet} sheet`}</small></div><div><span class="lbl">You keep</span><b class="g">${cedi(x.profit)}</b><small>${x.margin}% margin</small></div></div>
+        <p class="lbl" style="text-transform:none;letter-spacing:0;font-size:12.5px">His calculator would say ${cedi(x.calc)} for the same size.</p><textarea class="msg" id="qmsg" style="min-height:76px;margin-top:8px">${esc(line)}</textarea><button class="btn" id="qcp">Copy reply for WhatsApp</button>`;
+      $('#qcp').onclick = () => navigator.clipboard.writeText($('#qmsg').value).then(() => toast('Copied')); } catch (e) { $('#qres').textContent = e.message; } };
+  let qt; ['#qw', '#qh', '#qq', '#qk'].forEach(x => $(x).addEventListener('input', () => { clearTimeout(qt); qt = setTimeout(quote, 250); })); quote();
+  app.querySelector('.qpre').onclick = e => { const b = e.target.closest('[data-q]'); if (!b) return; const [w, h, n = 1, k = 'sticker'] = b.dataset.q.split(','); $('#qw').value = w; $('#qh').value = h; $('#qq').value = n; $('#qk').value = k; quote(); };
+  $('#pss').onclick = async () => { const v = k => +$('#ps-' + k).value; $('#pss').textContent = 'Saving…';
+    try { await post('pricing', { settings: { cost: { A5: v('A5'), A4: v('A4'), A3: v('A3') }, sqft: v('sqft'), markup: v('markup'), extra: v('extra'), min: v('min'), cut: v('cut'), round: v('round') } }); toast('Saved. Quotes use the new costs'); pricing(); }
+    catch (e) { toast(e.message); $('#pss').textContent = 'Save costs'; } };
 }
 
 // ---------- phone notifications for new orders ----------

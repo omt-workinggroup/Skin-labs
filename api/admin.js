@@ -1,16 +1,29 @@
-// /api/admin : everything the Skin Lab team does in /admin, behind the admin password.
+// /api/admin : everything the Skin Lab team does in /admin and /printer. Three logins (see role() in _lib.js):
+// owner = everything, payments = everything but deleting orders and the sticker catalog, printer = the print queue only.
 // GET  ?a=orders | payments[&all=1] | tickets | reviews
 // POST {a: status | note | delete | sync | refund | push-test | ticket | review, ...}
 // Every change is written into the record's history with who made it and when.
 import { list, del } from '@vercel/blob';
-import { json, isAdmin, adminName, findOrder, saveOrder, STATUSES, FLOW, payOn, paystack, confirmPayment, pushAll, allOrders, loadDocs, loadDoc, saveDoc } from './_lib.js';
+import { settings, saveSettings, price, cost } from './_quote.js';
+import PR from './_prices.js';
+import { json, role, forPrinter, adminName, findOrder, saveOrder, STATUSES, FLOW, payOn, paystack, confirmPayment, pushAll, allOrders, loadDocs, loadDoc, saveDoc } from './_lib.js';
 
 const SL = /^SL-[2-9A-Z]{5}-[a-z0-9]{4,12}$/;
 const str = (s, n) => String(s ?? '').trim().slice(0, n);
 export default async function handler(req, res) {
-  if (!isAdmin(req)) return json(res, 401, { error: 'Wrong password' });
-  const by = adminName(req), q = req.query || {};
+  const who = role(req); if (!who) return json(res, 401, { error: 'Wrong password' });
+  const by = adminName(req), q = req.query || {}, b0 = req.body || {};
+  if (q.a === 'me') return json(res, 200, { role: who, name: by });
+  if (who === 'printer') return printer(req, res, by, q, b0);
   if (req.method === 'GET') {
+    if (q.a === 'pricing') {   // owner only: the printer's costs and our markup
+      if (who !== 'owner') return json(res, 403, { error: 'Only the owner sees costs' });
+      const s = await settings(), shop = [['Sticker sheet A5', PR.packs && Object.values(PR.packs)[0] ? Object.values(PR.packs)[0][1] : 30, 14.8, 21], ['Sticker sheet A4', Object.values(PR.packs || {})[0] ? Object.values(PR.packs)[0][0] : 60, 21, 29.7],
+        ['Laptop skin S (to 13.3")', PR.skin.S, 31, 22], ['Laptop skin M (14-15.6")', PR.skin.M, 36, 25], ['Laptop skin L (16-17.3")', PR.skin.L, 40, 27], ['Keyboard skin', PR.kb, 34, 23], ['Trackpad skin', PR.tp ?? 30, 12, 8], ['Vinyl decal', PR.decal, 20, 20, 'decal'],
+        [`${Math.ceil((PR.minSingles || 25) / PR.single)} single stickers (minimum order)`, Math.ceil((PR.minSingles || 25) / PR.single) * PR.single, 5.5, 5.5, 'sticker', Math.ceil((PR.minSingles || 25) / PR.single)]]
+        .map(([name, sell, w, h, kind = 'sticker', n = 1]) => { const c = cost(s, w, h, n, kind); return { name, sell, w, h, n, sheet: c.sheet, cost: c.cost, calc: c.calc, profit: Math.round((sell - c.cost - s.extra) * 100) / 100, margin: Math.round((1 - (c.cost + s.extra) / sell) * 100), x: Math.round(sell / (c.cost + s.extra) * 10) / 10 }; });
+      return json(res, 200, { settings: s, shop, example: q.w ? price(s, q.w, q.h, q.q, q.kind) : null });
+    }
     if (q.a === 'orders') return json(res, 200, { orders: await allOrders(), push: !!process.env.VAPID_PUBLIC, pay: payOn() });
     if (q.a === 'tickets') return json(res, 200, { tickets: await loadDocs('support/') });
     if (q.a === 'reviews') return json(res, 200, { reviews: await loadDocs('reviews/') });
@@ -37,6 +50,7 @@ export default async function handler(req, res) {
   }
   if (req.method !== 'POST') return json(res, 405, { error: 'GET or POST' });
   const b = req.body || {};
+  if (b.a === 'pricing') { if (who !== 'owner') return json(res, 403, { error: 'Only the owner changes costs' }); return json(res, 200, { settings: await saveSettings(b.settings || {}, by) }); }
   if (b.a === 'push-test') return json(res, 200, { result: await pushAll({ title: 'Skin Lab · test', body: 'Notifications are on. New orders will show up like this.', url: '/admin/', tag: 'test' }) });
   if (b.a === 'sync') {   // re-check one payment with Paystack (if the webhook was missed)
     if (!SL.test(String(b.ref || ''))) return json(res, 400, { error: 'Not a Skin Lab payment' });
@@ -58,6 +72,7 @@ export default async function handler(req, res) {
   }
   const id = String(b.id || ''); if (!/^SL-[2-9A-Z]{5}$/.test(id)) return json(res, 400, { error: 'Bad order id' });
   if (b.a === 'delete') {
+    if (who !== 'owner') return json(res, 403, { error: 'Only the owner can delete orders' });
     const { blobs } = await list({ prefix: `orders/${id}-` }); if (!blobs.length) return json(res, 404, { error: 'No such order' });
     await del(blobs.map(x => x.url)); return json(res, 200, { ok: true, removed: blobs.length });
   }
@@ -82,4 +97,27 @@ export default async function handler(req, res) {
   } else return json(res, 400, { error: 'Unknown action' });
   await saveOrder(f.dir, o);
   return json(res, 200, { ok: true, order: o });
+}
+
+// The printer's login: the print queue (no prices, phones or payments) and the production steps only.
+const PRINT_STEPS = ['artwork', 'printing', 'qc', 'ready', 'hold', 'clarify'];
+async function printer(req, res, by, q, b) {
+  if (req.method === 'GET') {
+    if (q.a !== 'orders') return json(res, 403, { error: 'The printer login only sees the print queue' });
+    return json(res, 200, { orders: (await allOrders()).map(forPrinter), push: !!process.env.VAPID_PUBLIC });
+  }
+  if (req.method !== 'POST') return json(res, 405, { error: 'GET or POST' });
+  if (b.a === 'push-test') return json(res, 200, { result: await pushAll({ printer: { title: 'Skin Lab · print queue', body: 'Notifications are on. Paid orders will show up like this.', url: '/printer/', tag: 'test' } }) });
+  const id = String(b.id || ''); if (!/^SL-[2-9A-Z]{5}$/.test(id)) return json(res, 400, { error: 'Bad order id' });
+  const f = await findOrder(id); if (!f) return json(res, 404, { error: 'No such order' });
+  const o = f.order; o.history ||= [];
+  if (b.a === 'status') {
+    if (!PRINT_STEPS.includes(b.status)) return json(res, 403, { error: 'The printer can only move orders through artwork, printing, quality check and ready' });
+    if (payOn() && !o.paid && o.total > 0) return json(res, 409, { error: `${o.id} is not paid yet. Wait for it to show as paid before printing` });
+    if (['delivered', 'cancelled', 'refunded', 'refund-review', 'on-the-way'].includes(o.status)) return json(res, 409, { error: `${o.id} is already ${o.status}` });
+    o.status = b.status; o.history.push({ s: b.status, at: Date.now(), by: by + ' (printer)', ...(b.note ? { note: str(b.note, 300) } : {}) });
+  } else if (b.a === 'note') { (o.notes ||= []).push({ t: str(b.note, 800), at: Date.now(), by: by + ' (printer)' }); }
+  else return json(res, 403, { error: 'Not allowed for the printer login' });
+  await saveOrder(f.dir, o);
+  return json(res, 200, { ok: true, order: forPrinter(o) });
 }

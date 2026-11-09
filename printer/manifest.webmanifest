@@ -1,0 +1,1 @@
+{"name": "Skin Lab Print queue", "short_name": "SL Print", "start_url": "/printer/", "scope": "/printer/", "display": "standalone", "background_color": "#000000", "theme_color": "#000000", "icons": [{"src": "/admin/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}]}

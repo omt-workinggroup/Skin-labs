@@ -1,5 +1,6 @@
 // Shared helpers for the Skin Lab order backend (Vercel Functions + Vercel Blob).
 import { list, put, del } from '@vercel/blob';
+import { timingSafeEqual } from 'crypto';
 
 // Order lifecycle. Payment is never a status staff can set: only a verified Paystack payment marks an order paid.
 export const FLOW = ['new', 'confirmed', 'artwork', 'printing', 'qc', 'ready', 'on-the-way', 'delivered'];
@@ -14,18 +15,24 @@ export function priceOrder(b) {
     let m;
     if ((m = /^skin~([\w-]+)~([SMLC])$/.exec(k))) u = PR.skin[m[2]];
     else if (/^kb~[\w-]+$/.test(k)) u = PR.kb;
-    else if (/^ms~[\w-]+$/.test(k)) u = PR.ms;
+    else if (/^(ms|tp)~[\w-]+$/.test(k)) u = PR.tp ?? PR.ms;
     else if (/^dc~[\w-]+(~w)?$/.test(k)) u = PR.decal;
     else if ((m = /^(drop-[\w-]+?)(~5)?$/.exec(k))) u = m[2] ? 30 : 60;
     else if ((m = /^([\w-]+?)(~5)?$/.exec(k)) && PR.packs[m[1]]) u = m[2] ? PR.packs[m[1]][1] : PR.packs[m[1]][0];
     if (u == null) bad.push(k); else { p.price = u; t += u * q; }
   }
-  for (const s of b.singles || []) if (!String(s.code).startsWith('XQV-')) t += PR.single * Math.max(1, Math.min(99, +s.q || 1));
-  const d = b.design;
+  let st = 0;   // single stickers (GH₵3 each), loose or placed in the designer
+  for (const s of b.singles || []) if (!String(s.code).startsWith('XQV-')) st += PR.single * Math.max(1, Math.min(99, +s.q || 1));
+  const d = b.design; let skinJob = false;
   if (d) { const raw = d.raw && d.raw.i ? Object.values(d.raw.i).flat() : (d.layout || []); const n = raw.filter(o => !String(Array.isArray(o) ? o[0] : o.c).startsWith('XQV-')).length;
-    const skins = d.raw && d.raw.k ? Object.values(d.raw.k).some(Boolean) : (d.skins || []).length > 0;
-    t += n * PR.single + (skins ? PR.skin[/^[SMLC]$/.test(d.skinSize) ? d.skinSize : 'M'] : 0); }
-  return { total: Math.round(t * 100) / 100, bad };
+    const k = d.raw && d.raw.k ? d.raw.k : null;
+    const lap = k ? ['lid', 'kb', 'bot'].some(x => k[x]) : (d.skins || []).length > 0, pad = !!(k && k.pad);
+    st += n * PR.single; t += (lap ? PR.skin[/^[SMLC]$/.test(d.skinSize) ? d.skinSize : 'M'] : 0) + (pad ? (PR.tp ?? 30) : 0); skinJob = lap || pad; }
+  t += st;
+  // Single stickers print on their own A5/A4 sheet, so a handful alone does not pay for the print. Waived when the order
+  // already prints a skin (the stickers share that job).
+  const minSingles = PR.minSingles || 25, short = st > 0 && st < minSingles && !skinJob ? minSingles - st : 0;
+  return { total: Math.round(t * 100) / 100, bad, singles: st, short, minSingles };
 }
 export const adminName = req => String(req.headers['x-admin-name'] || '').replace(/[^\w .'-]/g, '').slice(0, 30) || 'Admin';
 // light abuse protection: per instance, per IP
@@ -42,7 +49,21 @@ export const newId = () => 'SL-' + rnd(5);
 export const secret = () => rnd(16, 'abcdefghijkmnpqrstuvwxyz23456789');
 
 export function json(res, code, body) { res.statusCode = code; res.setHeader('Content-Type', 'application/json'); res.setHeader('Cache-Control', 'no-store'); res.end(JSON.stringify(body)); }
-export const isAdmin = req => !!process.env.ADMIN_KEY && req.headers['x-admin-key'] === process.env.ADMIN_KEY;
+// Three logins: the owner (everything), payments (orders, money, support; no catalog, no deleting) and the printer
+// (the print queue only: what to print, never a price, a phone number or a payment).
+const KEYS = [['owner', 'ADMIN_KEY'], ['payments', 'PAYMENTS_KEY'], ['printer', 'PRINTER_KEY']];
+const same = (a, b) => { const x = Buffer.from(String(a)), y = Buffer.from(String(b)); return x.length === y.length && timingSafeEqual(x, y); };
+export function role(req) { const k = String(req.headers['x-admin-key'] || ''); if (!k) return null;
+  for (const [r, e] of KEYS) if (process.env[e] && same(k, process.env[e])) return r; return null; }
+export const isAdmin = req => role(req) === 'owner';
+const noMoney = t => String(t || '').replace(/(GH₵|GHS|₵|cedis?)\s?[\d.,]+|[\d.,]+\s?(GH₵|GHS|cedis?)/gi, '₵—');
+// What the printer may see of an order: the work, not the money or the customer's contact details.
+export function forPrinter(o) {
+  const d = o.design ? (({ skinPrice, ...x }) => x)(o.design) : null;
+  return { id: o.id, at: o.at, status: o.status, name: (o.name || '').split(' ')[0], note: noMoney(o.note), paidOk: !!o.paid || o.total === 0,
+    packs: (o.packs || []).map(({ price, ...p }) => p), singles: o.singles || [], picks: o.picks || null, free: o.free || null, design: d,
+    notes: (o.notes || []).map(n => ({ ...n, t: noMoney(n.t) })), history: (o.history || []).filter(h => !/^(paid|payment-mismatch|refund)/.test(h.s)).map(({ note, ...h }) => h) };
+}
 
 // An order lives at orders/<id>-<secret>/order.json (+ sheet.jpg, mock.jpg). The secret part keeps the
 // customer's phone number unguessable; the server finds an order from its short id by listing the prefix.
@@ -97,13 +118,15 @@ export const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;'
 
 // ---------- phone notifications (Web Push) to every device that turned them on in /admin ----------
 import webpush from 'web-push';
+// payload goes to the owner and payments phones; payload.printer (if any) is the price-free version for the printer's phone.
 export async function pushAll(payload) {
   const pub = process.env.VAPID_PUBLIC, priv = process.env.VAPID_PRIVATE; if (!pub || !priv) return 'off';
   webpush.setVapidDetails(SITE, pub, priv);
   const { blobs } = await list({ prefix: 'push/' }); if (!blobs.length) return 'no devices';
   let sent = 0;
   await Promise.all(blobs.map(async b => {
-    try { const sub = await (await fetch(b.url, { cache: 'no-store' })).json(); await webpush.sendNotification(sub, JSON.stringify(payload), { TTL: 86400, urgency: 'high' }); sent++; }
+    try { const { role: r, ...sub } = await (await fetch(b.url, { cache: 'no-store' })).json(), { printer, ...main } = payload, msg = r === 'printer' ? printer : main;
+      if (!msg) return; await webpush.sendNotification(sub, JSON.stringify(msg), { TTL: 86400, urgency: 'high' }); sent++; }
     catch (e) { if (e && (e.statusCode === 404 || e.statusCode === 410)) await del(b.url).catch(() => {}); }   // phone unsubscribed: forget it
   }));
   return `${sent}/${blobs.length} devices`;
@@ -133,6 +156,8 @@ export async function confirmPayment(reference) {
   delete o.payIssue; (o.history ||= []).push({ s: 'paid', at: Date.now(), by: 'Paystack' });
   if (o.status === 'new') { o.status = 'confirmed'; o.history.push({ s: 'confirmed', at: Date.now(), by: 'Paystack' }); }
   await saveOrder(f.dir, o);
-  await pushAll({ title: `💰 Paid GH₵${rec.amount} · ${o.id}`, body: `${o.name} · ${rec.channel === 'mobile_money' ? 'MoMo' : rec.channel || ''}`, url: `/admin/#${o.id}`, tag: o.id + '-paid' }).catch(() => {});
+  const job = [...(o.packs || []).map(p => `${p.q}× ${p.label}`), (o.singles || []).length ? `${o.singles.reduce((a, x) => a + x.q, 0)} singles` : '', o.design ? `custom ${o.design.size || ''} pack` : ''].filter(Boolean).join(' · ');
+  await pushAll({ title: `💰 Paid GH₵${rec.amount} · ${o.id}`, body: `${o.name} · ${rec.channel === 'mobile_money' ? 'MoMo' : rec.channel || ''}`, url: `/admin/#${o.id}`, tag: o.id + '-paid',
+    printer: { title: `🖨 Ready to print · ${o.id}`, body: job.slice(0, 160), url: `/printer/#${o.id}`, tag: o.id + '-print' } }).catch(() => {});
   return o;
 }

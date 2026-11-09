@@ -43,13 +43,13 @@ const old = store.get('sl-sel', null); if (Array.isArray(old)) old.forEach(c => 
 Object.assign(cart, store.get('sl-cart', {})); Object.assign(packs, store.get('sl-packs', {}));
 Object.keys(cart).forEach(c => { if (!CODE[c] || !(cart[c] > 0)) delete cart[c]; });
 // a pack in the cart: "<id>" is the big sheet (A4, or the A3 pick & mix), "<id>~5" the small A5 sheet
-const SZ = { A3: 'A3 pick & mix', A4: 'A4 big sheet', A5: 'A5 small sheet', XL: 'XL lid centrepiece', S: 'Small skin', M: 'Medium skin', L: 'Large skin', C: 'Custom skin', Keyboard: 'Keyboard skin', Mouse: 'Mouse skin', Decal: 'Vinyl decal' };
+const SZ = { A3: 'A3 pick & mix', A4: 'A4 big sheet', A5: 'A5 small sheet', XL: 'XL lid centrepiece', S: 'Small skin', M: 'Medium skin', L: 'Large skin', C: 'Custom skin', Keyboard: 'Keyboard skin', Trackpad: 'Trackpad skin', Decal: 'Vinyl decal' };
 // laptop skins: priced by size (change the numbers here)
 const SKINP = { S: { name: 'Small', fit: 'up to 13.3″', price: 70 }, M: { name: 'Medium', fit: '14″ – 15.6″', price: 80 }, L: { name: 'Large', fit: '16″ – 17.3″', price: 90 }, C: { name: 'Custom', fit: 'full wrap or your own picture', price: 120 } };
 const skinFor = inch => !inch ? 'M' : inch <= 13.5 ? 'S' : inch <= 15.7 ? 'M' : 'L';
 function pkOf(k) { const ks = String(k);
-  if (/^(kb|ms)~/.test(ks)) { const [t, id] = ks.split('~'), sk = SKIN[id]; if (!sk) return null;
-    return { k, id, skin: 1, kind: t, p: { nice: `${sk[1]} ${t === 'kb' ? 'keyboard' : 'mouse'} skin`, bg: '#111' }, a5: false, size: t === 'kb' ? 'Keyboard' : 'Mouse', price: XP[t], n: 0, img: 'skin:' + id, label: `${sk[1]} · ${t === 'kb' ? 'keyboard' : 'mouse'} skin`, fit: t === 'kb' ? 'keyboard area & palm rest' : 'top of your mouse' }; }
+  if (/^(kb|tp|ms)~/.test(ks)) { const [t, id] = ks.split('~'), sk = SKIN[id]; if (!sk) return null;
+    return { k, id, skin: 1, kind: t, p: { nice: `${sk[1]} ${t === 'kb' ? 'keyboard' : 'trackpad'} skin`, bg: '#111' }, a5: false, size: t === 'kb' ? 'Keyboard' : 'Trackpad', price: XP[t === 'ms' ? 'tp' : t], n: 0, img: 'skin:' + id, label: `${sk[1]} · ${t === 'kb' ? 'keyboard' : 'trackpad'} skin`, fit: t === 'kb' ? 'keyboard area & palm rest' : 'the touchpad on your laptop' }; }
   if (/^dc~/.test(ks)) { const [, id, c] = ks.split('~'), d = DEC[id]; if (!d) return null;
     return { k, id, decal: 1, p: { nice: d[1], bg: '#ececee' }, a5: false, size: 'Decal', price: XP.decal, n: 0, img: 'decal:' + id, label: `${d[1]} · ${c === 'w' ? 'white' : 'black'} vinyl decal`, fit: DKIND[d[2]] }; }
   if (ks.startsWith('skin~')) { const [, id, z] = String(k).split('~'), sk = SKIN[id], t = SKINP[z]; if (!sk || !t) return null;
@@ -57,7 +57,7 @@ function pkOf(k) { const ks = String(k);
   const [id, s5] = String(k).split('~'), p = PK[id]; if (!p) return null; const a5 = s5 === '5' && !!p.a5;
   const size = a5 ? 'A5' : p.size || 'A4';
   return { k, id, p, a5, size, price: a5 ? p.p5 : p.price, n: a5 ? p.a5.length : p.items.length, img: a5 ? id + '-a5' : id, label: `${p.nice} · ${SZ[size]}` }; }
-Object.keys(packs).forEach(k => { if (!(packs[k] > 0) || (!/^(skin|kb|ms|dc)~/.test(String(k)) && !pkOf(k))) delete packs[k]; });   // skins are checked once the skin list is loaded
+Object.keys(packs).forEach(k => { if (!(packs[k] > 0) || (!/^(skin|kb|tp|ms|dc)~/.test(String(k)) && !pkOf(k))) delete packs[k]; });   // skins are checked once the skin list is loaded
 // online payment (Paystack): on once the shop adds its key; asked once per visit
 let PAY = false; fetch('/api/pay/').then(r => r.json()).then(j => { PAY = !!j.enabled; }).catch(() => {});
 let who = store.get('sl-who', { name: '', loc: '', note: '' });
@@ -66,7 +66,12 @@ const nSingles = () => Object.values(cart).reduce((a, b) => a + b, 0);
 const nPacks = () => Object.values(packs).reduce((a, b) => a + b, 0);
 function curDsg() { const d = store.get('sl-dsg', null); if (!d || !(d.lap || d.v === 3) || !d.items) return null;
   return Object.values(d.items).some(v => v.length) || Object.values(d.skin || {}).some(Boolean) ? d : null; }
-const dsgSkins = () => { const d = curDsg(); return d ? Object.values(d.skin).filter(Boolean).length : 0; };
+const dsgSkins = () => { const d = curDsg(); return d ? ['lid', 'kb', 'bot'].filter(k => (d.skin || {})[k]).length : 0; };
+const dsgPad = d => !!(d && d.skin && d.skin.pad);
+// Single stickers print on their own sheet, so they start from MIN_SINGLES per order (waived when the order prints a skin)
+const MIN_SINGLES = 25;
+const singlesSub = () => { const d = curDsg(); return nSingles() * PRICE + (d ? Object.values(d.items || {}).flat().filter(o => !isFree(o.c)).length * PRICE : 0); };
+const singlesShort = () => { const d = curDsg(), st = singlesSub(); return st > 0 && st < MIN_SINGLES && !(d && (dsgSkins() || dsgPad(d))) ? MIN_SINGLES - st : 0; };
 const count = () => nSingles() + nPacks() + (curDsg() ? 1 : 0);
 const money = () => nSingles() * PRICE + Object.entries(packs).reduce((a, [k, q]) => a + q * pkOf(k).price, 0) + dsgPrice(curDsg());
 const buzz = () => { try { navigator.vibrate && navigator.vibrate(12); } catch (e) {} };
@@ -150,7 +155,7 @@ const waFmt = t => esc(t).replace(/\*([^*\n]+)\*/g, '<b>$1</b>').replace(/(https
 // ---------- cart + checkout: the order goes straight to the Skin Lab admin (no long WhatsApp text) ----------
 // skins have no price on the site: they are always "price on DM"
 const priceTxt = t => `${CUR}${t}`;
-const dsgPrice = d => d ? Object.values(d.items || {}).flat().filter(o => !isFree(o.c)).length * PRICE + (Object.values(d.skin || {}).some(Boolean) ? SKINP[d.skinSize || 'M'].price : 0) : 0;
+const dsgPrice = d => d ? Object.values(d.items || {}).flat().filter(o => !isFree(o.c)).length * PRICE + (['lid', 'kb', 'bot'].some(k => (d.skin || {})[k]) ? SKINP[d.skinSize || 'M'].price : 0) + (dsgPad(d) ? XP.tp : 0) : 0;
 // ---------- singles sheet: the single stickers a customer picks, laid out on the Skin Lab template ----------
 const PICK_CM = 5.5;
 const dsgFree = () => { const d = curDsg(); return d ? Object.values(d.items || {}).flat().map(o => o.c).find(isFree) || '' : ''; };
@@ -207,7 +212,7 @@ function openCart(focus) {
   const dn = dg ? Object.values(dg.items || {}).flat().length : 0;
   b.innerHTML = `${dg ? `<div class="mypk">${dg.sheet ? `<button type="button" class="mys" id="c-sheet" aria-label="See your sheet bigger"><img src="${dg.sheet}" alt="Your sticker sheet"></button>` : ''}
       <div class="myt">${dg.thumb ? `<img src="${dg.thumb}" alt="Your laptop design">` : ''}<span class="lbl">Your own pack</span><b>${esc(dg.packName || 'Your laptop design')}</b>
-        <span>${dg.sheetSize ? `${dg.sheetSize} sheet · ` : ''}${dn} sticker${dn === 1 ? '' : 's'}${dsgSkins() ? ` · ${SKINP[dg.skinSize || 'M'].name} skin` : ''}</span><span class="pr">${CUR}${dsgPrice(dg)}</span>
+        <span>${dg.sheetSize ? `${dg.sheetSize} sheet · ` : ''}${dn} sticker${dn === 1 ? '' : 's'}${dsgSkins() ? ` · ${SKINP[dg.skinSize || 'M'].name} skin` : ''}${dsgPad(dg) ? ' · trackpad skin' : ''}</span><span class="pr">${CUR}${dsgPrice(dg)}</span>
         <span class="dl"><a href="/design/" id="c-edit">Edit</a><button type="button" class="lnk" id="c-rmd">Remove</button></span></div></div>` : ''}
     ${pk.length ? `<div class="rows">${pk.map(([k, q]) => `<div class="row"><div class="th"><img src="${sh(pkOf(k).img, 'sheets-sm')}" alt="" loading="lazy" style="height:54px;width:auto;border-radius:3px"></div><div class="nm"><b style="font-family:var(--body)">${esc(pkOf(k).p.nice)}</b><span>${(pkOf(k).skin || pkOf(k).decal) ? `${SZ[pkOf(k).size]} · ${pkOf(k).fit}` : `${SZ[pkOf(k).size]} · ${pkOf(k).n} stickers`} · ${CUR}${pkOf(k).price}</span></div>
       <div class="qty"><button type="button" data-p="${k}" data-d="-1" aria-label="One less ${esc(pkOf(k).label)}">−</button><span>${q}</span><button type="button" data-p="${k}" data-d="1" aria-label="One more ${esc(pkOf(k).label)}">+</button></div></div>`).join('')}</div>` : ''}
@@ -216,6 +221,7 @@ function openCart(focus) {
       <div class="grp">Single stickers · ${CUR}${PRICE} each</div><div class="rows">${items.map(([c, q]) => `<div class="row"><div class="th">${spr(CODE[c].p, CODE[c].it, 50)}</div><div class="nm"><b>${c}</b><span>${esc(CODE[c].p.nice)}</span></div>
       <div class="qty"><button type="button" data-q="${c}" data-d="-1" aria-label="One less ${c}">−</button><span>${q}</span><button type="button" data-q="${c}" data-d="1" aria-label="One more ${c}">+</button></div></div>`).join('')}</div>` : ''}
     ${FREE.length ? `<div class="grp">Your free sticker · pick 1</div>${dsgFree() ? `<p class="small" style="margin:4px 0 10px">Your free sticker is already on your laptop design.</p>` : `<div class="fl fl2">${FREE.map(x => `<button type="button" class="fc ${x.code === freePick ? 'on' : ''}" data-free="${x.code}" aria-label="${esc(x.name)}, free"><img src="free/${x.code}-s.webp" alt="" loading="lazy"><i>FREE</i></button>`).join('')}</div>`}` : ''}
+    ${singlesShort() ? `<div class="minbar" role="status"><b>Add ${CUR}${singlesShort()} more to check out</b><span>Single stickers start from ${CUR}${MIN_SINGLES} an order (that's ${Math.ceil(MIN_SINGLES / PRICE)} stickers), because your picks print on a sheet of their own. Add ${Math.ceil(singlesShort() / PRICE)} more sticker${Math.ceil(singlesShort() / PRICE) > 1 ? 's' : ''}, or a full pack.</span><i style="--p:${Math.round(singlesSub() / MIN_SINGLES * 100)}%"></i></div>` : ''}
     ${cartAlso()}<div class="sum" aria-label="Payment summary"><span class="lbl">Payment summary</span>
       <div class="sline"><span>Products</span><span>${CUR}${money()}</span></div>
       <div class="sline"><span>Free sticker</span><span>${(() => { const f = FREE.find(x => x.code === (dsgFree() || freeCode())); return f ? esc(f.name) + ' · FREE' : 'pick one below'; })()}</span></div>
@@ -228,7 +234,7 @@ function openCart(focus) {
       <div class="fld" id="f-phone"><label for="c-phone">WhatsApp number</label><input id="c-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="e.g. 024 123 4567" value="${esc(who.phone || '')}" required aria-describedby="e-phone"><small class="fe" id="e-phone"></small></div>
       ${PAY ? `<div class="fld"><label for="c-email">Email <span style="opacity:.6">(optional, for your receipt)</span></label><input id="c-email" type="email" inputmode="email" autocomplete="email" placeholder="e.g. ama@gmail.com" value="${esc(who.email || '')}"></div>` : ''}
       <div class="fld"><label for="c-loc">Location</label><input id="c-loc" autocomplete="address-level2" placeholder="e.g. East Legon" value="${esc(who.loc)}"></div>
-      <button class="btn y" type="submit" id="c-send">${PAY && money() ? `Pay ${CUR}${money()} securely` : `Place order${money() ? ` · ${CUR}${money()}` : ''}`}</button>
+      <button class="btn y" type="submit" id="c-send"${singlesShort() ? ' disabled aria-disabled="true"' : ''}>${singlesShort() ? `Add ${CUR}${singlesShort()} more to check out` : PAY && money() ? `Pay ${CUR}${money()} securely` : `Place order${money() ? ` · ${CUR}${money()}` : ''}`}</button>
       <p class="small ckn">${PAY ? 'Secure payment by Paystack. We print once you\'ve paid, then WhatsApp you about delivery.' : "We'll message you on WhatsApp to confirm, then you pay with MoMo."}</p>
     </form>
     <button class="btn o" type="button" id="c-clear">Empty cart</button>`;
@@ -251,6 +257,7 @@ const phoneIntl = p => { let d = p.replace(/\D/g, ''); if (d.startsWith('0')) d 
 async function placeOrder() {
   const dg = curDsg(), pk = Object.entries(packs), items = Object.entries(cart);
   if (!pk.length && !items.length && !dg) return toast('Add a sheet, a sticker or a skin. The free sticker comes with it.');
+  if (singlesShort()) return toast(`Single stickers start from ${CUR}${MIN_SINGLES}. Add ${CUR}${singlesShort()} more`);
   const ferr = (f, m) => { const el = $('#e-' + f); if (el) el.textContent = m || ''; $('#f-' + f).classList.toggle('err', !!m); };
   ferr('name'); ferr('phone');
   if (!who.name || who.name.length < 2) { ferr('name', 'Add your name so we know whose order it is'); $('#c-name').focus(); return; }
@@ -261,7 +268,7 @@ async function placeOrder() {
     singles: items.map(([c, q]) => ({ code: c, q, pack: CODE[c].p.nice, img: new URL(stickerSrc(c), location.href).href })),
     free: (() => { const c = dsgFree() || freeCode(), x = FREE.find(f => f.code === c); return x ? { code: c, name: x.name, img: new URL(`free/${c}.webp`, location.href).href, onDesign: !!dsgFree() } : null; })(),
     picks: items.length || freeCode() ? await singlesSheet(who.name).then(r => r && { sheet: r.img, size: r.size, n: r.n, scaled: r.scaled, layout: r.layout }).catch(() => null) : null,
-    design: dg ? { line: dsgLine(dg), laptop: dg.laptop || dg.name, packName: dg.packName, size: dg.sheetSize || '', n: Object.values(dg.items).flat().length, skins: Object.values(dg.skin || {}).filter(Boolean).map(id => ((SKIN[id] || [])[1] || id)), skinSize: dsgSkins() ? (dg.skinSize || 'M') : '', skinPrice: dsgSkins() ? SKINP[dg.skinSize || 'M'].price : 0,
+    design: dg ? { line: dsgLine(dg), laptop: dg.laptop || dg.name, packName: dg.packName, size: dg.sheetSize || '', n: Object.values(dg.items).flat().length, skins: Object.entries(dg.skin || {}).filter(([, v]) => v).map(([k, id]) => (k === 'pad' ? 'Trackpad: ' : '') + ((SKIN[id] || [])[1] || id)), skinSize: dsgSkins() ? (dg.skinSize || 'M') : '', skinPrice: dsgSkins() ? SKINP[dg.skinSize || 'M'].price : 0,
       layout: dg.layout || [], scaled: !!dg.scaled, sheet: dg.sheet || null, mock: dg.thumb || null, raw: dsgPack(dg) } : null };
   try {
     const r = await fetch('/api/order/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }), j = await r.json().catch(() => ({}));
@@ -958,7 +965,7 @@ async function designToCart() {
   Object.entries(counts).forEach(([c, q]) => cart[c] = Math.max(cart[c] || 0, q));
   store.set('sl-dsg', designSnap()); saveCart(); updBar(); await saveMine(true); buzz(); openCart();
 }
-const dsgLine = d => !d ? '' : d.v === 3 ? `${d.name} (${d.col}): ` + Object.keys(d.items).filter(k => (d.items[k] || []).length || (d.skin || {})[k]).map(k => `${{ lid: 'lid', kb: 'keyboard', bot: 'bottom' }[k]}${d.skin[k] ? ' with ' + (SKIN[d.skin[k]] ? SKIN[d.skin[k]][1] : d.skin[k].replace('s-', '').replace('ph-', '')) + ' skin' : ''}${d.items[k].length ? `${d.skin[k] ? ' +' : ''} ${d.items[k].length} sticker${d.items[k].length > 1 ? 's' : ''}` : ''}`).join(', ') : `${lapName(d)} (${LCOLS[d.col][0]}): ` + Object.keys(SURFS).filter(k => (d.items[k] || []).length || (d.skin || {})[k]).map(k => `${k === 'pad' ? (PADS[d.pad || 'std'][2] + ' mousepad ' + PADS[d.pad || 'std'][0] + '×' + PADS[d.pad || 'std'][1] + ' cm').toLowerCase() : SURFS[k][0].toLowerCase()}${d.skin[k] ? ' with ' + SKIN[d.skin[k]][1] + ' skin' : ''}${d.items[k].length ? `${d.skin[k] ? ' +' : ''} ${d.items[k].length} sticker${d.items[k].length > 1 ? 's' : ''}` : ''}`).join(', ');
+const dsgLine = d => !d ? '' : d.v === 3 ? `${d.name} (${d.col}): ` + Object.keys(d.items).filter(k => (d.items[k] || []).length || (d.skin || {})[k]).map(k => `${{ lid: 'lid', kb: 'keyboard', bot: 'bottom' }[k]}${d.skin[k] ? ' with ' + (SKIN[d.skin[k]] ? SKIN[d.skin[k]][1] : d.skin[k].replace('s-', '').replace('ph-', '')) + ' skin' : ''}${d.items[k].length ? `${d.skin[k] ? ' +' : ''} ${d.items[k].length} sticker${d.items[k].length > 1 ? 's' : ''}` : ''}`).join(', ') + (d.skin && d.skin.pad ? `, trackpad with ${SKIN[d.skin.pad] ? SKIN[d.skin.pad][1] : d.skin.pad.replace('s-', '').replace('ph-', '')} skin` : '') : `${lapName(d)} (${LCOLS[d.col][0]}): ` + Object.keys(SURFS).filter(k => (d.items[k] || []).length || (d.skin || {})[k]).map(k => `${k === 'pad' ? (PADS[d.pad || 'std'][2] + ' mousepad ' + PADS[d.pad || 'std'][0] + '×' + PADS[d.pad || 'std'][1] + ' cm').toLowerCase() : SURFS[k][0].toLowerCase()}${d.skin[k] ? ' with ' + SKIN[d.skin[k]][1] + ' skin' : ''}${d.items[k].length ? `${d.skin[k] ? ' +' : ''} ${d.items[k].length} sticker${d.items[k].length > 1 ? 's' : ''}` : ''}`).join(', ');
 const dsgPack = d => d && d.v === 3 ? { v: 3, n: d.name, c: d.col, k: d.skin, i: Object.fromEntries(Object.entries(d.items).map(([k, v]) => [k, v.map(o => [o.c, +o.x.toFixed(3), +o.y.toFixed(3), +o.s.toFixed(3), o.r])])) } : d && { l: [d.lap.b, d.lap.m], c: d.col, p: d.pad, k: d.skin, i: Object.fromEntries(Object.entries(d.items).map(([k, v]) => [k, v.map(o => [o.c, +o.x.toFixed(3), +o.y.toFixed(3), +o.s.toFixed(3), o.r])])) };
 const dsgUnpack = p => p && p.v === 3 ? { v: 3, name: p.n, col: p.c, skin: { lid: '', kb: '', bot: '', ...p.k }, items: Object.fromEntries(Object.entries({ lid: [], kb: [], bot: [], ...p.i }).map(([k, v]) => [k, v.filter(o => CODE[o[0]]).map(([c, x, y, s, r]) => ({ c, x, y, s, r }))])) } : p && { lap: { b: p.l[0], m: p.l[1] }, col: p.c, pad: p.p || 'std', skin: { lid: '', kb: '', bot: '', pad: '', ...p.k }, items: Object.fromEntries(Object.entries({ lid: [], kb: [], bot: [], pad: [], ...p.i }).map(([k, v]) => [k, v.filter(o => CODE[o[0]]).map(([c, x, y, s, r]) => ({ c, x, y, s, r }))])) };
 
@@ -979,15 +986,15 @@ function vMine() {
     if (d) { store.set('sl-mine', store.get('sl-mine', []).filter(y => y.id !== d.dataset.del)); vMine(); toast('Deleted'); } };
 }
 
-// ======================= Skin Lab 2.0: search, saved, decals, keyboard & mouse skins, help, reviews =======================
-const XP = { kb: 50, ms: 30, decal: 30 };   // keyboard-area skin, mouse skin, vinyl decal (same numbers as the server's price list)
+// ======================= Skin Lab 2.0: search, saved, decals, keyboard & trackpad skins, help, reviews =======================
+const XP = { kb: 50, tp: 30, decal: 30 };   // keyboard-area skin, trackpad (mouse pad) skin, vinyl decal (same numbers as the server's price list)
 const DECALS = [
   ['dc-mickey-wink', 'Mickey peeking', 'peek'], ['dc-pennywise', 'Pennywise peeking', 'peek'], ['dc-stick-push', 'Stick men pushing the trackpad', 'palm'], ['dc-goku-blast', 'Goku Kamehameha', 'palm'],
   ['dc-axe-chase', 'Axe man chases the logo', 'lid'], ['dc-iron-blast', 'Iron Man logo blast', 'lid'], ['dc-heartbeat', 'Heartbeat line', 'palm'], ['dc-mickey-pad', 'Mickey by the trackpad', 'palm'],
   ['dc-minions', 'Minions', 'palm'], ['dc-panda-logo', 'Panda hugs the logo', 'lid']];
 const DEC = Object.fromEntries(DECALS.map(d => [d[0], d]));
 const DKIND = { peek: 'Peeks over an edge', palm: 'Around the trackpad', lid: 'Plays with the lid logo' };
-const STYPE = { lap: ['Laptop skin', 'Lid'], kb: ['Keyboard skin', 'Around the keys'], ms: ['Mouse skin', 'Fits most mice'] };
+const STYPE = { lap: ['Laptop skin', 'Lid'], kb: ['Keyboard skin', 'Around the keys'], tp: ['Trackpad skin', 'The touchpad'] };
 // skin themes for filtering (photo skins)
 const SKTAG = { 'ph-jinx': 'anime', 'ph-tanjiro': 'anime', 'ph-reality': 'anime', 'ph-joker': 'heroes', 'ph-marvel': 'heroes', 'ph-avengers': 'heroes', 'ph-bvs': 'heroes', 'ph-spidey-collage': 'heroes', 'ph-spidey-comics': 'heroes',
   'ph-spidey-scrapbook': 'heroes', 'ph-miles': 'heroes', 'ph-spider-logo': 'heroes', 'ph-batman': 'heroes', 'ph-panther': 'heroes', 'ph-joker-ink': 'heroes', 'ph-porsche93': 'cars', 'ph-amg-red': 'cars',
@@ -1015,7 +1022,7 @@ function itemOf(k) {
 }
 function itemCard(it) { return `<div class="sr"><a class="sri" href="${it.href}" style="--tb:${it.bg || '#151517'}"><img src="${it.img}" alt="" loading="lazy" decoding="async"></a>
   <div class="srm"><a href="${it.href}"><span class="lbl">${esc(it.type === 'pack' ? it.cat : it.cat)}${it.isNew ? ' · New' : ''}${POP.has(it.k) ? ' · Best seller' : ''}</span><b>${esc(it.name)}</b>
-  <span>${it.type === 'pack' ? `${it.size === 'XL' ? 'XL centrepiece' : it.size === 'A3' ? `A3 · ${it.n} stickers` : `A5 & A4 · up to ${it.n} stickers`}` : it.type === 'skin' ? 'Laptop · keyboard · mouse' : 'One-colour vinyl decal'}</span></a>
+  <span>${it.type === 'pack' ? `${it.size === 'XL' ? 'XL centrepiece' : it.size === 'A3' ? `A3 · ${it.n} stickers` : `A5 & A4 · up to ${it.n} stickers`}` : it.type === 'skin' ? 'Laptop · keyboard · trackpad' : 'One-colour vinyl decal'}</span></a>
   <span class="pr">${it.type === 'inspo' ? 'idea' : `${it.from ? 'from ' : ''}${CUR}${it.price}`}</span></div>${heart(it.k, it.name)}</div>`; }
 
 // ---------- popular (from real orders) + reviews ----------
@@ -1036,7 +1043,7 @@ const CATKW = { programmers: 'coding code coder developer dev programmer python 
   sneakers: 'shoes jordan nike kicks', cars: 'car jdm bmw mercedes racing', moto: 'bike motorbike motorcycle', dark: 'dark grunge skull goth', xl: 'big large centrepiece lid', mix: 'pick and mix assorted' };
 const IDX = () => { if (IDX.c && IDX.c.n === D.packs.length) return IDX.c;
   const rows = [...D.packs.filter(p => !p.free).map(p => ({ k: p.id, t: 'pack', text: `${p.nice} ${p.name} ${p.tag || ''} ${(CAT[p.cat] || {}).name || ''} ${p.cat} ${CATKW[p.cat] || ''} ${p.size || ''} ${p.items.map(i => i[0]).join(' ')}`.toLowerCase() })),
-    ...SKINS.filter(s => s[2] === 'photo').map(s => ({ k: 'sk:' + s[0], t: 'skin', text: `${s[1]} skin laptop keyboard mouse ${SKTAG[s[0]] || ''} ${{ heroes: 'marvel dc spiderman superhero', code: 'coding programmer hacker developer tech', girly: 'pink cute girl', cars: 'car racing', anime: 'anime manga naruto', street: 'streetwear hiphop', art: 'nature art' }[SKTAG[s[0]]] || ''}`.toLowerCase() })),
+    ...SKINS.filter(s => s[2] === 'photo').map(s => ({ k: 'sk:' + s[0], t: 'skin', text: `${s[1]} skin laptop keyboard trackpad touchpad mousepad mouse pad ${SKTAG[s[0]] || ''} ${{ heroes: 'marvel dc spiderman superhero', code: 'coding programmer hacker developer tech', girly: 'pink cute girl', cars: 'car racing', anime: 'anime manga naruto', street: 'streetwear hiphop', art: 'nature art' }[SKTAG[s[0]]] || ''}`.toLowerCase() })),
     ...DECALS.map(d => ({ k: 'dc:' + d[0], t: 'decal', text: `${d[1]} decal vinyl ${d[2]} macbook trackpad logo`.toLowerCase() }))];
   return IDX.c = Object.assign(rows, { n: D.packs.length }); };
 const SYN = { soccer: 'football', footy: 'football', coder: 'coding', code: 'coding', programmer: 'programmers', dev: 'coding', python: 'python', spiderman: 'spider', 'spider-man': 'spider', cartoon: 'cartoons', car: 'cars', girl: 'girly', cute: 'girly' };
@@ -1099,10 +1106,10 @@ function vSaved(shared) {
   if ($('#sv-clear')) $('#sv-clear').onclick = () => { if (!confirm('Clear your saved list?')) return; SAVED = []; store.set('sl-saved', SAVED); savedBadge(); vSaved(); };
 }
 
-// ---------- skins: laptop · keyboard · mouse ----------
-let SKT = store.get('sl-sktype', 'lap'), SKC = '';
-const mockCache = {};
-function skinMock(id, type, w) {   // the design shown on a keyboard deck or a mouse, drawn on the phone
+// ---------- skins: laptop · keyboard · trackpad ----------
+let SKT = (s => s === 'ms' ? 'tp' : s)(store.get('sl-sktype', 'lap')), SKC = '';
+const mockCache = {};   // keyboard deck and trackpad previews, drawn on the phone
+function skinMock(id, type, w) {   // the design shown on a keyboard deck or on the trackpad, drawn on the phone
   const key = id + type + w; if (mockCache[key]) return Promise.resolve(mockCache[key]);
   return new Promise(ok => { const im = new Image(); im.onload = () => {
     const h = Math.round(w * 2 / 3), c = Object.assign(document.createElement('canvas'), { width: w * 2, height: h * 2 }), g = c.getContext('2d'); g.scale(2, 2);
@@ -1114,17 +1121,18 @@ function skinMock(id, type, w) {   // the design shown on a keyboard deck or a m
       const kx = x + W * .07, ky = y + H * .07, kw = W * .86, kh = H * .48, cols = 14, rows = 5; g.fillStyle = 'rgba(10,10,12,.92)';
       for (let r = 0; r < rows; r++) for (let i = 0; i < cols; i++) { const cw = kw / cols, ch = kh / rows; rr(kx + i * cw + 1.5, ky + r * ch + 1.5, cw - 3, ch - 3, 2.5); g.fill(); }
       g.strokeStyle = 'rgba(255,255,255,.55)'; g.lineWidth = 1.2; rr(x + W * .34, y + H * .64, W * .32, H * .3, 6); g.stroke();
-    } else if (type === 'ms') {   // a mouse seen from above
-      const mw = h * .52, mh = h * .84, x = (w - mw) / 2, y = (h - mh) / 2; g.save(); g.beginPath(); g.ellipse(x + mw / 2, y + mh * .55, mw / 2, mh * .48, 0, 0, Math.PI * 2); g.clip(); cover(x - mw * .3, y, mw * 1.6, mh); g.restore();
-      g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(x + mw / 2, y + mh * .08); g.lineTo(x + mw / 2, y + mh * .42); g.stroke();
-      g.fillStyle = 'rgba(0,0,0,.6)'; rr(x + mw / 2 - 4, y + mh * .17, 8, mh * .12, 4); g.fill();
-      g.strokeStyle = 'rgba(255,255,255,.35)'; g.beginPath(); g.ellipse(x + mw / 2, y + mh * .55, mw / 2, mh * .48, 0, 0, Math.PI * 2); g.stroke();
+    } else if (type === 'tp') {   // the trackpad (mouse pad) on the laptop, with the keys above it
+      const x = w * .04, y = h * .06, W = w * .92, H = h * .88; g.fillStyle = '#c9cacd'; rr(x, y, W, H, 12); g.fill();
+      const kx = x + W * .07, ky = y + H * .05, kw = W * .86, kh = H * .4, cols = 14, rows = 4; g.fillStyle = '#1b1b1e';
+      for (let r = 0; r < rows; r++) for (let i = 0; i < cols; i++) { const cw = kw / cols, ch = kh / rows; rr(kx + i * cw + 1.5, ky + r * ch + 1.5, cw - 3, ch - 3, 2.5); g.fill(); }
+      const tx = x + W * .3, ty = y + H * .52, tw = W * .4, th = H * .42; g.save(); rr(tx, ty, tw, th, 8); g.clip(); cover(tx, ty, tw, th); g.restore();
+      g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = 1.2; rr(tx, ty, tw, th, 8); g.stroke();
     } else cover(0, 0, w, h);
     ok(mockCache[key] = c.toDataURL('image/jpeg', .86)); }; im.onerror = () => ok(''); im.src = `skins/${id}-s.${IX}`; }); }
 function skinsGrid() {
   const photos = SKINS.filter(s => s[2] === 'photo' && (!SKC || SKTAG[s[0]] === SKC)), pr = SKT === 'lap' ? `from ${CUR}${SKINP.S.price}` : `${CUR}${XP[SKT]}`;
   return `<div class="seg sktype" id="sktype" role="tablist" aria-label="Skin type">${Object.entries(STYPE).map(([k, [n, s]]) => `<button type="button" role="tab" aria-selected="${k === SKT}" class="${k === SKT ? 'on' : ''}" data-t="${k}"><b>${n.replace(' skin', '')}</b><small>${k === 'lap' ? `${CUR}${SKINP.S.price}–${SKINP.C.price}` : CUR + XP[k]}</small></button>`).join('')}</div>
-    ${SKT === 'lap' ? `<div class="skp">${Object.values(SKINP).map(t => `<span><b>${t.name}</b><small>${t.fit}</small><i>${CUR}${t.price}</i></span>`).join('')}</div>` : `<p class="sub" style="margin:4px 0 10px">${SKT === 'kb' ? 'Wraps the keyboard area and palm rest of your laptop, cut around the keys and trackpad.' : 'Wraps the top of your mouse. Tell us the model on WhatsApp and we cut it to fit.'} ${CUR}${XP[SKT]} each.</p>`}
+    ${SKT === 'lap' ? `<div class="skp">${Object.values(SKINP).map(t => `<span><b>${t.name}</b><small>${t.fit}</small><i>${CUR}${t.price}</i></span>`).join('')}</div>` : `<p class="sub" style="margin:4px 0 10px">${SKT === 'kb' ? 'Wraps the keyboard area and palm rest of your laptop, cut around the keys and trackpad.' : 'Covers the trackpad (the mouse pad below your keyboard). It still clicks and swipes as normal. Tell us your laptop model and we cut it to fit.'} ${CUR}${XP[SKT]} each.</p>`}
     <div class="hs" id="skcat" style="margin-bottom:10px">${SKCAT.map(([k, n]) => `<button type="button" class="chip ${k === SKC ? 'on' : ''}" data-c="${k}" aria-pressed="${k === SKC}">${n}</button>`).join('')}</div>
     <div class="cats skins">${photos.map((s, i) => `<a class="catc" href="#" data-skin="${s[0]}"><div class="table sk" style="aspect-ratio:3/2;background:#111">${SKT === 'lap' ? `<img src="skins/${s[0]}-s.${IX}" alt="${esc(s[1])} laptop skin" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover">` : `<img data-mock="${s[0]}" alt="${esc(s[1])} ${STYPE[SKT][0].toLowerCase()}" style="width:100%;height:100%;object-fit:cover">`}${NEWSKIN.has(s[0]) ? '<span class="newb">New</span>' : ''}${heart('sk:' + s[0], s[1] + ' skin')}</div>
       <div class="cmeta"><span class="no">${String(i + 1).padStart(2, '0')}</span><b>${esc(s[1])}</b><span>${pr}${SKT === 'lap' ? ' · S · M · L · Custom' : ''}</span></div></a>`).join('')}
@@ -1149,17 +1157,17 @@ function skinSheet(id, type) {   // product page for one skin design, in a sheet
     <div class="seg sktype" id="skt2" role="radiogroup" aria-label="What to skin">${Object.entries(STYPE).map(([k, [n, s]]) => `<button type="button" role="radio" aria-checked="${k === t}" class="${k === t ? 'on' : ''}" data-t="${k}"><b>${n.replace(' skin', '')}</b><small>${s}</small></button>`).join('')}</div>
     ${t === 'lap' ? `<p class="small">Full vinyl skin for the lid, matte laminate, bubble-free. Pick your size:</p>
       <div class="skz">${Object.entries(SKINP).map(([k, s]) => `<button type="button" data-z="${k}" class="${k === z ? 'on' : ''}" aria-pressed="${k === z}"><b>${s.name}</b><small>${s.fit}</small><i>${CUR}${s.price}</i></button>`).join('')}</div>`
-      : `<p class="small">${t === 'kb' ? 'Covers the keyboard area and palm rest, cut around the keys and the trackpad. Tell us your laptop model at checkout (in the location box) or on WhatsApp.' : 'Covers the top of your mouse. We cut it to your mouse: send us the model on WhatsApp after paying.'}</p>`}
+      : `<p class="small">${t === 'kb' ? 'Covers the keyboard area and palm rest, cut around the keys and the trackpad. Tell us your laptop model at checkout (in the location box) or on WhatsApp.' : 'A skin for the trackpad (the mouse pad on your laptop), cut to its exact size. Tell us your laptop model at checkout or on WhatsApp.'}</p>`}
     <div class="sum1"><span>${esc(STYPE[t][0])}${t === 'lap' ? ' · ' + SKINP[z].name : ''}</span><b>${CUR}${price()}</b></div>
     <button class="btn y" type="button" id="skbuy">Buy now · ${CUR}${price()}</button>
-    <div class="two"><button class="btn o" type="button" id="skadd">Add to cart</button>${t !== 'ms' ? `<a class="btn o" href="/design/" id="sktry">Try it on my laptop</a>` : '<a class="btn o" href="#help">Questions?</a>'}</div>`;
+    <div class="two"><button class="btn o" type="button" id="skadd">Add to cart</button><a class="btn o" href="/design/" id="sktry">Try it on my laptop</a></div>`;
     $('#skx').onclick = () => box.hidden = true;
     if (t !== 'lap') skinMock(id, t, 600).then(u => { const m = $('#skmk'); if (m && u) m.src = u; });
     $('#skt2').onclick = e => { const b = e.target.closest('[data-t]'); if (b) { t = b.dataset.t; buzz(); draw(); } };
     const zz = box.querySelector('.skz'); if (zz) zz.onclick = e => { const b = e.target.closest('[data-z]'); if (b) { z = b.dataset.z; store.set('sl-skinsize', z); buzz(); draw(); } };
     $('#skadd').onclick = () => { const k = key(); setPack(k, (packs[k] || 0) + 1); buzz(); box.hidden = true; toast(`${sk[1]} ${STYPE[t][0].toLowerCase()} added`); };
     $('#skbuy').onclick = () => { box.hidden = true; buyNow(key()); };
-    if ($('#sktry')) $('#sktry').onclick = () => { const st = store.get('sl-design3', {}) || {}; st.skin = { ...(st.skin || {}), [t === 'kb' ? 'kb' : 'lid']: id }; if (t === 'lap') st.skinSize = z; store.set('sl-design3', st); }; };
+    if ($('#sktry')) $('#sktry').onclick = () => { const st = store.get('sl-design3', {}) || {}; st.skin = { ...(st.skin || {}), [t === 'kb' ? 'kb' : t === 'tp' ? 'pad' : 'lid']: id }; if (t === 'lap') st.skinSize = z; store.set('sl-design3', st); }; };
   draw(); box.hidden = false; openSheetA11y(box);
 }
 
@@ -1214,6 +1222,11 @@ function vHelp(orderRef) {
   app.innerHTML = `<section class="sec" style="padding-top:14px"><div class="crumb"><a href="#">Shop</a> / <span>Help</span></div>
     <div class="sech"><div><h2>Help <em>centre</em></h2><p class="sub">Answers first. A real person on WhatsApp if you need one.</p></div></div>
     <form class="track" id="trk"><label for="trk-i" class="lbl">Track an order</label><div class="tr2"><input id="trk-i" placeholder="e.g. SL-ABC12" autocapitalize="characters" value="${esc(orderRef || '')}"><button class="btn y" type="submit">Track</button></div></form>
+    <form class="cq" id="cq"><h3>Custom size? Get a price</h3><p class="small">A big lid sticker, a sheet of your own designs, a skin for an odd laptop. Type the size and we'll tell you roughly what it costs.</p>
+      <div class="cq-g"><div class="fld"><label for="cq-k">What</label><select id="cq-k"><option value="sticker">Stickers (print &amp; cut)</option><option value="skin">Skin</option><option value="decal">Vinyl decal</option></select></div>
+        <div class="fld"><label for="cq-w">Width (cm)</label><input id="cq-w" type="number" inputmode="decimal" min="1" max="300" placeholder="e.g. 30"></div><div class="fld"><label for="cq-h">Height (cm)</label><input id="cq-h" type="number" inputmode="decimal" min="1" max="300" placeholder="e.g. 20"></div>
+        <div class="fld"><label for="cq-q">How many</label><input id="cq-q" type="number" inputmode="numeric" min="1" max="500" value="1"></div></div>
+      <div id="cq-r" class="cq-r" role="status" aria-live="polite"></div></form>
     <div class="faq">${HELP.map(([t, qs]) => `<h3 class="lbl" style="margin:18px 0 6px">${esc(t)}</h3>${qs.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('')}`).join('')}
       <p style="margin-top:10px"><a class="lnk" href="/care/">Care guide: applying and removing stickers →</a></p></div>
     <form class="tk" id="tk" novalidate><h3>Report a problem or ask us</h3><p class="small">We reply on WhatsApp. You get a reference straight away.</p>
@@ -1224,6 +1237,12 @@ function vHelp(orderRef) {
       <div class="fld" id="tkf-msg"><label for="tk-m">Tell us what happened</label><textarea id="tk-m" maxlength="1500" aria-describedby="tke-msg"></textarea><small class="fe" id="tke-msg"></small></div>
       <button class="btn y" type="submit" id="tk-go">Send</button><div id="tk-ok" role="status"></div>
       <a class="btn wa" href="https://wa.me/${WA}?text=${encodeURIComponent(orderRef ? `Hello Skin Lab, I need help with order ${orderRef}.` : 'Hello Skin Lab, I need help.')}" target="_blank" rel="noopener"><svg class="wa-i"><use href="#wa"/></svg>Chat on WhatsApp instead</a></form></section>${footer}`;
+  { let t; const go = async () => { const w = +$('#cq-w').value, h = +$('#cq-h').value, q = +$('#cq-q').value || 1, k = $('#cq-k').value, r = $('#cq-r'); if (!(w > 0 && h > 0)) { r.innerHTML = ''; return; }
+      try { const j = await (await fetch(`/api/public/?a=quote&w=${w}&h=${h}&q=${q}&kind=${k}`)).json(); if (!j.price) throw 0;
+        const what = `${q > 1 ? q + ' × ' : ''}${k === 'skin' ? 'skin' : k === 'decal' ? 'vinyl decal' : 'sticker print'} ${j.w} × ${j.h} cm`;
+        r.innerHTML = `<div><span class="lbl">About</span><b>${CUR}${j.price}</b><small>${esc(what)} · final price confirmed on WhatsApp</small></div><a class="btn y" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent(`Hello Skin Lab, I'd like a custom ${what} (about ${CUR}${j.price}).`)}">Order this on WhatsApp</a>`;
+      } catch (e) { r.innerHTML = '<small>Could not get a price right now. Ask us on WhatsApp.</small>'; } };
+    ['#cq-w', '#cq-h', '#cq-q', '#cq-k'].forEach(x => $(x).addEventListener('input', () => { clearTimeout(t); t = setTimeout(go, 350); })); $('#cq').onsubmit = e => { e.preventDefault(); go(); }; }
   $('#trk').onsubmit = e => { e.preventDefault(); const v = $('#trk-i').value.trim().toUpperCase().replace(/\s/g, ''); if (/^SL-[2-9A-Z]{5}$/.test(v)) location.href = `/o/${v}/`; else toast('Order numbers look like SL-ABC12'); };
   $('#tk').onsubmit = async e => { e.preventDefault(); const err = (f, m) => { $('#tkf-' + f).classList.toggle('err', !!m); $('#tke-' + f).textContent = m || ''; };
     const name = $('#tk-n').value.trim(), phone = $('#tk-p').value.trim(), msg = $('#tk-m').value.trim(); err('name'); err('phone'); err('msg');
