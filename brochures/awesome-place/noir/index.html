@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Awesome Place Noir</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;0,6..96,700;1,6..96,400;1,6..96,500&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* NOIR — bold, editorial, after-dark. Prices are in the markup (search GH₵). */
+:root{
+  --ink:#0D0A08; --ink-2:#17120E; --ink-3:#221A14;
+  --bone:#F3ECE0; --dim:rgba(243,236,224,.62); --faint:rgba(243,236,224,.14);
+  --gold:#C9A25A; --gold-2:#E6C784; --gold-3:#9C7A3C;
+  --display:'Bodoni Moda', Didot, serif; --sans:'Manrope', Arial, sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#3a332c}
+body{font-family:var(--sans);color:var(--bone);-webkit-font-smoothing:antialiased;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+@page{size:A4;margin:0}
+.page{width:210mm;height:297mm;margin:10mm auto;position:relative;overflow:hidden;background:var(--ink);box-shadow:0 10px 40px rgba(0,0,0,.45)}
+@media print{html,body{background:none}.page{margin:0;box-shadow:none;break-after:page}}
+@media screen and (max-width:820px){.page{zoom:calc((100vw - 32px) / 794px);margin:16px auto}}
+.ph{display:block;width:100%;height:100%;object-fit:cover}
+.kick{font-size:7pt;font-weight:600;letter-spacing:.38em;text-transform:uppercase;color:var(--gold)}
+.big{font-family:var(--display);font-weight:400;line-height:.92;letter-spacing:-.02em;color:var(--bone)}
+.big em{font-style:italic;color:var(--gold-2)}
+.num{font-family:var(--display);font-style:italic;color:var(--gold)}
+.folio{position:absolute;left:16mm;right:16mm;bottom:9mm;display:flex;justify-content:space-between;font-size:6.6pt;font-weight:500;letter-spacing:.32em;text-transform:uppercase;color:rgba(243,236,224,.4)}
+.folio b{color:var(--gold);font-weight:600}
+.hair{height:1px;background:var(--faint)}
+
+/* 1 cover */
+.cv img.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%}
+.cv .shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(13,10,8,.9) 0%,rgba(13,10,8,.25) 34%,rgba(13,10,8,.35) 55%,rgba(13,10,8,.97) 82%)}
+.cv .top{position:absolute;top:13mm;left:16mm;right:16mm;display:flex;justify-content:space-between;align-items:center}
+.cv .top img{width:17mm}
+.cv .top span{font-size:6.8pt;letter-spacing:.36em;text-transform:uppercase;color:var(--dim);font-weight:500}
+.cv h1{position:absolute;left:14mm;right:14mm;bottom:52mm;font-size:76pt}
+.cv h1 small{display:block;font-family:var(--sans);font-size:9pt;font-weight:600;letter-spacing:.6em;color:var(--gold);margin:0 0 4mm 1mm}
+.cv .meta{position:absolute;left:16mm;right:16mm;bottom:16mm;display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid rgba(201,162,90,.5);padding-top:4.5mm}
+.cv .meta div{font-size:7pt;letter-spacing:.24em;text-transform:uppercase;color:var(--dim);font-weight:500}
+.cv .meta b{display:block;font-family:var(--display);font-size:13pt;letter-spacing:0;text-transform:none;color:var(--bone);font-weight:400;margin-top:1mm}
+
+/* 2 intro */
+.intro .left{position:absolute;left:0;top:0;bottom:0;width:86mm}
+.intro .left::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 60%,var(--ink))}
+.intro .right{position:absolute;left:96mm;right:16mm;top:22mm}
+.intro h2{font-size:40pt;margin-top:5mm}
+.intro p{font-size:9.6pt;line-height:1.75;color:var(--dim);margin-top:5mm}
+.intro p b{color:var(--bone);font-weight:500}
+.stats{position:absolute;left:96mm;right:16mm;top:170mm}
+.stats div{display:flex;align-items:baseline;gap:5mm;padding:3.4mm 0;border-top:1px solid var(--faint)}
+.stats div:last-child{border-bottom:1px solid var(--faint)}
+.stats b{font-family:var(--display);font-size:22pt;font-weight:400;color:var(--gold-2);width:26mm;flex:none;line-height:1}
+.stats span{font-size:8.6pt;color:var(--bone);letter-spacing:.02em}
+.stats span i{font-style:normal;color:var(--dim);display:block;font-size:7.6pt;margin-top:.4mm}
+
+/* 3 occasions — stacked strips */
+.oc .head{position:absolute;left:16mm;right:16mm;top:18mm;display:flex;justify-content:space-between;align-items:flex-end}
+.oc .head h2{font-size:46pt}
+.oc .head p{width:62mm;font-size:8.6pt;line-height:1.6;color:var(--dim);text-align:right}
+.strips{position:absolute;left:0;right:0;top:66mm;bottom:20mm;display:grid;grid-template-rows:repeat(5,1fr);gap:1.6mm}
+.strip{position:relative;overflow:hidden}
+.strip img{position:absolute;inset:0}
+.strip::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(13,10,8,.92) 0%,rgba(13,10,8,.55) 45%,rgba(13,10,8,.05) 80%)}
+.strip .c{position:absolute;left:16mm;top:50%;transform:translateY(-50%);z-index:1;display:flex;align-items:center;gap:6mm}
+.strip .num{font-size:20pt;width:12mm}
+.strip h3{font-family:var(--display);font-weight:400;font-size:25pt;line-height:1}
+.strip p{font-size:8.2pt;color:var(--dim);margin-top:1.2mm}
+
+/* 4 spaces */
+.sp .hero{position:absolute;left:0;right:0;top:0;height:150mm}
+.sp .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(13,10,8,.94) 0%,rgba(13,10,8,.72) 34%,rgba(13,10,8,.2) 52%,rgba(13,10,8,.75) 80%,var(--ink))}
+.sp .ttl{position:absolute;left:16mm;right:16mm;top:18mm;z-index:1}
+.sp .ttl h2{font-size:50pt;margin-top:4mm}
+.sp .cap{position:absolute;left:16mm;top:118mm;z-index:1;width:100mm}
+.sp .cap h3{font-family:var(--display);font-weight:400;font-size:24pt}
+.sp .cap p{font-size:8.6pt;color:var(--dim);line-height:1.6;margin-top:1.5mm}
+.sp .three{position:absolute;left:16mm;right:16mm;top:160mm;display:grid;grid-template-columns:repeat(3,1fr);gap:5mm}
+.sp .three .pic{height:68mm;overflow:hidden}
+.sp .three .num{font-size:12pt;display:block;margin-top:4mm}
+.sp .three h4{font-family:var(--display);font-weight:400;font-size:15pt;margin-top:.5mm}
+.sp .three p{font-size:8pt;color:var(--dim);line-height:1.55;margin-top:1.2mm}
+
+/* 5 services */
+.sv .wrap{position:absolute;left:16mm;right:16mm;top:20mm}
+.sv h2{font-size:46pt;margin-top:4mm}
+.sv .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:9mm;border-top:1px solid var(--faint)}
+.sv .grid div{padding:4.5mm 4mm 4.5mm 0;border-bottom:1px solid var(--faint)}
+.sv .grid .num{font-size:11pt}
+.sv .grid b{display:block;font-family:var(--display);font-weight:400;font-size:14pt;margin-top:1mm}
+.sv .grid span{font-size:7.8pt;color:var(--dim)}
+.menu{position:absolute;left:16mm;right:16mm;top:128mm;display:grid;grid-template-columns:62mm 1fr;gap:10mm}
+.menu .pic{height:128mm;overflow:hidden}
+.menu h3{font-family:var(--display);font-weight:400;font-size:26pt}
+.menu h3 em{color:var(--gold-2)}
+.menu .sub{font-size:7.8pt;color:var(--dim);margin:1.5mm 0 3mm}
+.row{display:flex;align-items:baseline;gap:3mm;padding:2.55mm 0;border-bottom:1px solid var(--faint);font-size:8.8pt}
+.row .d{flex:1}
+.row .p{font-family:var(--display);font-size:12.5pt;color:var(--gold-2);white-space:nowrap}
+.row .p small{font-family:var(--sans);font-size:6.8pt;color:var(--dim);margin-left:.8mm}
+.row small.n{color:var(--dim);font-size:7.2pt;margin-left:1mm}
+
+/* 6 packages */
+.pk .wrap{position:absolute;left:16mm;right:16mm;top:20mm}
+.pk h2{font-size:52pt;margin-top:4mm}
+.pk .intro-l{font-size:8.8pt;color:var(--dim);line-height:1.6;margin-top:4mm;width:120mm}
+.tiers{position:absolute;left:16mm;right:16mm;top:76mm;display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid rgba(201,162,90,.35)}
+.tier{padding:7mm 5.5mm 6mm;position:relative}
+.tier+.tier{border-left:1px solid rgba(201,162,90,.35)}
+.tier.on{background:linear-gradient(180deg,#2a2016,#17120E)}
+.tier .num{font-size:11pt}
+.tier h3{font-family:var(--display);font-weight:400;font-size:21pt;margin-top:1mm}
+.tier .who{font-size:7.4pt;color:var(--dim);min-height:7mm;margin-top:1mm;line-height:1.4}
+.tier .amt{font-family:var(--display);font-size:29pt;color:var(--gold-2);margin-top:5mm;line-height:1}
+.tier .amt small{font-family:var(--sans);font-size:7pt;letter-spacing:.24em;color:var(--dim);display:block;margin-bottom:1.5mm}
+.tier .cap2{font-size:7.4pt;color:var(--dim);margin-top:1.5mm;padding-bottom:4mm;border-bottom:1px solid var(--faint)}
+.tier ul{list-style:none;margin-top:3.5mm}
+.tier li{font-size:8pt;line-height:1.4;padding:1.15mm 0;color:rgba(243,236,224,.85)}
+.tier li::before{content:"✦";color:var(--gold);font-size:6pt;margin-right:2.2mm;vertical-align:1px}
+.tier .badge{position:absolute;top:5mm;right:5mm;font-size:6pt;letter-spacing:.24em;font-weight:700;color:var(--ink);background:var(--gold-2);padding:1.1mm 2.4mm;text-transform:uppercase}
+.vo{position:absolute;left:16mm;right:16mm;top:203mm;display:grid;grid-template-columns:56mm repeat(3,1fr);gap:0;border:1px solid var(--faint)}
+.vo>div{padding:4.5mm 4mm}.vo>div:first-child{padding-left:6mm}
+.vo>div+div{border-left:1px solid var(--faint);text-align:center}
+.vo h4{font-family:var(--display);font-weight:400;font-size:17pt}
+.vo p{font-size:7.6pt;color:var(--dim);margin-top:1mm;line-height:1.45}
+.vo small{display:block;font-size:6.4pt;letter-spacing:.26em;color:var(--dim);text-transform:uppercase}
+.vo b{display:block;font-family:var(--display);font-weight:400;font-size:15pt;color:var(--gold-2);margin-top:1mm;white-space:nowrap}
+.cat{position:absolute;left:16mm;right:16mm;top:240mm;font-size:8.6pt;line-height:1.6;color:var(--dim)}
+.cat b{color:var(--bone);font-weight:600}
+
+/* 7 booking */
+.bk .wrap{position:absolute;left:16mm;right:16mm;top:20mm}
+.bk h2{font-size:46pt;margin-top:4mm}
+.flow{position:absolute;left:16mm;right:16mm;top:66mm;display:grid;grid-template-columns:repeat(4,1fr);gap:5mm}
+.flow .num{font-size:30pt;line-height:1}
+.flow b{display:block;font-family:var(--display);font-weight:400;font-size:14pt;margin-top:2mm}
+.flow span{display:block;font-size:7.8pt;line-height:1.5;color:var(--dim);margin-top:1mm}
+.money{position:absolute;left:16mm;right:16mm;top:110mm;display:grid;grid-template-columns:repeat(3,1fr);background:var(--gold-2);color:var(--ink)}
+.money div{padding:5mm 5.5mm}
+.money div+div{border-left:1px solid rgba(13,10,8,.2)}
+.money small{font-size:6.4pt;letter-spacing:.28em;text-transform:uppercase;font-weight:700;opacity:.7}
+.money b{display:block;white-space:nowrap;font-family:var(--display);font-size:14.5pt;font-weight:500;margin-top:1mm}
+.money span{display:block;font-size:7.6pt;line-height:1.45;margin-top:1mm}
+.qa{position:absolute;left:16mm;right:16mm;top:154mm;display:grid;grid-template-columns:1fr 1fr;gap:0 10mm}
+.qa h3{grid-column:span 2;font-family:var(--display);font-weight:400;font-size:24pt;margin-bottom:2mm}
+.qa div{padding:3mm 0;border-top:1px solid var(--faint)}
+.qa b{display:block;font-size:8.8pt;font-weight:600;color:var(--bone)}
+.qa span{display:block;font-size:7.9pt;line-height:1.5;color:var(--dim);margin-top:.8mm}
+
+/* 8 back */
+.bc img.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.32}
+.bc .shade{position:absolute;inset:0;background:linear-gradient(180deg,var(--ink) 0%,rgba(13,10,8,.5) 40%,var(--ink) 85%)}
+.bc .wrap{position:absolute;left:16mm;right:16mm;top:24mm}
+.bc h2{font-size:66pt}
+.bc .lede{font-size:10pt;color:var(--dim);margin-top:6mm;width:120mm;line-height:1.6}
+.bc .phone{position:absolute;left:16mm;right:16mm;top:122mm}
+.bc .phone small{font-size:7pt;letter-spacing:.36em;font-weight:600;color:var(--gold);text-transform:uppercase}
+.bc .phone b{display:block;font-family:var(--display);font-weight:400;font-size:44pt;color:var(--bone);margin-top:2mm;letter-spacing:-.01em}
+.bc .ct{position:absolute;left:16mm;right:16mm;top:166mm;display:grid;grid-template-columns:1fr 1fr;border-top:1px solid rgba(201,162,90,.4)}
+.bc .ct div{padding:4.5mm 0;border-bottom:1px solid var(--faint)}
+.bc .ct div:nth-child(odd){padding-right:6mm}
+.bc .ct small{display:block;font-size:6.4pt;letter-spacing:.3em;color:var(--dim);text-transform:uppercase}
+.bc .ct span{font-size:10pt;color:var(--bone)}
+.bc .foot{position:absolute;left:16mm;right:16mm;bottom:16mm;display:flex;justify-content:space-between;align-items:flex-end}
+.bc .foot .logo{width:70mm}
+.bc .qr{display:flex;gap:5mm}
+.bc .qr div{text-align:center;font-size:6.4pt;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.bc .qr .code{width:21mm;height:21mm;background:var(--bone);padding:1.8mm;margin-bottom:2mm}
+.bc .qr img{width:100%;height:100%;display:block}
+</style>
+</head>
+<body>
+
+<!-- 1 COVER -->
+<section class="page cv">
+  <img class="bg" src="../images/hero-dusk.jpg" alt="">
+  <div class="shade"></div>
+  <div class="top"><img src="../images/emblem-final.png" alt=""><span>Brochure &amp; Price Guide · 2026/27</span></div>
+  <h1 class="big"><small>The</small>Awesome<br><em>Place.</em></h1>
+  <div class="meta">
+    <div>Events Center<b>East Legon, Accra</b></div>
+    <div>Capacity<b>Up to 600 guests</b></div>
+    <div>Bookings<b>+233 59 840 4993</b></div>
+  </div>
+</section>
+
+<!-- 2 INTRO -->
+<section class="page intro">
+  <div class="left"><img class="ph" src="../images/frontage-palms.jpg" alt="" style="object-position:70% 50%"></div>
+  <div class="right">
+    <div class="kick">Welcome</div>
+    <h2 class="big">A venue as striking as <em>the day you plan.</em></h2>
+    <p>Palms out front. Warm light at dusk. A glass-fronted hall that glows the moment your guests pull in. <b>The Awesome Place</b> sits on Boundary Road in East Legon, built for nights people talk about for years.</p>
+    <p>We’re a small, hands-on team. We’ll walk the room with you, learn the names that matter, and quietly handle the hundred little things — so all you have to do on the day is show up and enjoy it.</p>
+  </div>
+  <div class="stats">
+    <div><b>600</b><span>Guests, banquet-style<i>Big enough for the whole family. Intimate when it’s fifty.</i></span></div>
+    <div><b>A/C</b><span>Fully air-conditioned hall<i>Cool all night, whatever the season.</i></span></div>
+    <div><b>Free</b><span>Very large on-site car park<i>Nobody circles the block in heels.</i></span></div>
+    <div><b>Safe</b><span>Secure, gated environment<i>Peace of mind for you and your guests.</i></span></div>
+  </div>
+  <div class="folio"><span></span><b>02</b></div>
+</section>
+
+<!-- 3 OCCASIONS -->
+<section class="page oc">
+  <div class="head">
+    <div><div class="kick">Occasions</div><h2 class="big" style="margin-top:4mm">Any event.<br><em>Our place.</em></h2></div>
+    <p>Joyous or strategic, fifty guests or six hundred — the room changes shape around your story.</p>
+  </div>
+  <div class="strips">
+    <div class="strip"><img class="ph" src="../images/wedding-blue.jpg" alt="" style="object-position:50% 45%"><div class="c"><span class="num">01</span><div><h3>Weddings</h3><p>Dreamy stages, sweeping drapes and a room that glows.</p></div></div></div>
+    <div class="strip"><img class="ph" src="../images/wedding-aisle.jpg" alt="" style="object-position:50% 40%"><div class="c"><span class="num">02</span><div><h3>Engagements</h3><p>A grand aisle for a grand yes.</p></div></div></div>
+    <div class="strip"><img class="ph" src="../images/banquet-rounds.jpg" alt="" style="object-position:50% 30%"><div class="c"><span class="num">03</span><div><h3>Banquets &amp; Receptions</h3><p>Round tables, gold chairs, effortless flow.</p></div></div></div>
+    <div class="strip"><img class="ph" src="../images/conference-candles.jpg" alt="" style="object-position:50% 55%"><div class="c"><span class="num">04</span><div><h3>Corporate &amp; Conferences</h3><p>Stage lighting, big screens and long-table dinners.</p></div></div></div>
+    <div class="strip"><img class="ph" src="../images/garden-lounge.jpg" alt="" style="object-position:50% 62%"><div class="c"><span class="num">05</span><div><h3>Birthdays &amp; Parties</h3><p>Lounge corners and garden vibes for the good times.</p></div></div></div>
+  </div>
+  <div class="folio"><span>Occasions</span><b>03</b></div>
+</section>
+
+<!-- 4 SPACES -->
+<section class="page sp">
+  <div class="hero"><img class="ph" src="../images/ballroom-chandeliers.jpg" alt=""></div>
+  <div class="ttl"><div class="kick">Spaces</div><h2 class="big">Your theme,<br><em>your way.</em></h2></div>
+  <div class="cap"><h3>The Main Hall</h3><p>Chandeliers, high ceilings and full air-conditioning. Up to 600 guests banquet-style.</p></div>
+  <div class="three">
+    <div><div class="pic"><img class="ph" src="../images/marquee-navy.jpg" alt=""></div><span class="num">i.</span><h4>Outdoor Marquee</h4><p>Draped ceilings and chandeliers on the lawn — a ballroom under the sky.</p></div>
+    <div><div class="pic"><img class="ph" src="../images/tent-gold.jpg" alt=""></div><span class="num">ii.</span><h4>Garden Reception</h4><p>Fresh air, fresh flowers and flawless service.</p></div>
+    <div><div class="pic"><img class="ph" src="../images/table-pink.jpg" alt="" style="object-position:30% 50%"></div><span class="num">iii.</span><h4>The Finer Details</h4><p>Chargers, gold cutlery and colour matched to your theme.</p></div>
+  </div>
+  <div class="folio"><span>Spaces</span><b>04</b></div>
+</section>
+
+<!-- 5 SERVICES + ADD-ONS -->
+<section class="page sv">
+  <div class="wrap">
+    <div class="kick">Services</div>
+    <h2 class="big">More than <em>a venue.</em></h2>
+    <div class="grid">
+      <div><span class="num">01</span><b>Venue rental</b><span>Hall, grounds &amp; parking</span></div>
+      <div><span class="num">02</span><b>Planning &amp; coordination</b><span>A dedicated host on the day</span></div>
+      <div><span class="num">03</span><b>Lighting &amp; sound</b><span>PA, mics &amp; stage lights</span></div>
+      <div><span class="num">04</span><b>Chairs &amp; tables</b><span>Rounds, long tables, gold chairs</span></div>
+      <div><span class="num">05</span><b>Decoration support</b><span>Drapes, florals, backdrops</span></div>
+      <div><span class="num">06</span><b>Catering</b><span>Local &amp; continental menus</span></div>
+    </div>
+  </div>
+  <div class="menu">
+    <div class="pic"><img class="ph" src="../images/conference-candles.jpg" alt="" style="object-position:40% 50%"></div>
+    <div>
+      <h3>Add-ons <em>&amp; extras</em></h3>
+      <p class="sub">Mix and match with any package. Prices in Ghana cedis.</p>
+      <div class="row"><span>Extra hour of hall time</span><span class="d"></span><span class="p">1,500<small>/hr</small></span></div>
+      <div class="row"><span>Outdoor marquee setup<small class="n">up to 300</small></span><span class="d"></span><span class="p">9,500</span></div>
+      <div class="row"><span>Stage &amp; themed backdrop</span><span class="d"></span><span class="p">from 4,500</span></div>
+      <div class="row"><span>LED screen &amp; projector</span><span class="d"></span><span class="p">3,500</span></div>
+      <div class="row"><span>DJ with full sound system</span><span class="d"></span><span class="p">4,000</span></div>
+      <div class="row"><span>Gold chiavari chairs</span><span class="d"></span><span class="p">25<small>/chair</small></span></div>
+      <div class="row"><span>Chair covers &amp; sashes</span><span class="d"></span><span class="p">12<small>/chair</small></span></div>
+      <div class="row"><span>Floral centrepieces</span><span class="d"></span><span class="p">from 350<small>/table</small></span></div>
+      <div class="row"><span>Bridal / VIP holding room</span><span class="d"></span><span class="p">1,200</span></div>
+      <div class="row"><span>Photographer &amp; videographer</span><span class="d"></span><span class="p">from 6,000</span></div>
+      <div class="row" style="border:0"><span style="color:var(--dim);font-size:7.6pt">All figures in GH₵ · Not sure what you need? Give us a budget — we’ll build around it.</span></div>
+    </div>
+  </div>
+  <div class="folio"><span>Services</span><b>05</b></div>
+</section>
+
+<!-- 6 PACKAGES -->
+<section class="page pk">
+  <div class="wrap">
+    <div class="kick">Packages &amp; Pricing</div>
+    <h2 class="big">Three ways <em>in.</em></h2>
+    <p class="intro-l">Every package covers the venue for a full event day (up to 8 hours), cleaning, security and parking. Pick a starting point — then make it yours.</p>
+  </div>
+  <div class="tiers">
+    <div class="tier"><span class="num">i.</span><h3>Elegant</h3><div class="who">Intimate weddings, birthdays &amp; family gatherings</div>
+      <div class="amt"><small>FROM GH₵</small>25,000</div><div class="cap2">Up to 200 guests</div>
+      <ul><li>Main hall for 8 hours</li><li>Round tables, linen &amp; chairs</li><li>PA system &amp; 2 mics</li><li>Stage &amp; ambient lighting</li><li>On-site event host</li><li>Generator backup</li></ul></div>
+    <div class="tier on"><span class="badge">Most booked</span><span class="num">ii.</span><h3>Premium</h3><div class="who">Weddings, receptions &amp; corporate dinners</div>
+      <div class="amt"><small>FROM GH₵</small>45,000</div><div class="cap2">Up to 400 guests</div>
+      <ul><li>Everything in Elegant</li><li>Gold chiavari chairs &amp; covers</li><li>Themed backdrop &amp; draping</li><li>Full sound with DJ</li><li>Florals on every table</li><li>Planning &amp; day-of coordination</li><li>Bridal / VIP holding room</li></ul></div>
+    <div class="tier"><span class="num">iii.</span><h3>VIP</h3><div class="who">Grand weddings, galas &amp; flagship launches</div>
+      <div class="amt"><small>FROM GH₵</small>75,000</div><div class="cap2">Up to 600 guests</div>
+      <ul><li>Everything in Premium</li><li>Hall + outdoor marquee</li><li>Luxury chandelier styling</li><li>LED screen &amp; intelligent lighting</li><li>Red-carpet entrance &amp; ushers</li><li>Valet-managed parking</li><li>Access the evening before</li></ul></div>
+  </div>
+  <div class="vo">
+    <div><h4>Just the venue</h4><p>Your own planner and vendors. 8 hours, chairs &amp; tables included.</p></div>
+    <div><small>Mon–Thu</small><b>GH₵ 12,000</b></div>
+    <div><small>Fri &amp; Sun</small><b>GH₵ 15,000</b></div>
+    <div><small>Saturday</small><b>GH₵ 18,000</b></div>
+  </div>
+  <p class="cat"><b>Catering from GH₵ 180 per guest</b> — buffet or plated, local and continental, with a tasting before you decide. Outside caterers are welcome for a GH₵ 2,000 kitchen &amp; service fee.</p>
+  <div class="folio"><span>Prices valid for events booked in 2026–27</span><b>06</b></div>
+</section>
+
+<!-- 7 BOOKING -->
+<section class="page bk">
+  <div class="wrap"><div class="kick">Booking</div><h2 class="big">Simple. Clear. <em>Done.</em></h2></div>
+  <div class="flow">
+    <div><span class="num">01</span><b>Say hello</b><span>Call or WhatsApp with your date, guest count and event type.</span></div>
+    <div><span class="num">02</span><b>Come see it</b><span>Tour the hall — ideally at the time of day your event runs.</span></div>
+    <div><span class="num">03</span><b>Get your quote</b><span>A tailored, written quote within 48 hours.</span></div>
+    <div><span class="num">04</span><b>Lock your date</b><span>Sign, pay the deposit — it’s officially yours.</span></div>
+  </div>
+  <div class="money">
+    <div><small>To reserve</small><b>50% deposit</b><span>Balance due 14 days before the event.</span></div>
+    <div><small>Refundable</small><b>GH₵ 2,000 caution</b><span>Returned within 7 days, less any damages.</span></div>
+    <div><small>We accept</small><b>MoMo · Bank · Cash</b><span>Whatever’s easiest for you.</span></div>
+  </div>
+  <div class="qa">
+    <h3>Good questions.</h3>
+    <div><b>How many guests can you hold?</b><span>Up to 600 banquet-style. Smaller events feel just as good — we scale the layout.</span></div>
+    <div><b>What if I need to cancel?</b><span>60+ days out, 75% of your deposit back. Inside 60 days, move your date once, free, within 6 months.</span></div>
+    <div><b>Can I bring my own vendors?</b><span>Yes. Outside caterers pay a GH₵ 2,000 kitchen &amp; service fee.</span></div>
+    <div><b>Is there backup power?</b><span>Yes — a standby generator keeps lights, sound and air-con running.</span></div>
+    <div><b>How long is the venue mine?</b><span>8 hours including setup. Extra time is GH₵ 1,500 per hour.</span></div>
+    <div><b>When can my decorator set up?</b><span>From the morning of. Evening-before access is in VIP, or GH₵ 3,000.</span></div>
+    <div><b>Is parking free for guests?</b><span>Yes — a very large car park right on site.</span></div>
+    <div><b>Can I see the space first?</b><span>Please do. Viewings daily, by appointment.</span></div>
+  </div>
+  <div class="folio"><span>Book early — Q4 Saturdays go fast</span><b>07</b></div>
+</section>
+
+<!-- 8 BACK -->
+<section class="page bc">
+  <img class="bg" src="../images/marquee-navy.jpg" alt="">
+  <div class="shade"></div>
+  <div class="wrap">
+    <div class="kick">Let’s talk</div>
+    <h2 class="big" style="margin-top:5mm">Your date<br>is <em>waiting.</em></h2>
+    <p class="lede">Call, WhatsApp, or just come by. We’ll put the kettle on and show you around.</p>
+  </div>
+  <div class="phone"><small>Bookings · Call or WhatsApp</small><b>+233 59 840 4993</b></div>
+  <div class="ct">
+    <div><small>Email</small><span>Awesomeplaceevent@gmail.com</span></div>
+    <div><small>Instagram</small><span>@awesomeplaceevents</span></div>
+    <div><small>Find us</small><span>Saks, Boundary Road, East Legon</span></div>
+    <div><small>City</small><span>Accra, Ghana</span></div>
+  </div>
+  <div class="foot">
+    <img class="logo" src="../images/logo-final.png" alt="The Awesome Place Events Center">
+    <div class="qr">
+      <div><div class="code"><img src="../images/qr-whatsapp.svg" alt=""></div>WhatsApp</div>
+      <div><div class="code"><img src="../images/qr-website.svg" alt=""></div>Website</div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>
