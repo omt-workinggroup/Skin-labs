@@ -646,6 +646,7 @@ const LCOLS = { silver: ['Silver', '#e4e6e9', '#b6b9be'], grey: ['Space grey', '
 const SURFS = { lid: ['Lid', 'Laptop lid', 5.5], kb: ['Keyboard', 'Keyboard area', 3.2], bot: ['Bottom', 'Bottom', 6], pad: ['Mousepad', 'Mousepad', 5] };
 const PADS = { std: [25, 21, 'Standard'], xl: [80, 30, 'Desk mat'] };
 const SKINS = [
+  ['ph-galaxy', 'Blue galaxy', 'photo'],
   ['ph-spidey-collage', 'Spider-Verse collage', 'photo'],
   ['ph-porsche93', 'Porsche 93 race', 'photo'],
   ['ph-spidey-comics', 'Spider-Man comics', 'photo'],
@@ -999,7 +1000,7 @@ const DEC = Object.fromEntries(DECALS.map(d => [d[0], d]));
 const DKIND = { peek: 'Peeks over an edge', palm: 'Around the trackpad', lid: 'Plays with the lid logo' };
 const STYPE = { lap: ['Laptop skin', 'Lid'], kb: ['Keyboard skin', 'Around the keys'], tp: ['Trackpad skin', 'The touchpad'] };
 // skin themes for filtering (photo skins)
-const SKTAG = { 'ph-gojo': 'anime', 'ph-jinx': 'anime', 'ph-tanjiro': 'anime', 'ph-reality': 'anime', 'ph-joker': 'heroes', 'ph-marvel': 'heroes', 'ph-avengers': 'heroes', 'ph-bvs': 'heroes', 'ph-spidey-collage': 'heroes', 'ph-spidey-comics': 'heroes',
+const SKTAG = { 'ph-galaxy': 'art', 'ph-gojo': 'anime', 'ph-jinx': 'anime', 'ph-tanjiro': 'anime', 'ph-reality': 'anime', 'ph-joker': 'heroes', 'ph-marvel': 'heroes', 'ph-avengers': 'heroes', 'ph-bvs': 'heroes', 'ph-spidey-collage': 'heroes', 'ph-spidey-comics': 'heroes',
   'ph-spidey-scrapbook': 'heroes', 'ph-miles': 'heroes', 'ph-spider-logo': 'heroes', 'ph-batman': 'heroes', 'ph-panther': 'heroes', 'ph-joker-ink': 'heroes', 'ph-porsche93': 'cars', 'ph-amg-red': 'cars',
   'ph-kali': 'code', 'ph-circuit': 'code', 'ph-cute-hacker': 'code', 'ph-code-reaper': 'code', 'ph-coder-bomb': 'code', 'ph-coding': 'code', 'ph-tech-logos': 'code', 'ph-wasd': 'code',
   'ph-pink': 'girly', 'ph-rose': 'girly', 'ph-girlpower': 'girly', 'ph-heart-pink': 'girly', 'ph-heart-fluffy': 'girly', 'ph-butterfly': 'girly', 'ph-panda': 'girly',
