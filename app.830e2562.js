@@ -676,6 +676,7 @@ const SKINS = [
   ['ph-heart-pink', 'Finger heart', 'photo'],
   ['ph-heart-fluffy', 'Fluffy finger heart', 'photo'],
   ['ph-popbomb', 'Pop culture bomb', 'photo'],
+  ['ph-gojo', 'Satoru Gojo', 'photo'],
   ['ph-graffiti', 'Red graffiti', 'photo'],
   ['ph-starry', 'Starry Night', 'photo'],
   ['ph-boondocks', 'Boondocks', 'photo'],
@@ -998,7 +999,7 @@ const DEC = Object.fromEntries(DECALS.map(d => [d[0], d]));
 const DKIND = { peek: 'Peeks over an edge', palm: 'Around the trackpad', lid: 'Plays with the lid logo' };
 const STYPE = { lap: ['Laptop skin', 'Lid'], kb: ['Keyboard skin', 'Around the keys'], tp: ['Trackpad skin', 'The touchpad'] };
 // skin themes for filtering (photo skins)
-const SKTAG = { 'ph-jinx': 'anime', 'ph-tanjiro': 'anime', 'ph-reality': 'anime', 'ph-joker': 'heroes', 'ph-marvel': 'heroes', 'ph-avengers': 'heroes', 'ph-bvs': 'heroes', 'ph-spidey-collage': 'heroes', 'ph-spidey-comics': 'heroes',
+const SKTAG = { 'ph-gojo': 'anime', 'ph-jinx': 'anime', 'ph-tanjiro': 'anime', 'ph-reality': 'anime', 'ph-joker': 'heroes', 'ph-marvel': 'heroes', 'ph-avengers': 'heroes', 'ph-bvs': 'heroes', 'ph-spidey-collage': 'heroes', 'ph-spidey-comics': 'heroes',
   'ph-spidey-scrapbook': 'heroes', 'ph-miles': 'heroes', 'ph-spider-logo': 'heroes', 'ph-batman': 'heroes', 'ph-panther': 'heroes', 'ph-joker-ink': 'heroes', 'ph-porsche93': 'cars', 'ph-amg-red': 'cars',
   'ph-kali': 'code', 'ph-circuit': 'code', 'ph-cute-hacker': 'code', 'ph-code-reaper': 'code', 'ph-coder-bomb': 'code', 'ph-coding': 'code', 'ph-tech-logos': 'code', 'ph-wasd': 'code',
   'ph-pink': 'girly', 'ph-rose': 'girly', 'ph-girlpower': 'girly', 'ph-heart-pink': 'girly', 'ph-heart-fluffy': 'girly', 'ph-butterfly': 'girly', 'ph-panda': 'girly',
