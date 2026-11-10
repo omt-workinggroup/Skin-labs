@@ -188,6 +188,7 @@ const SOLID = [['s-black', 'Matte black', '#121213'], ['s-white', 'Gloss white',
 // ---------- state ----------
 let L = null, col = '', surf = 'lid', sel = -1, lidA = 108, hist = [], skinSize = '';
 const PADP = 30;
+const PADPIC = new Set(['ph-gojo']);   // skins with their own trackpad artwork (skins/<id>-pad)
 const SKINP = { S: { name: 'Small', fit: 'up to 13.3″', price: 70 }, M: { name: 'Medium', fit: '14″ – 15.6″', price: 80 }, L: { name: 'Large', fit: '16″ – 17.3″', price: 90 }, C: { name: 'Custom', fit: 'full wrap or own picture', price: 120 } };
 const skinFor = inch => !inch ? 'M' : inch <= 13.5 ? 'S' : inch <= 15.7 ? 'M' : 'L';
 const items = { lid: [], kb: [], bot: [] }, skin = { lid: '', kb: '', bot: '', pad: '' };
@@ -265,7 +266,7 @@ async function paintBase(s) {
   if (s === 'bot') { await paintSkin(g, skin.bot, W, H); bottom(g, W, H, light); }
   if (s === 'kb') { await paintSkin(g, skin.kb, W, H); keyboard(g, W, H, light);
     if (skin.pad && PADR) { const [x, y, w, h] = PADR; g.save(); rr(g, x, y, w, h, W * .012); g.clip(); const c = document.createElement('canvas'); c.width = Math.ceil(w); c.height = Math.ceil(h);
-      await paintSkin(c.getContext('2d'), skin.pad, c.width, c.height); g.drawImage(c, x, y); g.restore();
+      await paintSkin(c.getContext('2d'), PADPIC.has(skin.pad) ? skin.pad + '-pad' : skin.pad, c.width, c.height); g.drawImage(c, x, y); g.restore();
       g.strokeStyle = light ? 'rgba(0,0,0,.22)' : 'rgba(255,255,255,.22)'; g.lineWidth = W * .0016; rr(g, x, y, w, h, W * .012); g.stroke(); } }
 }
 function paintNow(s) { if (!BASE[s]) return; const old = TX[s].image; TX[s].image = BASE[s]; BASE[s] = old; TX[s].needsUpdate = true; kick(); }   // swap canvases: no 2048 px copy

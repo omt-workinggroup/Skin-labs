@@ -1112,7 +1112,10 @@ function vSaved(shared) {
 // ---------- skins: laptop · keyboard · trackpad ----------
 let SKT = (s => s === 'ms' ? 'tp' : s)(store.get('sl-sktype', 'lap')), SKC = '';
 const mockCache = {};   // keyboard deck and trackpad previews, drawn on the phone
+// skins with a real photo of the keyboard / trackpad version: shown instead of the drawn preview
+const REALMOCK = { 'ph-gojo': ['kb', 'tp'] };
 function skinMock(id, type, w) {   // the design shown on a keyboard deck or on the trackpad, drawn on the phone
+  if ((REALMOCK[id] || []).includes(type)) return Promise.resolve(`skins/${id}-${type}${w <= 400 ? '-s' : ''}.${IX}`);
   const key = id + type + w; if (mockCache[key]) return Promise.resolve(mockCache[key]);
   return new Promise(ok => { const im = new Image(); im.onload = () => {
     const h = Math.round(w * 2 / 3), c = Object.assign(document.createElement('canvas'), { width: w * 2, height: h * 2 }), g = c.getContext('2d'); g.scale(2, 2);
